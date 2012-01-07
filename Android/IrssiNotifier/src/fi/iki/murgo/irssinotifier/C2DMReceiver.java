@@ -26,16 +26,16 @@ public class C2DMReceiver extends BroadcastReceiver {
         String error = intent.getStringExtra("error");
         String unregistered = intent.getStringExtra("unregistered");
         
-        Log.d(TAG, "RegistrationId: " + registrationId + " Error: " + error + " Unregistered: " + unregistered);
-        Toast.makeText(context, "RegistrationId: " + registrationId + " Error: " + error + " Unregistered: " + unregistered, Toast.LENGTH_LONG).show();
-        //Store the Registration ID
+        context.getSharedPreferences(Prefs.PREFERENCES_NAME, Prefs.PREFERENCES_MODE).edit().putString(Prefs.REGISTRATION_ID, registrationId).commit();
+        
+        Log.i(TAG, "RegistrationId: " + registrationId + " Error: " + error + " Unregistered: " + unregistered);
     }
 
     private void handleMessage(Context context, Intent intent) {
         Log.d(TAG, "Handling C2DM notification");
         String action = intent.getStringExtra(C2DM_DATA_ACTION);
         
-        // Do something in the program to let the User know the notification has been received.
+        // TODO
         Log.d(TAG, "Action: " + action);
         Toast.makeText(context, "Action: " + action, Toast.LENGTH_LONG).show();
     }
