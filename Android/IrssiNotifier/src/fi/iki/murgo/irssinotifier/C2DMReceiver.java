@@ -10,6 +10,7 @@ public class C2DMReceiver extends BroadcastReceiver {
     private static final String TAG = C2DMReceiver.class.getSimpleName();
 
     private static final String C2DM_DATA_ACTION = "action";
+    private static final String C2DM_DATA_MESSAGE = "message";
 
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals("com.google.android.c2dm.intent.REGISTRATION")) {
@@ -34,9 +35,10 @@ public class C2DMReceiver extends BroadcastReceiver {
     private void handleMessage(Context context, Intent intent) {
         Log.d(TAG, "Handling C2DM notification");
         String action = intent.getStringExtra(C2DM_DATA_ACTION);
+        String message = intent.getStringExtra(C2DM_DATA_MESSAGE);
         
         // TODO
-        Log.d(TAG, "Action: " + action);
-        Toast.makeText(context, "Action: " + action, Toast.LENGTH_LONG).show();
+        Log.d(TAG, "Action: " + action + " Message: " + message);
+        Toast.makeText(context, "Message: " + message, Toast.LENGTH_LONG).show();
     }
 }

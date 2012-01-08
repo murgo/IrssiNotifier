@@ -25,6 +25,8 @@ public class IrssiNotifierActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+        getPrefs().edit().clear().commit();
+        
         
         if (isFirstTime()) {
         	setContentView(R.layout.initialsettings);
