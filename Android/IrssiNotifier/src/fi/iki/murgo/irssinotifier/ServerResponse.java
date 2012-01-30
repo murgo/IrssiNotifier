@@ -12,14 +12,23 @@ public class ServerResponse {
 	
 	private final boolean success;
 	private String message;
+
+	private JSONObject responseJson;
 	
-	public ServerResponse(boolean success, JSONObject json) {
+	public ServerResponse(boolean success, String responseString) {
 		this.success = success;
-		if (!success) 
+		if (!success || responseString == null || responseString.length() == 0) 
 			return;
+
+		try {
+			responseJson = new JSONObject(responseString);
+		} catch (Exception e) {
+			success = false;
+			return;
+		}
 		
 		try {
-			this.message = json.getString(MESSAGE);
+			this.message = responseJson.getString(MESSAGE);
 		} catch (JSONException e) {
 			Log.e(TAG, "Invalid JSON response: " + e);
 			e.printStackTrace();

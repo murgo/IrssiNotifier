@@ -3,6 +3,7 @@ package fi.iki.murgo.irssinotifier;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -14,6 +15,12 @@ public class IrssiNotifierActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
     	Log.i(TAG, "Startup");
         super.onCreate(savedInstanceState);
+        
+        try {
+			MessageToServer.setVersion(getPackageManager().getPackageInfo(getPackageName(), 0).versionCode);
+		} catch (NameNotFoundException e) {
+			e.printStackTrace();
+		}
         
         preferences = new Preferences(this);
         preferences.clear();
@@ -52,6 +59,7 @@ public class IrssiNotifierActivity extends Activity {
 	}
 	
 	private void sendSettings() {
+		// TODO: Not tested
 		SettingsSendingTask task = new SettingsSendingTask(this, "", "Generating authentication token..."); // TODO i18n
 		
 		final Context ctx = this;

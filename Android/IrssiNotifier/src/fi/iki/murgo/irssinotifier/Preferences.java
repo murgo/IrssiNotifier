@@ -1,9 +1,9 @@
 package fi.iki.murgo.irssinotifier;
 
 import java.io.IOException;
+import java.util.HashMap;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import fi.iki.murgo.irssinotifier.Server.Target;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -52,9 +52,12 @@ public class Preferences {
 		return !sharedPreferences.getBoolean(SETTINGS_SENT_KEY, false);
 	}
 
-	public ServerResponse sendSettings() throws JSONException, IOException {
-		JSONObject json = new JSONObject();
-		json.put(REGISTRATION_ID_KEY, getRegistrationId());
-		return Server.send(json);
+	public ServerResponse sendSettings() throws IOException {
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put(REGISTRATION_ID_KEY, getRegistrationId());
+		MessageToServer msg = new MessageToServer(map);
+
+		Server server = new Server();
+		return server.send(msg, Target.SaveSettings);
 	}
 }
