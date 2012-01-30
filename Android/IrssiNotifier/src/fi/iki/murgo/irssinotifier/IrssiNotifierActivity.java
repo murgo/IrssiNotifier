@@ -1,146 +1,91 @@
 package fi.iki.murgo.irssinotifier;
 
-import java.util.Date;
-
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.SharedPreferences;
-import android.os.AsyncTask;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
 
 public class IrssiNotifierActivity extends Activity {
-	
 	private static final String TAG = IrssiNotifierActivity.class.getSimpleName();
-	
-	private ProgressDialog _registerDialog;
+	private Preferences preferences;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
+    	Log.i(TAG, "Startup");
         super.onCreate(savedInstanceState);
         
-        getPrefs().edit().clear().commit();
+        preferences = new Preferences(this);
+        preferences.clear();
         
+        // do initial settings
+        if (preferences.getAuthToken() == null || preferences.getRegistrationId() == null) {
+        	Log.d(TAG, "Asking for initial settings");
+	        Intent i = new Intent(IrssiNotifierActivity.this, InitialSettingsActivity.class);
+	        startActivity(i);
+	        finish();
+	        return;
+        }
         
-        if (isFirstTime()) {
-        	setContentView(R.layout.initialsettings);
-            Button b = (Button)findViewById(R.id.buttonInitialSettingsDone);
-            
-            b.setOnClickListener(new OnClickListener() {
-    			public void onClick(View v) {
-    				getPrefs().edit().putBoolean(Prefs.FIRST_TIME, false).commit();
-    				getPrefs().edit().putString(Prefs.REGISTRATION_ID, null).commit();
-    				
-    				registerIfNeeded();
-    			}});
-        }
-        else {
-        	registerIfNeeded();
-        }
+        startMainApp();
     }
 	
-
-	
 	private void startMainApp() {
+    	Log.d(TAG, "Main startup");
         createUi();
 
+        if (preferences.settingsNeedSending()) {
+        	Log.d(TAG, "Settings are not saved, odd");
+        	sendSettings();
+        }
+        
         startFetchingData();
 	}
     
-    private void registerIfNeeded() {
-        if (!isRegistered()) {
-    		_registerDialog = ProgressDialog.show(this, "", "Registering...", true); // TODO i18n
-    		
-    		new RegisterTask().execute();
-        } else {
-        	startMainApp();
-        }
-    }
-
-	private void registerFailed() {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage("Unable to register to C2DM!") // TODO i18n, better message about what to do
-			.setCancelable(false).setPositiveButton("OK", new DialogInterface.OnClickListener(){
-				public void onClick(DialogInterface dialog, int which) {
-					finish();
-				}}).show();
-	}
-
-	private void registerToC2DM() {
-		Log.d(TAG, "Registering to C2DM");
-		C2DMRegistration reg = new C2DMRegistration();
-		reg.registerForC2dm(this);
-	}
-
-	private boolean isRegistered() {
-		return (getRegisterId() != null);
-	}
-	
-	private String getRegisterId() {
-		return getPrefs().getString(Prefs.REGISTRATION_ID, null);
-	}
-
-	private boolean waitForRegistration() {
-		final int loadTime = 10000;
-		final long startTime = new Date().getTime();
-		
-		while (!isRegistered() && new Date().getTime() < startTime + loadTime) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				break;
-			}
-		}
-		return isRegistered();
-	}
-
 	private void startFetchingData() {
 		// TODO
 	}
 
-	private boolean isFirstTime() {
-		return getPrefs().getBoolean(Prefs.FIRST_TIME, true);
-	}
-	
 	private void createUi() {
 		Log.d(TAG, "(Re)creating UI");
         setContentView(R.layout.main);
-        Button b = (Button)findViewById(R.id.buttonRegister);
-        
-        final Context context = this;
-        b.setOnClickListener(new OnClickListener() {
-			public void onClick(View v) {
-				Asd.temp2(context);
-			}});
 	}
 	
-	private SharedPreferences getPrefs() {
-		return getSharedPreferences(Prefs.PREFERENCES_NAME, Prefs.PREFERENCES_MODE);
-	}
-	
-	private class RegisterTask extends AsyncTask<Void, Void, Boolean> {
-
-		@Override
-		protected Boolean doInBackground(Void... params) {
-    		registerToC2DM();
-    		return waitForRegistration();
-		}
+	private void sendSettings() {
+		SettingsSendingTask task = new SettingsSendingTask(this, "", "Generating authentication token..."); // TODO i18n
 		
-		protected void onPostExecute(Boolean result) {
-    		_registerDialog.dismiss();
-    		
-        	if (!result) {
-        		registerFailed();
-        	}
-        	else {
-        		startMainApp();
-        	}
-		}
+		final Context ctx = this;
+		task.setCallback(new Callback<ServerResponse>() {
+			public void doStuff(ServerResponse result) {
+				if (result == null || !result.wasSuccesful()) {
+					MessageBox.Show(ctx, null, "Unable to register to C2DM! Please try again later!", new Callback<Void>() { // TODO i18n
+						public void doStuff(Void param) {
+							finish();
+						}
+					});
+				}
+				if (result.getMessage() != null || result.getMessage().length() == 0) {
+					MessageBox.Show(ctx, "TITLE", result.getMessage(), new Callback<Void>() {
+						public void doStuff(Void param) {
+						}
+					});
+				}
+			}
+		});
+		
+		task.execute();
 	}
+	
+	/*
+	 * Stored here if need arises
+	public boolean isNetworkAvailable() {
+	    ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+	    // if no network is available networkInfo will be null, otherwise check if we are connected
+	    if (networkInfo != null && networkInfo.isConnected()) {
+	        return true;
+	    }
+	    return false;
+	}
+	*/
 }
