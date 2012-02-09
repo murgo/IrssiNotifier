@@ -22,7 +22,13 @@ public class UserHelper {
 	
 	public String getAuthToken(Activity activity, Account account) throws OperationCanceledException, AuthenticatorException, IOException {
 		AccountManager manager = AccountManager.get(activity);
-		AccountManagerFuture<Bundle> future = manager.getAuthToken(account, "ac2dm", null, activity, null, null); // TODO
+		String token = buildToken(manager, account, activity);
+		manager.invalidateAuthToken(account.type, token);
+		return buildToken(manager, account, activity);
+	}
+
+	private String buildToken(AccountManager manager, Account account, Activity activity) throws OperationCanceledException, AuthenticatorException, IOException {
+		AccountManagerFuture<Bundle> future = manager.getAuthToken(account, "ah", null, activity, null, null); // TODO
 		Bundle token = future.getResult();
 		return token.get(AccountManager.KEY_AUTHTOKEN).toString();
 	}

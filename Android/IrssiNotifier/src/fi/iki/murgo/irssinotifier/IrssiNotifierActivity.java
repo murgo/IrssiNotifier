@@ -7,6 +7,9 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.util.Log;
 
+// ACRA! http://code.google.com/p/acra/
+// Analytics!
+
 public class IrssiNotifierActivity extends Activity {
 	private static final String TAG = IrssiNotifierActivity.class.getSimpleName();
 	private Preferences preferences;

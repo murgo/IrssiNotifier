@@ -2,62 +2,85 @@ package fi.iki.murgo.irssinotifier;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import android.util.Log;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.params.ClientPNames;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 public class Server {
-	private static final String TAG = InitialSettingsActivity.class.getSimpleName();
+	//private static final String TAG = InitialSettingsActivity.class.getSimpleName();
 	
-	public enum Target {
+	public enum ServerTarget {
 		SaveSettings,
 		Test,
 		FetchData,
+		Authenticate,
 	}
 	
-	private Map<Target, String> serverUrls = new HashMap<Target, String>();
+	private Map<ServerTarget, String> serverUrls = new HashMap<ServerTarget, String>();
 
 	private static final String SERVER_BASE_URL = "http://irssinotifier.appspot.com/API/";
 
+	private DefaultHttpClient http_client = new DefaultHttpClient();
+
 	public Server() {
-		serverUrls.put(Target.SaveSettings, SERVER_BASE_URL);// + "SaveSettings");
-		serverUrls.put(Target.Test, SERVER_BASE_URL + "Test");
-		serverUrls.put(Target.FetchData, SERVER_BASE_URL + "FetchData");
+		serverUrls.put(ServerTarget.SaveSettings, SERVER_BASE_URL + "Settings");
+		serverUrls.put(ServerTarget.Test, SERVER_BASE_URL + "Test");
+		serverUrls.put(ServerTarget.FetchData, SERVER_BASE_URL + "FetchData");
+		serverUrls.put(ServerTarget.Authenticate, "http://irssinotifier.appspot.com/_ah/login?continue=http://localhost/&auth=");
 	}
 	
-	public ServerResponse send(MessageToServer message, Target target) throws IOException {
-		byte[] bytes = message.getJsonObject().toString().getBytes();
+	public boolean authenticate(String token) {
+		try {
+			// Don't follow redirects
+	        http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
+	        
+	        HttpGet http_get = new HttpGet(serverUrls.get(ServerTarget.Authenticate) + token);
+	        HttpResponse response;
+	        response = http_client.execute(http_get);
+	        
+	        if(response.getStatusLine().getStatusCode() != 302)
+                return false;
+	        
+	        for(Cookie cookie : http_client.getCookieStore().getCookies()) {
+                if(cookie.getName().equals("ACSID"))
+                    return true;
+	        }
+	    } catch (ClientProtocolException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+    	} catch (IOException e) { 		
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+		} finally {
+			if (http_client != null)
+		        http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
+		}
+		return false;
+	}
+	
+	public ServerResponse send(MessageToServer message, ServerTarget target) throws IOException {
+		byte[] bytes = message.getJsonObject().toString().getBytes("UTF8");
 		
-		URL url = new URL(serverUrls.get(target));
-		HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+		HttpPost httpPost = new HttpPost(serverUrls.get(target));
+		httpPost.setHeader("Content-Type", "application/json");
+		httpPost.setEntity(new ByteArrayEntity(bytes));
 		
-		connection.setRequestMethod("POST");
-		connection.setRequestProperty("Content-Type", "application/json");
-		connection.setRequestProperty("Content-Length", Integer.toString(bytes.length));
-
-		connection.setUseCaches(false);
-		connection.setDoOutput(true);
-		connection.setDoInput(true);
-		connection.setChunkedStreamingMode(0);
+		HttpResponse response = http_client.execute(httpPost);
+		int statusCode = response.getStatusLine().getStatusCode();
+		String responseString = readResponse(response.getEntity().getContent());
 		
-		OutputStream stream = connection.getOutputStream();
-		stream.write(bytes);
-		stream.flush();
-		stream.close();
+		// TODO: error handling (authentication etc)
 		
-		int status = connection.getResponseCode();
-		String responseString = readResponse(connection.getInputStream());
-		connection.disconnect();
-
-		// TODO: WHY ISN'T SENDING WORKING
-		Log.d(TAG, responseString);
-		
-		ServerResponse serverResponse = new ServerResponse(status == 200, responseString);
+		ServerResponse serverResponse = new ServerResponse(statusCode == 200, responseString);
 		return serverResponse;
 	}
 

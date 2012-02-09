@@ -3,7 +3,9 @@ package fi.iki.murgo.irssinotifier;
 import java.io.IOException;
 import java.util.HashMap;
 
-import fi.iki.murgo.irssinotifier.Server.Target;
+import org.apache.http.auth.AuthenticationException;
+
+import fi.iki.murgo.irssinotifier.Server.ServerTarget;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -52,12 +54,15 @@ public class Preferences {
 		return !sharedPreferences.getBoolean(SETTINGS_SENT_KEY, false);
 	}
 
-	public ServerResponse sendSettings() throws IOException {
+	public ServerResponse sendSettings() throws IOException, AuthenticationException {
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		map.put(REGISTRATION_ID_KEY, getRegistrationId());
 		MessageToServer msg = new MessageToServer(map);
 
 		Server server = new Server();
-		return server.send(msg, Target.SaveSettings);
+		boolean authenticated = server.authenticate(getAuthToken());
+		if (!authenticated) throw new AuthenticationException();
+		
+		return server.send(msg, ServerTarget.SaveSettings);
 	}
 }
