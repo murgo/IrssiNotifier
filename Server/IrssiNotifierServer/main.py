@@ -149,6 +149,7 @@ class TestController(BaseController):
         self.response.out.write(resp)
 
 def authenticate():
+    # TODO login page logic here
     user = users.get_current_user()
     if not user:
         return None
