@@ -90,31 +90,63 @@ class C2DM(object):
 
 class TestController(BaseController):
     def post(self):
-        user = authenticate()
+        user = users.get_current_user()
+        fail = None
         if not user:
-            self.response.out.write("lol no user")
+            fail = "<a href=\"%s\">Sign in or register</a>" % users.create_login_url(self.request.uri)
+        else:
+            irssiuser = authenticate()
+            if not irssiuser:
+                fail = "lol no irssiuser"
+            
+        if fail:
+            self.response.out.write("<html><body>%s</body></html>" % fail)
+            return
 
         fail = None
         try:
             c2dm = C2DM()
-            c2dm.sendC2dm(user.c2dm, self.request.params['n'])
+
+            tokens = C2dmToken.all()
+            tokens.ancestor(irssiuser.key())
+            tokensList = tokens.fetch(10)
+            for token in tokensList:
+                c2dm.sendC2dm(token.c2dm_token, self.request.params['n'])
+            
         except Exception as e:
             fail = e
 
         self.response.out.write("""<html><body>
-        <p>hello %s %s %s %s</p>
         <p>posting %s</p>
-        <p>failure: %s</p></body></html> """ % (user.user_name, user.email, user.user_id, user.c2dm, self.request.params['n'], fail))
+        <p>failure: %s</p></body></html> """ % (self.request.params['n'], fail))
         
         
     def get(self):
-        user = authenticate()
+        user = users.get_current_user()
+        fail = None
         if not user:
-            self.response.out.write("lol no user")
+            fail = "<a href=\"%s\">Sign in or register</a>" % users.create_login_url(self.request.uri)
+        else:
+            irssiuser = authenticate()
+            if not irssiuser:
+                fail = "lol no irssiuser"
+            
+        if fail:
+            self.response.out.write("<html><body>%s</body></html>" % fail)
+            return
 
-        self.response.out.write("""<html><body>
-        <p>hello %s %s %s %s</p>
-        <form action="/Test" method="post"><input type="text" name="n" /><input type="submit" value="Submit" /></form></body></html>""" % (user.user_name, user.email, user.user_id, user.c2dm))
+        resp = """<html><body>
+        <p>hello %s %s %s</p><ul>""" % (irssiuser.user_name, irssiuser.email, irssiuser.user_id)
+        
+        tokens = C2dmToken.all()
+        tokens.ancestor(irssiuser.key())
+        tokensList = tokens.fetch(10)
+        for token in tokensList:
+            resp = resp + """<li>%s</li>""" % token.c2dm_token
+        
+        resp = resp + """</ul><form action="/Test" method="post"><input type="text" name="n" /><input type="submit" value="Submit" /></form></body></html>"""
+        
+        self.response.out.write(resp)
 
 def authenticate():
     user = users.get_current_user()
@@ -135,21 +167,31 @@ class IrssiUser(db.Model):
     user_name = db.StringProperty()
     email = db.StringProperty()
     user_id = db.StringProperty()
-    c2dm = db.StringProperty()
 
 
-class UserSettings(db.Model):
-    pass
+class C2dmToken(db.Model):
+    c2dm_token = db.StringProperty()
+    # TODO some device info perhaps
+    # TODO maybe it's better to use more generic names than c2dm, and extract c2dm sender into it's own controller
+    # TODO also token types are nice, how to set default stuff to Google
 
 
 class SettingsHandler(object):
     def handle(self, user, jsonObj):
-        user.c2dm = jsonObj["RegistrationId"]
-        user.put()
+        newToken = jsonObj["RegistrationId"]
+
+        tokens = C2dmToken.all()
+        tokens.ancestor(user.key())
+        tokensList = tokens.fetch(10)
+       
+        t = next((token for token in tokensList if token.c2dm_token == newToken), None)
+        
+        if not t:
+            tokenToAdd = C2dmToken(c2dm_token = newToken, parent = user.key())
+            tokenToAdd.put()
         
         user2 = IrssiUser.get_by_key_name(user.user_id)
-        
-        return {"message": "%s %s %s %s" % (user2.user_name, user2.email, user2.user_id, user2.c2dm)}
+        return {"message": "%s %s %s" % (user2.user_name, user2.email, user2.user_id)}
 
 
 class SettingsController(webapp2.RequestHandler):
