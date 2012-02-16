@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>IrssiNotifier</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	
+	<script>
+		function sendMessage() {
+			var msg = $("#msgbox").val();
+			$.post("/Api/Message", { 'message': msg }, function(data) {
+				$('#result').html(data);
+			});
+		}
+	</script>
+</head>
+<body>
+	<ul>
+		<li>User: {{ user.user_name }}</li>
+		<li>Email: {{ user.email }}</li>
+		<li>Id: {{ user.user_id }}</li>
+		<li>Api token: {{ user.api_token }}</li>
+	</ul>
+	
+	<p>C2DM Tokens:</p>
+	<ul>
+	{% for token in tokens %}
+		<li><input type="checkbox" checked="{{ token.enabled }}" id="{{ token.c2dm_token }}" /><b>{{ token.name }}:</b> {{ token.c2dm_token }}</li>
+    {% endfor %}
+	</ul>
+	
+	<p>Send message to android</p>
+	<form>
+		<input type="text" name="message" id="msgbox" />
+		<input type="button" value="Send" onClick="sendMessage()" />
+	</form>
+	
+	<p>Result:</p>
+	<p id="result"></p>
+	
+	<a href="{{ logout_url }}">Log out</a>
+</body>
+</html>
