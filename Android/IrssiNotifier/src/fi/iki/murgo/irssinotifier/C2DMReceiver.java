@@ -1,5 +1,7 @@
 package fi.iki.murgo.irssinotifier;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -75,5 +77,21 @@ public class C2DMReceiver extends BroadcastReceiver {
         // TODO
         Log.d(TAG, "Action: " + action + " Message: " + message);
         Toast.makeText(context, "Message: " + message, Toast.LENGTH_LONG).show();
+        
+        NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        IrcMessage msg = new IrcMessage();
+        msg.Deserialize(message);
+        
+        long when = System.currentTimeMillis();
+
+        Notification notification = new Notification(R.drawable.ic_launcher, msg.getMessage(), when);
+		notification.flags |= Notification.FLAG_AUTO_CANCEL;
+		notification.defaults |= Notification.DEFAULT_SOUND;
+		
+        Intent toLaunch = new Intent(context, IrssiNotifierActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, toLaunch, 0);
+        notification.setLatestEventInfo(context, "IrssiNotifier", msg.getMessage(), contentIntent);
+        notificationManager.notify(666, notification);
     }
 }

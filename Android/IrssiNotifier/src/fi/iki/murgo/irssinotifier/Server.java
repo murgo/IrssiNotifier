@@ -12,8 +12,10 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.cookie.Cookie;
-import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 
 public class Server {
 	//private static final String TAG = InitialSettingsActivity.class.getSimpleName();
@@ -27,7 +29,7 @@ public class Server {
 	
 	private Map<ServerTarget, String> serverUrls = new HashMap<ServerTarget, String>();
 
-	private static final String SERVER_BASE_URL = "http://irssinotifier.appspot.com/API/";
+	private static final String SERVER_BASE_URL = "https://irssinotifier.appspot.com/API/";
 
 	private DefaultHttpClient http_client = new DefaultHttpClient();
 
@@ -35,7 +37,7 @@ public class Server {
 		serverUrls.put(ServerTarget.SaveSettings, SERVER_BASE_URL + "Settings");
 		serverUrls.put(ServerTarget.Test, SERVER_BASE_URL + "Test");
 		serverUrls.put(ServerTarget.FetchData, SERVER_BASE_URL + "FetchData");
-		serverUrls.put(ServerTarget.Authenticate, "http://irssinotifier.appspot.com/_ah/login?continue=http://localhost/&auth=");
+		serverUrls.put(ServerTarget.Authenticate, "https://irssinotifier.appspot.com/_ah/login?continue=https://localhost/&auth=");
 	}
 	
 	public boolean authenticate(String token) {
@@ -51,7 +53,7 @@ public class Server {
                 return false;
 	        
 	        for(Cookie cookie : http_client.getCookieStore().getCookies()) {
-                if(cookie.getName().equals("ACSID"))
+                if(cookie.getName().equals("SACSID"))
                     return true;
 	        }
 	    } catch (ClientProtocolException e) {
@@ -68,11 +70,15 @@ public class Server {
 	}
 	
 	public ServerResponse send(MessageToServer message, ServerTarget target) throws IOException {
-		byte[] bytes = message.getJsonObject().toString().getBytes("UTF8");
-		
 		HttpPost httpPost = new HttpPost(serverUrls.get(target));
-		httpPost.setHeader("Content-Type", "application/json");
-		httpPost.setEntity(new ByteArrayEntity(bytes));
+		
+		HttpParams params = new BasicHttpParams();
+		Map<String, String> map = message.getMap(); 
+		for (Map.Entry<String, String> entry : map.entrySet()) {
+			params.setParameter(entry.getKey(), entry.getValue());
+		}
+		httpPost.setParams(params);
+		httpPost.setEntity(new StringEntity(message.getHttpString()));
 		
 		HttpResponse response = http_client.execute(httpPost);
 		int statusCode = response.getStatusLine().getStatusCode();

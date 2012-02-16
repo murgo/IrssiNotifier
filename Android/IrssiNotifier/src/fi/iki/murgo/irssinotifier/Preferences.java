@@ -17,7 +17,10 @@ public class Preferences {
 	private static final String AUTH_TOKEN_KEY = "AuthToken";
 	private static final String REGISTRATION_ID_KEY = "RegistrationId";
 	private static final String SETTINGS_SENT_KEY = "SettingsSent";
-	
+
+	private static final String DEVICE_NAME_KEY = "Name";
+	private static final String ENABLED_KEY = "Enabled";
+
 	private SharedPreferences sharedPreferences;
 	
 	public Preferences(Context context) {
@@ -55,8 +58,10 @@ public class Preferences {
 	}
 
 	public ServerResponse sendSettings() throws IOException, AuthenticationException {
-		HashMap<String, Object> map = new HashMap<String, Object>();
+		HashMap<String, String> map = new HashMap<String, String>();
 		map.put(REGISTRATION_ID_KEY, getRegistrationId());
+		map.put(DEVICE_NAME_KEY, android.os.Build.MODEL);
+		map.put(ENABLED_KEY, "1");
 		MessageToServer msg = new MessageToServer(map);
 
 		Server server = new Server();

@@ -1,40 +1,38 @@
 package fi.iki.murgo.irssinotifier;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.MissingResourceException;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class MessageToServer {
 	private static final String LANGUAGE = "language";
 	private static final String VERSION = "version";
 	
 	private static int version;
-	private final JSONObject json;
 	
-	public MessageToServer(Map<String, Object> values) {
-		json = new JSONObject();
-		try {
-			json.put(LANGUAGE, Locale.getDefault().getISO3Language());
-			json.put(VERSION, version);
-			for (Map.Entry<String, Object> pair : values.entrySet()) {
-				json.put(pair.getKey(), pair.getValue());
-			}
-		} catch (MissingResourceException e) {
-			e.printStackTrace();
-		} catch (JSONException e) {
-			e.printStackTrace();
+	private Map<String, String> map = new HashMap<String, String>(); 
+	
+	public MessageToServer(Map<String, String> values) {
+		map.put(LANGUAGE, Locale.getDefault().getISO3Language());
+		map.put(VERSION, Integer.toString(version));
+		for (Map.Entry<String, String> pair : values.entrySet()) {
+			map.put(pair.getKey(), pair.getValue());
 		}
 	}
 	
-	public JSONObject getJsonObject() {
-		return json;
+	public Map<String, String> getMap() {
+		return this.map;
 	}
 	
-
 	public static void setVersion(int versionCode) {
 		version = versionCode;
+	}
+
+	public String getHttpString() {
+		StringBuilder sb = new StringBuilder();
+		for (Map.Entry<String, String> entry : map.entrySet()) {
+			sb.append(entry.getKey()).append("=").append(entry.getValue()).append("&");
+		}
+		return sb.toString();
 	}
 }
