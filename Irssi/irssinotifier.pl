@@ -5,7 +5,7 @@ use File::Path qw(make_path);
 
 $VERSION = "0.01";
 %IRSSI = (
-    authors     => "Lauri \'murgo\' Härsilä",
+    authors     => "Lauri \'murgo\' HÃ¤rsilÃ¤",
     contact     => "murgo\@iki.fi",
     name        => "notify",
     description => "",
@@ -33,12 +33,11 @@ sub hilite {
             localtime
         ).$text;
 
-        $text =~ s/`//g;
-        $text =~ s/|//g;
-        $text =~ s/;//g;
+        $text =~ s/&/and/g; #dirty hack because of shitty string parsing in the server side
+        $text =~ s/;/:/g; #TODO sanitize better
 
-        $result = `wget --no-check-certificate -qO- --post-data="apiToken=$token&message=$text" https://irssinotifier.appspot.com/Api/Message`;
-
+        @args = ("wget", "--no-check-certificate", "-q", "-O", "/dev/null", "--post-data=apiToken=$token&message=$text", "https://irssinotifier.appspot.com/Api/Message");
+        system (@args);
     }
 }
 
