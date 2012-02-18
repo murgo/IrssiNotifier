@@ -5,7 +5,7 @@ import android.app.Activity;
 import android.util.Log;
 
 public class TokenGenerationTask extends BackgroundAsyncTask<Account, Void, String> {
-	private static final String TAG = InitialSettingsActivity.class.getSimpleName();
+	private static final String TAG = TokenGenerationTask.class.getSimpleName();
 
 	public TokenGenerationTask(Activity activity, String titleText,
 			String text) {
