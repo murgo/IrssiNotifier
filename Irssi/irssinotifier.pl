@@ -90,11 +90,11 @@ sub encrypt {
 	#$result = system (@args);
 	#return $result
 	Irssi::print("before: $text");
-	$result = `echo $text| /usr/bin/openssl enc -aes-128-cbc -salt -base64 -k $encryption_password`;
+	$result = `echo $text| /usr/bin/openssl enc -aes-128-cbc -salt -base64 -A -k $encryption_password | tr -d '\n'`;
 	chomp($result);
 	Irssi::print("between: $result");
 	#decrypt
-	$result = `echo $result| /usr/bin/openssl enc -aes-128-cbc -d -salt -base64 -k $encryption_password`;
+	$result = `echo $result| /usr/bin/openssl enc -aes-128-cbc -d -salt -base64 -A -k $encryption_password`;
 	chomp($result);
 	Irssi::print("after: $result");
 	return $result;
