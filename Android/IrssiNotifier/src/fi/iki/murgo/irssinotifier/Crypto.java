@@ -12,7 +12,7 @@ public class Crypto {
 
 	public static String decrypt(String key, String payload) {
 		try {
-			byte[] encrypted = base64ToBytes(payload);
+			byte[] encrypted = Base64.decode(key, Base64.DEFAULT);
 	
 			Cipher c = Cipher.getInstance("AES/CBC/PKCS5Padding", "BC");
 	
@@ -33,9 +33,5 @@ public class Crypto {
 			Log.e(TAG, "Unable to decrypt data", e);
 		}
 		return null;
-	}
-
-	private static byte[] base64ToBytes(String key) {
-		return Base64.decode(key, Base64.DEFAULT);
 	}
 }
