@@ -20,12 +20,11 @@ class C2dmToken(db.Model):
 class Message(db.Model):
     server_timestamp = db.FloatProperty()
     timestamp = db.StringProperty()
-    message = db.StringProperty()
+    message = db.TextProperty()
     channel = db.StringProperty()
     nick = db.StringProperty()
     def ToJson(self):
         return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'timestamp': self.timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick})
-
 
 class AuthKey(db.Model):
     sid = db.StringProperty()

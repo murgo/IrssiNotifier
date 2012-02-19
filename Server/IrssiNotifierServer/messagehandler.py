@@ -6,8 +6,8 @@ import time
 
 class MessageHandler(object):
     def handle(self, irssiuser, array):
+        logging.debug("Adding new message: %s" % array)
         try:
-            logging.debug("Adding new message: %s" % array)
             dbMessage = Message(parent = irssiuser.key())
             dbMessage.message = array["message"]
             dbMessage.channel = array['channel']
@@ -24,3 +24,12 @@ class MessageHandler(object):
         c2dm.sendC2dmToUser(irssiuser, dbMessage.ToJson()) #TODO don't send whole message?
         
         return True
+    def getMessage(self, timestamp, user):
+        logging.debug("Getting messages after: %s" % timestamp)
+        messages = Message.all(parent = user.key())
+        messages.filter("server_timestamp <", timestamp)
+	messages.order("server_timestamp")
+
+	c2dm.sendC2dmToUser(user, "read")
+
+	return messages.fetch(25)

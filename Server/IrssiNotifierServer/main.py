@@ -73,6 +73,13 @@ def decode_params(request):
         data[k] = v
     return data
 
+def validate_params(data, params):
+    for i in params:
+        if i not in data:
+            logging.error("data error: %s not in %s" % (i, [x for x in data]))
+            return False
+    return True
+
 
 class SettingsController(webapp2.RequestHandler):
     def post(self):
@@ -92,13 +99,11 @@ class SettingsController(webapp2.RequestHandler):
         
         logging.debug(self.request.params)
         logging.debug(self.request.body)
-        
-        for i in ["RegistrationId", 'Name', 'Enabled']:
-            if i not in data:
-                logging.error("data error: %s not in %s" % (i, [x for x in data]))
-                self.response.status = "400 Bad Request"
-                return self.response
 
+	if (!validate_params(data, ["RegistrationId", "Name", "Enabled"])):
+            self.response.status = "400 Bad Request"
+            return self.response
+            
         settingsHandler = SettingsHandler()
         settingsHandler.handle(irssiUser, data)
         
@@ -110,7 +115,7 @@ class SettingsController(webapp2.RequestHandler):
 
 class MessageController(webapp2.RequestHandler):
     def post(self):
-        logging.debug("messagecontroller start")
+        logging.debug("messagecontroller post start")
         
         data = {}
         if len(self.request.params) > 0:
@@ -124,11 +129,9 @@ class MessageController(webapp2.RequestHandler):
             self.response.status = "401 Unauthorized"
             return self.response
        
-        for i in ["message"]:
-            if i not in data or len(data[i]) == 0:
-                logging.error("data error: %s not in %s" % (i, self.request.params))
-                self.response.status = "400 Bad Request"
-                return self.response
+	if (!validate_params(data, ["message", "channel", "nick", "timestamp"])):
+            self.response.status = "400 Bad Request"
+            return self.response
             
         messageHandler = MessageHandler()
         ok = messageHandler.handle(irssiUser, data)
@@ -138,6 +141,37 @@ class MessageController(webapp2.RequestHandler):
         else:
             responseJson = json.dumps({'response': 'fail' })
             self.response.status = '400 Bad Request'
+
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(responseJson)
+
+    def get(self):
+        #untested
+        logging.debug("messagecontroller get start")
+        
+        data = {}
+        if len(self.request.params) > 0:
+            data = self.request.params
+        else:
+            data = decode_params(self.request)
+        logging.debug(data)
+
+        irssiUser = Login().getIrssiUser(data)
+        if not irssiUser:
+            self.response.status = "401 Unauthorized"
+            return self.response
+       
+	if (!validate_params(data, ["timestamp"])):
+            self.response.status = "400 Bad Request"
+            return self.response
+
+        messageHandler = MessageHandler()
+        messages = messageHandler.getMessages(data, irssiUser)
+        messageJsons = []
+        for message in messages:
+            messageJsons.push(message.ToJson())
+        responseJson = json.dumps(messageJsons)
+        #TODO: dump custom message here
 
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(responseJson)
