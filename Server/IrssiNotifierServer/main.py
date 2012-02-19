@@ -177,6 +177,30 @@ class MessageController(webapp2.RequestHandler):
         self.response.out.write(responseJson)
 
 
+class WipeController(webapp2.RequestHandler):
+    def post(self):
+        logging.debug("wipecontroller start")
+        
+        data = {}
+        if len(self.request.params) > 0:
+            data = self.request.params
+        else:
+            data = decode_params(self.request)
+        logging.debug(data)
+
+        irssiUser = Login().getIrssiUser(data)
+        if not irssiUser:
+            self.response.status = "401 Unauthorized"
+            return self.response
+       
+        handler = WipeHandler()
+        handler.handle(irssiUser)
+
+        responseJson = json.dumps({'response': 'ok' })
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(responseJson)
+
+
 def handle_404(request, response, exception):
     logging.debug("404'd")
     logging.exception(exception)
@@ -184,7 +208,7 @@ def handle_404(request, response, exception):
     response.set_status(404)
 
 
-app = webapp2.WSGIApplication([('/', Main), ('/API/Settings', SettingsController), ('/Api/Message', MessageController)], debug=True)
+app = webapp2.WSGIApplication([('/', Main), ('/API/Settings', SettingsController), ('/Api/Message', MessageController), ('/Api/Wipe', WipeController], debug=True)
 app.error_handlers[404] = handle_404
 
 logging.debug("Hello reinstall: loaded main")

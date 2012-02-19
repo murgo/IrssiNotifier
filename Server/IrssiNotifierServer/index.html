@@ -11,6 +11,12 @@
 				$('#result').html(data);
 			});
 		}
+
+		function wipe() {
+			$.post("/Api/Wipe", { }, function(data) {
+				location.reload(true);
+			});
+		}
 	</script>
 </head>
 <body>
@@ -36,6 +42,9 @@
 	
 	<p>Result:</p>
 	<p id="result"></p>
+
+	<p>Wipe everything</p>
+	<input type="button" value="Wipe!" onClick="wipe()" />
 	
 	<a href="{{ logout_url }}">Log out</a>
 </body>
