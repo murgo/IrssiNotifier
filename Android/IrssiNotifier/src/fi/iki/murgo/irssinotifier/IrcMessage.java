@@ -1,23 +1,22 @@
 package fi.iki.murgo.irssinotifier;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class IrcMessage {
 	
+	public static final String PRIVATE = "!PRIVATE";
 	private String message;
 	private String channel;
 	private String nick;
 	private String timestamp;
-	private String serverTimestamp;
+	private Date serverTimestamp;
 	
-	public void Deserialize(String payload) {
-		try {
-			Deserialize(new JSONObject(payload));
-		} catch (JSONException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public void Deserialize(String payload) throws JSONException {
+		Deserialize(new JSONObject(payload));
 	}
 	
 	public void Deserialize(JSONObject obj) {
@@ -66,12 +65,17 @@ public class IrcMessage {
 		this.timestamp = timestamp;
 	}
 
-	public String getServerTimestamp() {
+	public Date getServerTimestamp() {
 		return serverTimestamp;
 	}
 
 	public void setServerTimestamp(String serverTimestamp) {
-		this.serverTimestamp = serverTimestamp;
+		this.serverTimestamp = new Date((long) Double.parseDouble(serverTimestamp) * 1000);
+	}
+	
+	public String getServerTimestampAsString() {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+		return dateFormat.format(serverTimestamp);
 	}
 
 	public void Decrypt(String encryptionKey) throws CryptoException {
@@ -82,6 +86,10 @@ public class IrcMessage {
 		message = message.replace('´', '\'');
 		channel = channel.replace('´', '\'');
 		nick = nick.replace('´', '\'');
+	}
+
+	public boolean isPrivate() {
+		return channel.equals(PRIVATE);
 	}
 
 }

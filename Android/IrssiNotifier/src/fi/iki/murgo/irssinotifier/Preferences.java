@@ -18,6 +18,7 @@ public class Preferences {
 	private static final String REGISTRATION_ID_KEY = "RegistrationId";
 	private static final String SETTINGS_SENT_KEY = "SettingsSent";
 	private static final String ENCRYPTION_PASSWORD = "EncryptionPassword";
+	private static final String NOTIFICATION_MODE = "NotificationMode";
 
 	private static final String DEVICE_NAME_KEY = "Name";
 	private static final String ENABLED_KEY = "Enabled";
@@ -80,5 +81,15 @@ public class Preferences {
 
 	public String getEncryptionPassword() {
 		return sharedPreferences.getString(ENCRYPTION_PASSWORD, null);
+	}
+
+	public NotificationMode getNotificationMode() {
+		return NotificationMode.values()[sharedPreferences.getInt(NOTIFICATION_MODE, 0)];
+	}
+	
+	public boolean setNotificationMode(NotificationMode notificationMode) {
+		SharedPreferences.Editor editor = sharedPreferences.edit();
+		editor.putInt(NOTIFICATION_MODE, notificationMode.ordinal());
+		return editor.commit();
 	}
 }

@@ -24,7 +24,7 @@ class Message(db.Model):
     channel = db.StringProperty()
     nick = db.StringProperty()
     def ToJson(self):
-        return json.dumps({'server_timestamp': self.server_timestamp, 'timestamp': self.timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick})
+        return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'timestamp': self.timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick})
 
 
 class AuthKey(db.Model):
