@@ -27,7 +27,6 @@ my $lastAddress;
 my $lastTarget;
 
 sub private {
-	Irssi::print("private");
 	my ($server, $msg, $nick, $address) = @_;
 	$lastMsg = $msg;
 	$lastServer = $server;
@@ -37,7 +36,6 @@ sub private {
 }
 
 sub public {
-	Irssi::print("public");
 	my ($server, $msg, $nick, $address, $target) = @_;
 	$lastMsg = $msg;
 	$lastServer = $server;
@@ -51,53 +49,59 @@ sub print_text {
 
 	my $opt = MSGLEVEL_HILIGHT|MSGLEVEL_MSGS;
 	if(($dest->{level} & ($opt)) && ($dest->{level} & MSGLEVEL_NOHILIGHT) == 0) {
-		Irssi::print("print_text");
 		hilite();
 	}
 }
 
 sub hilite {
-	my $time = strftime(Irssi::settings_get_str('timestamp_format')." ", localtime);
-	Irssi::print("hilight! $lastMsg $lastServer $lastNick $lastAddress $lastTarget");
-	
 	if (!$api_token) {
 		Irssi::print("Set api token to send andoid notifications: /irssinotifier apitoken [token]");
 		return;
 	}
 	
-	my $text = "$lastMsg";
-	
-	$text =~ s/&/and/g; #dirty hack because of shitty string parsing in the server side
-	$text =~ s/;/:/g; #TODO sanitize better
-	
 	if ($encryption_password) {
 		$lastMsg = encrypt($lastMsg);
 		#$lastServer = encrypt($lastServer);
-		#$lastNick = encrypt($lastNick);
+		$lastNick = encrypt($lastNick);
 		#$lastAddress = encrypt($lastAddress);
-		#$lastTarget = encrypt($lastTarget);
+		$lastTarget = encrypt($lastTarget);
+	} else {
+		Irssi::print("Set encryption password to send android notifications: /irssinotifier encryptionpassword [password");
 	}
 
-	Irssi::print("hilight! $lastMsg $lastServer $lastNick $lastAddress $lastTarget");
-	
-	#@args = ("wget", "--no-check-certificate", "-q", "-O", "/dev/null", "--post-data=apiToken=$api_token&message=$text", "https://irssinotifier.appspot.com/Api/Message");
-	#system (@args);
+#	my $time = strftime(Irssi::settings_get_str('timestamp_format')." ", localtime);
+	my $time = localtime;
+	my $data = "--post-data=apiToken=$api_token&message=$lastMsg&channel=$lastTarget&nick=$lastNick&timestamp=$time";
+	Irssi::print($data);
+
+	@args = ("wget", "--no-check-certificate", "-q", "-O", "/dev/null", $data, "https://irssinotifier.appspot.com/Api/Message");
+	system (@args);
+}
+
+sub sanitize {
+    my $str = @_ ? shift : $_;
+    $str =~ s/((?:^|[^\\])(?:\\\\)*)'/$1\\'/g;
+    $str =~ s/\\'/´/g; # stupid perl
+    $str =~ s/'/´/g; # stupid perl
+    return "'$str'";
 }
 
 sub encrypt {
-	my $text = $_[0];
-	#@args = ("echo", "Foobar", "|", "/usr/bin/openssl", "enc", "-aes-128-cbc", "-salt", "-base64", "-k", $encryption_password, "2>&1");
-	#$result = system (@args);
-	#return $result
-	Irssi::print("before: $text");
-	$result = `echo $text| /usr/bin/openssl enc -aes-128-cbc -salt -base64 -A -k $encryption_password | tr -d '\n'`;
-	chomp($result);
-	Irssi::print("between: $result");
-	#decrypt
-	$result = `echo $result| /usr/bin/openssl enc -aes-128-cbc -d -salt -base64 -A -k $encryption_password`;
-	chomp($result);
-	Irssi::print("after: $result");
-	return $result;
+        my $text = $_[0];
+        $text = sanitize $text;
+        my $result = `echo $text| /usr/bin/openssl enc -aes-128-cbc -salt -base64 -A -k $encryption_password | tr -d '\n'`;
+	$result =~ s/=//g;
+        chomp($result);
+        return $result;
+}
+ 
+sub decrypt {
+        my $text = $_[0];
+        $text = sanitize $text;
+        my $result = `echo $text| /usr/bin/openssl enc -aes-128-cbc -d -salt -base64 -A -k $encryption_password`;
+	$result =~ s/=//g;
+        chomp($result);
+        return $result;
 }
 
 sub print_help {
@@ -159,4 +163,6 @@ Irssi::command_bind('irssinotifier', 'cmd');
 Irssi::signal_add('message public', 'public');
 Irssi::signal_add('message private', 'private');
 Irssi::signal_add('print text', 'print_text');
+
+
 
