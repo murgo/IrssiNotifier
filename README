@@ -1,1 +1,8 @@
-huhuu taas
+IrssiNotifier - IRC notifications for Android (and possibly other devices)
+
+Goals:
+1) Low battery usage (users C2dm)
+2) Easy to set up (hosted server)
+3) Good privacy (end-to-end -encryption)
+
+Still work in progress, but it kinda works already.
