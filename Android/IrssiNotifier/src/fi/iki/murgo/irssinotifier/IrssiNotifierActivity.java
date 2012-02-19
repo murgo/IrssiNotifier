@@ -27,6 +27,7 @@ public class IrssiNotifierActivity extends Activity {
         
         preferences = new Preferences(this);
         preferences.clear();
+        preferences.setEncryptionPassword("kissa13"); // TODO
         
         // do initial settings
         if (preferences.getAuthToken() == null || preferences.getRegistrationId() == null) {

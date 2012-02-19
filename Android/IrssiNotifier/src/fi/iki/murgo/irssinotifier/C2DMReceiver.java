@@ -78,20 +78,28 @@ public class C2DMReceiver extends BroadcastReceiver {
         Log.d(TAG, "Action: " + action + " Message: " + message);
         Toast.makeText(context, "Message: " + message, Toast.LENGTH_LONG).show();
         
-        NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
-
         IrcMessage msg = new IrcMessage();
         msg.Deserialize(message);
         
+        Preferences prefs = new Preferences(context);
+        String notificationMessage;
+        try {
+        	msg.Decrypt(prefs.getEncryptionPassword());
+        	notificationMessage = msg.getTimestamp() + " " + msg.getChannel() + ": (" + msg.getNick() + ") " + msg.getMessage();
+        } catch (CryptoException e) {
+        	notificationMessage = "Unable to decrypt data. Perhaps encryption key is wrong?";
+        }
+        
+        NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         long when = System.currentTimeMillis();
 
-        Notification notification = new Notification(R.drawable.ic_launcher, msg.getMessage(), when);
+        Notification notification = new Notification(R.drawable.ic_launcher, "New IRC message", when);
 		notification.flags |= Notification.FLAG_AUTO_CANCEL;
 		notification.defaults |= Notification.DEFAULT_SOUND;
 		
         Intent toLaunch = new Intent(context, IrssiNotifierActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, toLaunch, 0);
-        notification.setLatestEventInfo(context, "IrssiNotifier", msg.getMessage(), contentIntent);
+        notification.setLatestEventInfo(context, "IrssiNotifier", notificationMessage, contentIntent);
         notificationManager.notify(666, notification);
     }
 }

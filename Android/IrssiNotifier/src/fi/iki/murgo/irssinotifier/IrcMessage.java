@@ -7,7 +7,7 @@ public class IrcMessage {
 	
 	private String message;
 	private String channel;
-	private String sender;
+	private String nick;
 	private String timestamp;
 	private String serverTimestamp;
 	
@@ -24,7 +24,7 @@ public class IrcMessage {
 		try {
 			setMessage(obj.getString("message"));
 			setChannel(obj.getString("channel"));
-			setSender(obj.getString("sender"));
+			setNick(obj.getString("nick"));
 			setTimestamp(obj.getString("timestamp"));
 			setServerTimestamp(obj.getString("server_timestamp"));
 		} catch (JSONException e) {
@@ -50,12 +50,12 @@ public class IrcMessage {
 		this.channel = channel;
 	}
 
-	public String getSender() {
-		return sender;
+	public String getNick() {
+		return nick;
 	}
 
-	public void setSender(String sender) {
-		this.sender = sender;
+	public void setNick(String sender) {
+		this.nick = sender;
 	}
 
 	public String getTimestamp() {
@@ -72,6 +72,16 @@ public class IrcMessage {
 
 	public void setServerTimestamp(String serverTimestamp) {
 		this.serverTimestamp = serverTimestamp;
+	}
+
+	public void Decrypt(String encryptionKey) throws CryptoException {
+		message = Crypto.decrypt(encryptionKey, message);
+		channel = Crypto.decrypt(encryptionKey, channel);
+		nick = Crypto.decrypt(encryptionKey, nick);
+		
+		message = message.replace('´', '\'');
+		channel = channel.replace('´', '\'');
+		nick = nick.replace('´', '\'');
 	}
 
 }

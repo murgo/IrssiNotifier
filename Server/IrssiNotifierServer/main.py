@@ -173,9 +173,9 @@ class Message(db.Model):
     timestamp = db.StringProperty()
     message = db.StringProperty()
     channel = db.StringProperty()
-    sender = db.StringProperty()
+    nick = db.StringProperty()
     def ToJson(self):
-        return json.dumps({'server_timestamp': self.server_timestamp, 'timestamp': self.timestamp, 'message': self.message, 'channel': self.channel, 'sender': self.sender})
+        return json.dumps({'server_timestamp': self.server_timestamp, 'timestamp': self.timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick})
 
 
 class SettingsHandler(object):
@@ -195,9 +195,8 @@ class SettingsHandler(object):
             tokenToAdd.name = array["Name"]
             tokenToAdd.put()
         else:
-            #untested
             logging.debug("Updating token: " + newToken)
-            t.enabled = array["Enabled"]
+            t.enabled = bool(int(array["Enabled"]))
             t.name = array["Name"]
             t.put()
 
@@ -208,9 +207,9 @@ class MessageHandler(object):
             logging.debug("Adding new message: %s" % array)
             dbMessage = Message(parent = irssiuser.key())
             dbMessage.message = array["message"]
-            dbMessage.channel = 'channel' #TODO
-            dbMessage.sender = 'sender' #TODO
-            dbMessage.timestamp = 'timestamp' #TODO
+            dbMessage.channel = array['channel'] #TODO
+            dbMessage.nick = array['nick'] #TODO
+            dbMessage.timestamp = array['timestamp'] #TODO
             dbMessage.server_timestamp = time.time()
             dbMessage.put()
         except Exception as e:

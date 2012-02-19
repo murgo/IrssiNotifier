@@ -17,6 +17,7 @@ public class Preferences {
 	private static final String AUTH_TOKEN_KEY = "AuthToken";
 	private static final String REGISTRATION_ID_KEY = "RegistrationId";
 	private static final String SETTINGS_SENT_KEY = "SettingsSent";
+	private static final String ENCRYPTION_PASSWORD = "EncryptionPassword";
 
 	private static final String DEVICE_NAME_KEY = "Name";
 	private static final String ENABLED_KEY = "Enabled";
@@ -69,5 +70,15 @@ public class Preferences {
 		if (!authenticated) throw new AuthenticationException();
 		
 		return server.send(msg, ServerTarget.SaveSettings);
+	}
+	
+	public boolean setEncryptionPassword(String encryptionPassword) {
+		SharedPreferences.Editor editor = sharedPreferences.edit();
+		editor.putString(ENCRYPTION_PASSWORD, encryptionPassword);
+		return editor.commit();
+	}
+
+	public String getEncryptionPassword() {
+		return sharedPreferences.getString(ENCRYPTION_PASSWORD, null);
 	}
 }

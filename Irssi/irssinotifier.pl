@@ -72,7 +72,6 @@ sub hilite {
 #	my $time = strftime(Irssi::settings_get_str('timestamp_format')." ", localtime);
 	my $time = localtime;
 	my $data = "--post-data=apiToken=$api_token&message=$lastMsg&channel=$lastTarget&nick=$lastNick&timestamp=$time";
-	Irssi::print($data);
 
 	@args = ("wget", "--no-check-certificate", "-q", "-O", "/dev/null", $data, "https://irssinotifier.appspot.com/Api/Message");
 	system (@args);
@@ -87,21 +86,22 @@ sub sanitize {
 }
 
 sub encrypt {
-        my $text = $_[0];
-        $text = sanitize $text;
-        my $result = `echo $text| /usr/bin/openssl enc -aes-128-cbc -salt -base64 -A -k $encryption_password | tr -d '\n'`;
+	my $text = $_[0];
+	$text = sanitize $text;
+	my $result = `echo $text| /usr/bin/openssl enc -aes-128-cbc -salt -base64 -A -k $encryption_password | tr -d '\n'`;
 	$result =~ s/=//g;
-        chomp($result);
-        return $result;
+	$result =~ s/\+/-/g;
+	$result =~ s/\//_/g;
+	chomp($result);
+	return $result;
 }
  
 sub decrypt {
-        my $text = $_[0];
-        $text = sanitize $text;
-        my $result = `echo $text| /usr/bin/openssl enc -aes-128-cbc -d -salt -base64 -A -k $encryption_password`;
-	$result =~ s/=//g;
-        chomp($result);
-        return $result;
+	my $text = $_[0];
+	$text = sanitize $text;
+	my $result = `echo $text| /usr/bin/openssl enc -aes-128-cbc -d -salt -base64 -A -k $encryption_password`;
+	chomp($result);
+	return $result;
 }
 
 sub print_help {
@@ -163,6 +163,3 @@ Irssi::command_bind('irssinotifier', 'cmd');
 Irssi::signal_add('message public', 'public');
 Irssi::signal_add('message private', 'private');
 Irssi::signal_add('print text', 'print_text');
-
-
-
