@@ -1,16 +1,26 @@
 import urllib2
 import logging
-from datamodels import C2dmToken
+from datamodels import C2dmToken, AuthKey
 
 class C2DM(object):
     def loadAuthKey(self):
-        return None
+        logging.debug("Loading auth key from datastore")
+        key = AuthKey.get_by_key_name("AUTHKEY")
+        if key is None:
+            return None
+        
+        return key.auth 
     
-    def saveAuthKey(self, auth):
-        pass
+    def saveAuthKey(self, lines):
+        logging.debug("Saving auth key to datastore")
+        key = AuthKey(key_name = "AUTHKEY")
+        key.sid = lines[0][4:-1]
+        key.lsid = lines[1][5:-1]
+        key.auth = lines[2][5:-1]
+        key.put()
     
     def getAuthKey(self):
-        logging.info("generating c2dm auth key")
+        logging.info("Generating c2dm auth key")
         
         f = open("secret.txt", 'r')
         line = f.readline()

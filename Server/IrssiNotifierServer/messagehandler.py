@@ -10,9 +10,9 @@ class MessageHandler(object):
             logging.debug("Adding new message: %s" % array)
             dbMessage = Message(parent = irssiuser.key())
             dbMessage.message = array["message"]
-            dbMessage.channel = array['channel'] #TODO
-            dbMessage.nick = array['nick'] #TODO
-            dbMessage.timestamp = array['timestamp'] #TODO
+            dbMessage.channel = array['channel']
+            dbMessage.nick = array['nick']
+            dbMessage.timestamp = array['timestamp']
             dbMessage.server_timestamp = time.time()
             dbMessage.put()
         except Exception as e:
