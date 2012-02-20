@@ -17,17 +17,9 @@
 			}
 		}
 
-		function toggleInstructions() {
-			$("#instructions").toggle('fast');
+		function toggle(c) {
+			$(c).toggle('fast');
 		}
-	</script>
-
-	<script type="text/javascript">
-		(function() {
-			var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
-			po.src = 'https://apis.google.com/js/plusone.js';
-			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
-		})();
 	</script>
 
 	<script type="text/javascript">
@@ -43,12 +35,23 @@
 
 </head>
 <body>
-	{% if working %}
-	<p id="works">Irssi script <span class="working">confirmed as working.</span></p>
-	<div id="instructions" style="display: none">
+	<h1>IrssiNotifier</h1>
+	
+	<h2>Android client status</h2>
+	{% if c2dmtokencount != 0 %}
+	<p>Android device <span class="working">confirmed as working.</span> Registered devices: {{ c2dmtokencount }}</p>
 	{% else %}
-	<p id="works">Irssi script <span class="broken">not confirmed as working.</span></p>
-	<p id="instructions">
+	<p>Android device <span class="broken">not confirmed as working.</span></p>
+	{% endif %}
+	<p><a href="http://tempuri.org">Market link for Android app.</a></p> 
+
+	<h2>Irssi script status</h2>
+	{% if irssiworking %}
+	<p>Irssi script <span class="working">confirmed as working.</span></p>
+	<div id="instructions" style="display: none;">
+	{% else %}
+	<p>Irssi script <span class="broken">not confirmed as working.</span></p>
+	<div id="instructions">
 	{% endif %}
 		Instructions: <br />
 		1) Get and run android app <br />
@@ -63,25 +66,31 @@
 		<div class="block">/irssinotifier encryptionPassword v3rys3cur3pa55w0rd</div>
 		7) Query yourself to see if it works (this instruction text should disappear after refreshing) <br />
 	</div>
-	<p><a onclick="toggleInstructions();" href="javascript:void(0)">Show/hide instructions</a></p>
+	<p><a onclick="toggle('#instructions');" href="javascript:void(0)">Show/hide instructions</a></p>
 
-	<h2>User details</h2>
-	<ul>
-		<li>User: {{ user.user_name }}</li>
-		<li>Email: {{ user.email }}</li>
-		<li>Id: {{ user.user_id }}</li>
-		<li>Api token: {{ user.api_token }}</li>
-	</ul>
+	<br /> <br />
+	<div id="debug" style="display: none;">
+		<h2>Debug stuff</h2>
+		
+		<h3>User details</h3>
+		<ul>
+			<li>User: {{ user.user_name }}</li>
+			<li>Email: {{ user.email }}</li>
+			<li>Id: {{ user.user_id }}</li>
+			<li>Api token: {{ user.api_token }}</li>
+		</ul>
 
-	<h2>C2DM Tokens</h2>
-	<ul>
-	{% for token in tokens %}
-		<li><input type="checkbox" checked="{{ token.enabled }}" id="{{ token.c2dm_token }}" /><b>{{ token.name }}:</b> {{ token.c2dm_token }}</li>
-	{% endfor %}
-	</ul>
+		<h23>C2DM Tokens</h3>
+		<ul>
+		{% for token in tokens %}
+			<li><input type="checkbox" checked="{{ token.enabled }}" id="{{ token.c2dm_token }}" /><b>{{ token.name }}:</b> {{ token.c2dm_token }}</li>
+		{% endfor %}
+		</ul>
 
-	<p><a onclick="wipe();" href="javascript:void(0)">Wipe all data!</a></p>
+		<p><a onclick="wipe();" href="javascript:void(0)">Wipe all data!</a></p>
+	</div>
+	<p><a onclick="toggle('#debug');" href="javascript:void(0)">Show/hide debug stuff</a></p>
+
 	<p><a href="{{ logout_url }}">Log out</a></p> <br />
-	<div class="g-plusone" data-annotation="inline" data-href="https://irssinotifier.appspot.com"></div>
 </body>
 </html>

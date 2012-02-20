@@ -100,6 +100,7 @@ public class C2DMReceiver extends BroadcastReceiver {
         int notificationId;
         long when = new Date().getTime();;
         IrcMessage msg = new IrcMessage();
+        String tag = null; // TODO why tag
 
     	try {
             msg.Deserialize(message);
@@ -110,7 +111,8 @@ public class C2DMReceiver extends BroadcastReceiver {
 			titleText = (String) values[1];
 			notificationId = (Integer) values[2];
             when = msg.getServerTimestamp().getTime();
-			
+            tag = msg.isPrivate() ? msg.getNick() : msg.getChannel();
+            
         	if (ircMessages.getUnreadCount() == 0) {
         		tickerText = "New IRC message";
         	} else {
@@ -123,6 +125,7 @@ public class C2DMReceiver extends BroadcastReceiver {
         	notificationMessage = "Unable to decrypt data. Perhaps encryption key is wrong?";
 			tickerText = "IrssiNotifier decryption error";
         	notificationId = 1;
+            tag = "error";
         } catch (JSONException e) {
         	titleText = "IrssiNotifier error";
         	notificationMessage = "Unable to parse data. Server error?";
@@ -130,7 +133,6 @@ public class C2DMReceiver extends BroadcastReceiver {
         	notificationId = 1;
 		}
         
-        String tag = msg.isPrivate() ? msg.getNick() : msg.getChannel();
         
         NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         

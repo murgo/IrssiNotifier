@@ -1,3 +1,7 @@
+h2 {
+	margin-top: 3em;
+}
+
 .working {
 	color: #30f030;
 }
@@ -6,9 +10,17 @@
 	color: #f03030;
 }
 
+.debug {
+	display:none;
+}
+
 .block {
-	margin: 16px;
+	margin: 1em;
 	background-color: #444444;
+}
+
+.g-plusone {
+	margin-top: 48px;
 }
 
 a:link {

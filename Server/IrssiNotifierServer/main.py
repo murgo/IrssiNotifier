@@ -53,7 +53,8 @@ class Main(BaseController):
              'user': user,
              'tokens': tokensList,
              'logout_url': users.create_logout_url(self.request.uri),
-             'working': count != 0,
+             'irssiworking': count != 0,
+             'c2dmtokencount': len(tokensList),
         }
         logging.debug(template_values)
         logging.debug(tokensList)
