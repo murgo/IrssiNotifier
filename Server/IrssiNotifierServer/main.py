@@ -191,7 +191,11 @@ class WipeController(webapp2.RequestHandler):
         if len(self.request.params) > 0:
             data = self.request.params
         else:
-            data = decode_params(self.request)
+            try:
+                data = decode_params(self.request)
+            except:
+                # because of weird assertion error
+                data = {}
         logging.debug(data)
 
         irssiUser = Login().getIrssiUser(data)

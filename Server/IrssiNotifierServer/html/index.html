@@ -12,7 +12,7 @@
 			var answer = confirm("Wipe all user data?");
 			if (answer) {
 				$.post("/Api/Wipe", { }, function(data) {
-					location.reload(true);
+					window.location.replace('{{ logout_url }}');
 				});
 			}
 		}
