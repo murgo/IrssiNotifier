@@ -7,8 +7,8 @@ threadsafe: true
 handlers:
 - url: /script
   static_dir: script
-- url: /style
-  static_dir: style
+- url: /static
+  static_dir: static
 - url: /.*
   script: main.app
   secure: always

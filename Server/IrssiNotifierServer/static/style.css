@@ -1,0 +1,35 @@
+.working {
+	color: #30f030;
+}
+
+.broken {
+	color: #f03030;
+}
+
+.block {
+	margin: 16px;
+	background-color: #444444;
+}
+
+a:link {
+	color:#a0a0f0;
+}
+
+a:visited {
+	color:#9090f0;
+}
+
+a:hover {
+	color:#9999f0;
+}
+
+a:active {
+	color:#a0a0ff;
+}
+
+body {
+	font-family:Consolas,Courier;
+	background-color: #000000;
+	color: #e0e0e0;
+}
+

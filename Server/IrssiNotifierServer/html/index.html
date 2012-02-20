@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="static/style.css" />
+	<link rel="icon" type="image/png" href="static/icon.png" />
+	
+	<title>IrssiNotifier</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+	<script>
+		function wipe() {
+			var answer = confirm("Wipe all user data?");
+			if (answer) {
+				$.post("/Api/Wipe", { }, function(data) {
+					location.reload(true);
+				});
+			}
+		}
+
+		function toggleInstructions() {
+			$("#instructions").toggle('fast');
+		}
+	</script>
+
+	<script type="text/javascript">
+		(function() {
+			var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+			po.src = 'https://apis.google.com/js/plusone.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+		})();
+	</script>
+
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-29331277-1']);
+		_gaq.push(['_trackPageview']);
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
+
+</head>
+<body>
+	{% if working %}
+	<p id="works">Irssi script <span class="working">confirmed as working.</span></p>
+	<div id="instructions" style="display: none">
+	{% else %}
+	<p id="works">Irssi script <span class="broken">not confirmed as working.</span></p>
+	<p id="instructions">
+	{% endif %}
+		Instructions: <br />
+		1) Get and run android app <br />
+		2) Download irssi script <br />
+		3) Use shell command:
+		<div class="block">wget http://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; mkdir ~/.irssi/scripts/autorun; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
+		4) Load irssi script by typing the following command to irssi
+		<div class="block">/script load irssinotifier</div>
+		5) Set api token in irssi: /irssinotifier apitoken {{ user.api_token }} <br />
+		<div class="block">/irssinotifier apiToken {{ user.api_token }}</div>
+		6) Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too.
+		<div class="block">/irssinotifier encryptionPassword v3rys3cur3pa55w0rd</div>
+		7) Query yourself to see if it works (this instruction text should disappear after refreshing) <br />
+	</div>
+	<p><a onclick="toggleInstructions();" href="javascript:void(0)">Show/hide instructions</a></p>
+
+	<h2>User details</h2>
+	<ul>
+		<li>User: {{ user.user_name }}</li>
+		<li>Email: {{ user.email }}</li>
+		<li>Id: {{ user.user_id }}</li>
+		<li>Api token: {{ user.api_token }}</li>
+	</ul>
+
+	<h2>C2DM Tokens</h2>
+	<ul>
+	{% for token in tokens %}
+		<li><input type="checkbox" checked="{{ token.enabled }}" id="{{ token.c2dm_token }}" /><b>{{ token.name }}:</b> {{ token.c2dm_token }}</li>
+	{% endfor %}
+	</ul>
+
+	<p><a onclick="wipe();" href="javascript:void(0)">Wipe all data!</a></p>
+	<p><a href="{{ logout_url }}">Log out</a></p> <br />
+	<div class="g-plusone" data-annotation="inline" data-href="https://irssinotifier.appspot.com"></div>
+</body>
+</html>
