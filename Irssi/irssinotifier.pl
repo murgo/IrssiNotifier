@@ -6,7 +6,7 @@ use POSIX;
 use vars qw($VERSION %IRSSI);
 use File::Path qw(make_path);
 
-$VERSION = "0.1";
+$VERSION = "1.0";
 %IRSSI = (
 	authors	 => "Lauri \'murgo\' Härsilä",
 	contact	 => "murgo\@iki.fi",
