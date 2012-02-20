@@ -37,7 +37,7 @@ class Main(BaseController):
 
         if not user:
             template = jinja_environment.get_template('html/login.html')
-            template_values = { 'login_url': users.create_login_url(self.request.uri) }
+            template_values = { 'login_url': users.create_login_url(self.request.uri).replace("&", "&amp;"), }
             self.response.out.write(template.render(template_values))
             return
         
@@ -52,7 +52,7 @@ class Main(BaseController):
         template_values = {
              'user': user,
              'tokens': tokensList,
-             'logout_url': users.create_logout_url(self.request.uri),
+             'logout_url': users.create_logout_url(self.request.uri).replace("&", "&amp;"),
              'irssiworking': count != 0,
              'c2dmtokencount': len(tokensList),
         }

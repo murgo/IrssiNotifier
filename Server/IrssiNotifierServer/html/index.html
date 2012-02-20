@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
 	<link rel="stylesheet" type="text/css" href="static/style.css" />
 	<link rel="icon" type="image/png" href="static/icon.png" />
 	
 	<title>IrssiNotifier</title>
+
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
 	<script>
@@ -68,7 +71,6 @@
 	</div>
 	<p><a onclick="toggle('#instructions');" href="javascript:void(0)">Show/hide instructions</a></p>
 
-	<br /> <br />
 	<div id="debug" style="display: none;">
 		<h2>Debug stuff</h2>
 		
@@ -80,15 +82,17 @@
 			<li>Api token: {{ user.api_token }}</li>
 		</ul>
 
-		<h23>C2DM Tokens</h3>
+		<h3>C2DM Tokens</h3>
 		<ul>
 		{% for token in tokens %}
-			<li><input type="checkbox" checked="{{ token.enabled }}" id="{{ token.c2dm_token }}" /><b>{{ token.name }}:</b> {{ token.c2dm_token }}</li>
+			<li><input type="checkbox" {% if token.enabled %}checked{% endif %} id="{{ token.c2dm_token }}" /><b>{{ token.name }}:</b> {{ token.c2dm_token }}</li>
 		{% endfor %}
 		</ul>
 
 		<p><a onclick="wipe();" href="javascript:void(0)">Wipe all data!</a></p>
 	</div>
+
+	<br /> <br />
 	<p><a onclick="toggle('#debug');" href="javascript:void(0)">Show/hide debug stuff</a></p>
 
 	<p><a href="{{ logout_url }}">Log out</a></p> <br />
