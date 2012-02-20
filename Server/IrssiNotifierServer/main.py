@@ -44,10 +44,15 @@ class Main(BaseController):
         tokens.ancestor(user.key())
         tokensList = tokens.fetch(10)
 
+	messages = IrcMessages.all()
+	messages.ancestor(user.key())
+	count = messages.count(1)
+
         template_values = {
              'user': user,
              'tokens': tokensList,
              'logout_url': users.create_logout_url(self.request.uri),
+             'working': count != 0,
         }
         logging.debug(template_values)
         logging.debug(tokensList)
