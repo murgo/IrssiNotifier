@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>IrssiNotifier</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+	<script>
+		function wipe() {
+			$.post("/Api/Wipe", { }, function(data) {
+				location.reload(true);
+			});
+		}
+
+		function toggleInstructions() {
+			$("#instructions").toggle('fast');
+		}
+	</script>
+
+<script type="text/javascript">
+  (function() {
+    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+    po.src = 'https://apis.google.com/js/plusone.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+  })();
+</script>
+
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-29331277-1']);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+</head>
+<body>
+	<ul>
+		<li>User: {{ user.user_name }}</li>
+		<li>Email: {{ user.email }}</li>
+		<li>Id: {{ user.user_id }}</li>
+		<li>Api token: {{ user.api_token }}</li>
+	</ul>
+
+	{ % if working % }
+	<p id="works">Irssi script confirmed as working.</p>
+	<p id="instructions" style="display: hidden">
+	{ % else % }
+	<p id="works">Irssi script not confirmed as working.</p>
+	<p id="instructions">
+	{ % endif & }
+		Instructions: <br />
+		1) Get and run android app <br />
+		2) Download irssi script <br />
+		3.1) Use shell command: "wget http://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; mkdir ~/.irssi/scripts/autorun; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl"
+		4) Load irssi script (type "/script load irssinotifier" to irssi window)
+		5) Set api token in irssi: /irssinotifier apitoken {{ user.api_token }}
+		6) Query yourself to see if it works (this instruction text should disappear after refreshing)
+	</p>
+	<p><a onclick="toggleInstructions" href="javascript:void(0);">Show/hide instructions</a></p>
+
+	<p>C2DM Tokens:</p>
+	<ul>
+	{% for token in tokens %}
+		<li><input type="checkbox" checked="{{ token.enabled }}" id="{{ token.c2dm_token }}" /><b>{{ token.name }}:</b> {{ token.c2dm_token }}</li>
+	{% endfor %}
+	</ul>
+
+	<p>Wipe everything</p>
+	<input type="button" value="Wipe!" onClick="wipe()" />
+
+	<a href="{{ logout_url }}">Log out</a>
+
+	<div class="g-plusone" data-annotation="inline" data-href="https://irssinotifier.appspot.com"></div>
+</body>
+</html>
