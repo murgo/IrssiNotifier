@@ -1,0 +1,1 @@
+../../../Irssi/irssinotifier.pl
