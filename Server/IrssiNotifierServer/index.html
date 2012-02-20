@@ -5,13 +5,6 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 	
 	<script>
-		function sendMessage() {
-			var msg = $("#msgbox").val();
-			$.post("/Api/Message", { 'message': msg }, function(data) {
-				$('#result').html(data);
-			});
-		}
-
 		function wipe() {
 			$.post("/Api/Wipe", { }, function(data) {
 				location.reload(true);
@@ -75,15 +68,6 @@
 	{% endfor %}
 	</ul>
 	
-	<p>Send message to android</p>
-	<form>
-		<input type="text" name="message" id="msgbox" />
-		<input type="button" value="Send" onClick="sendMessage()" />
-	</form>
-	
-	<p>Result:</p>
-	<p id="result"></p>
-
 	<p>Wipe everything</p>
 	<input type="button" value="Wipe!" onClick="wipe()" />
 	
