@@ -27,11 +27,31 @@
 
 </script>
 </head>
-<body style="text-align: center; margin-left:auto; margin-right:auto;">
-	<h1>IrssiNotifier</h1>
-	<img src="static/icon.png" alt="IrssiNotifier" />
-	<p>Please <a href="{{ login_url }}">log in</a>.</p>
-	<div class="g-plusone" data-annotation="none" data-href="https://irssinotifier.appspot.com"></div>
+<body>
+	<h1 class="center">IrssiNotifier</h1>
+	<img class="center" src="static/icon.png" alt="IrssiNotifier" />
+	<p class="center">Please <a href="{{ login_url }}">log in</a>.</p>
+
+	<div class="questions">
+	<p class="question">What?</p>
+	<p class="answer">Get notifications from IRC-hilights and private messages straight to your Android device!</p>
+
+	<p class="question">How?</p>
+	<p class="answer">IrssiNotifier uses Irssi-script to send IRC-messages to server, and Google's Cloud to Device Messaging framework to send notifications to Android device. This minimizes the battery usage of your device, and enables notifications to be sent near real time.</p>
+
+	<p class="question">Privacy?</p>
+	<p class="answer">All data is end-to-end -encrypted with the encryption password of your choice. Password is never sent to the server. You'll have to login with your Google account, but no password or other sensitive data is collected.</p>
+
+	<p class="question">What do I need?</p>
+	<p class="answer">You'll need Irssi running on Linux server or similar. Also you'll need Android device (phone or tablet, or both) with Android version 2.2 (froyo) or later.</p>
+
+	<p class="question">Where?</p>
+	<p class="answer">Download IrssiNotifier Android app from <a href="http://tempuri.org">Android Market</a>. Instructions about setting up the Irssi script are shown after logging in.</p>
+
+	<br /> <br />
+	<div class="g-plusone" data-annotation="inline" data-href="https://irssinotifier.appspot.com"></div>
+	</div>
+
 </body>
 </html>
 
