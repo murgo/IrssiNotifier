@@ -8,8 +8,9 @@ import os
 from settingshandler import SettingsHandler
 from messagehandler import MessageHandler
 from login import Login
-from datamodels import C2dmToken
+from datamodels import C2dmToken, Message
 import json
+from wipehandler import WipeHandler
 
 jinja_environment = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
@@ -44,9 +45,9 @@ class Main(BaseController):
         tokens.ancestor(user.key())
         tokensList = tokens.fetch(10)
 
-	messages = IrcMessages.all()
-	messages.ancestor(user.key())
-	count = messages.count(1)
+        messages = Message.all()
+        messages.ancestor(user.key())
+        count = messages.count(1)
 
         template_values = {
              'user': user,
@@ -105,7 +106,7 @@ class SettingsController(webapp2.RequestHandler):
         logging.debug(self.request.params)
         logging.debug(self.request.body)
 
-	if (!validate_params(data, ["RegistrationId", "Name", "Enabled"])):
+        if not validate_params(data, ["RegistrationId", "Name", "Enabled"]):
             self.response.status = "400 Bad Request"
             return self.response
             
@@ -134,7 +135,7 @@ class MessageController(webapp2.RequestHandler):
             self.response.status = "401 Unauthorized"
             return self.response
        
-	if (!validate_params(data, ["message", "channel", "nick", "timestamp"])):
+        if not validate_params(data, ["message", "channel", "nick", "timestamp"]):
             self.response.status = "400 Bad Request"
             return self.response
             
@@ -166,7 +167,7 @@ class MessageController(webapp2.RequestHandler):
             self.response.status = "401 Unauthorized"
             return self.response
        
-	if (!validate_params(data, ["timestamp"])):
+        if not validate_params(data, ["timestamp"]):
             self.response.status = "400 Bad Request"
             return self.response
 
@@ -213,7 +214,7 @@ def handle_404(request, response, exception):
     response.set_status(404)
 
 
-app = webapp2.WSGIApplication([('/', Main), ('/API/Settings', SettingsController), ('/Api/Message', MessageController), ('/Api/Wipe', WipeController], debug=True)
+app = webapp2.WSGIApplication([('/', Main), ('/API/Settings', SettingsController), ('/Api/Message', MessageController), ('/Api/Wipe', WipeController)], debug=True)
 app.error_handlers[404] = handle_404
 
 logging.debug("Hello reinstall: loaded main")
