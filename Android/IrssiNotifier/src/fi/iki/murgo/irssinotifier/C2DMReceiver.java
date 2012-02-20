@@ -111,7 +111,7 @@ public class C2DMReceiver extends BroadcastReceiver {
 			titleText = (String) values[1];
 			notificationId = (Integer) values[2];
             when = msg.getServerTimestamp().getTime();
-            tag = msg.isPrivate() ? msg.getNick() : msg.getChannel();
+            tag = msg.getLogicalChannel();
             
         	if (ircMessages.getUnreadCount() == 0) {
         		tickerText = "New IRC message";

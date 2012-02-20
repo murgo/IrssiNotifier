@@ -14,6 +14,7 @@ public class IrcMessage {
 	private String nick;
 	private String timestamp;
 	private Date serverTimestamp;
+	private String externalId;
 	
 	public void Deserialize(String payload) throws JSONException {
 		Deserialize(new JSONObject(payload));
@@ -25,7 +26,7 @@ public class IrcMessage {
 			setChannel(obj.getString("channel"));
 			setNick(obj.getString("nick"));
 			setTimestamp(obj.getString("timestamp"));
-			setServerTimestamp(obj.getString("server_timestamp"));
+			setServerTimestamp((long) (Double.parseDouble(obj.getString("server_timestamp")) * 1000));
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -69,8 +70,8 @@ public class IrcMessage {
 		return serverTimestamp;
 	}
 
-	public void setServerTimestamp(String serverTimestamp) {
-		this.serverTimestamp = new Date((long) Double.parseDouble(serverTimestamp) * 1000);
+	public void setServerTimestamp(long serverTimestamp) {
+		this.serverTimestamp = new Date(serverTimestamp);
 	}
 	
 	public String getServerTimestampAsString() {
@@ -90,6 +91,18 @@ public class IrcMessage {
 
 	public boolean isPrivate() {
 		return channel.equals(PRIVATE);
+	}
+
+	public String getLogicalChannel() {
+		return isPrivate() ? getNick() : getChannel();
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
+	}
+	
+	public String getExternalId() {
+		return externalId;
 	}
 
 }
