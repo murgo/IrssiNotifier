@@ -36,7 +36,7 @@ class Main(BaseController):
         user = Login().getIrssiUser(self.request.params)
 
         if not user:
-            template = jinja_environment.get_template('login.html')
+            template = jinja_environment.get_template('html/login.html')
             template_values = { 'login_url': users.create_login_url(self.request.uri) }
             self.response.out.write(template.render(template_values))
             return
@@ -58,7 +58,7 @@ class Main(BaseController):
         logging.debug(template_values)
         logging.debug(tokensList)
 
-        template = jinja_environment.get_template('index.html')
+        template = jinja_environment.get_template('html/index.html')
         self.response.out.write(template.render(template_values))
 
 
