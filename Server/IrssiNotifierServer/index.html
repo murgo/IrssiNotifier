@@ -20,6 +20,14 @@
 	</script>
 
 <script type="text/javascript">
+  (function() {
+    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+    po.src = 'https://apis.google.com/js/plusone.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+  })();
+</script>
+
+<script type="text/javascript">
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-29331277-1']);
   _gaq.push(['_trackPageview']);
@@ -59,5 +67,8 @@
 	<input type="button" value="Wipe!" onClick="wipe()" />
 	
 	<a href="{{ logout_url }}">Log out</a>
+
+	<div class="g-plusone" data-annotation="inline" data-href="https://irssinotifier.appspot.com"></div>
 </body>
 </html>
+
