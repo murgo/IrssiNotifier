@@ -63,6 +63,12 @@ class Main(BaseController):
         self.response.out.write(template.render(template_values))
 
 
+def getServerMessage(data):
+    if "version" in data:
+        if int(data["version"]) < 3:
+            return (True, "lol joku beta")
+    return (True, "")
+
 def decode_params(request):
     #TODO super ugly hack, stupid HttpPost not accepting params in android
     # Return JSON as request body? Switch to using UrlConnection?
@@ -114,7 +120,7 @@ class SettingsController(webapp2.RequestHandler):
         settingsHandler = SettingsHandler()
         settingsHandler.handle(irssiUser, data)
         
-        responseJson = json.dumps({'response': 'ok', 'message': 'lol' })
+        responseJson = json.dumps({ 'response': 'ok' })
 
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(responseJson)
@@ -135,7 +141,7 @@ class MessageController(webapp2.RequestHandler):
         if not irssiUser:
             self.response.status = "401 Unauthorized"
             return self.response
-       
+
         if not validate_params(data, ["message", "channel", "nick", "timestamp"]):
             self.response.status = "400 Bad Request"
             return self.response
@@ -168,6 +174,11 @@ class MessageController(webapp2.RequestHandler):
             self.response.status = "401 Unauthorized"
             return self.response
        
+        (cont, serverMessage) = getServerMessage(data)
+        if not cont:
+            self.response.out.write(json.dumps({ 'message': serverMessage }))
+            return self.response
+       
         if not validate_params(data, []):
             self.response.status = "400 Bad Request"
             return self.response
@@ -180,7 +191,7 @@ class MessageController(webapp2.RequestHandler):
         messageJsons = []
         for message in messages:
             messageJsons.append(message.ToJson())
-        responseJson = json.dumps(messageJsons)
+        responseJson = json.dumps({"servermessage": serverMessage, "messages": messageJsons})
         #TODO: dump custom message here
 
         self.response.headers['Content-Type'] = 'application/json'
