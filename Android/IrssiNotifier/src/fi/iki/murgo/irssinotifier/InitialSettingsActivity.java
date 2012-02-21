@@ -44,6 +44,8 @@ public class InitialSettingsActivity extends Activity {
 		switch (i) {
 			default:
 			case -1:
+				Preferences prefs = new Preferences(this);
+				prefs.clear();
 				finish();
 				break;
 			case 0:
@@ -59,22 +61,25 @@ public class InitialSettingsActivity extends Activity {
 				startMainApp();
 				break;
 		}
-		
 	}
 
 	private void startMainApp() {
-        Intent i = new Intent(this, IrssiNotifierActivity.class);
-        startActivity(i);
-        finish();
-        return;
+		final Context ctx = this;
+		MessageBox.Show(this, "Success", "Check http://irssinotifier.appspot.com for information about setting up your irssi script.", new Callback<Void>() {
+			public void doStuff(Void param) {
+		        Intent i = new Intent(ctx, IrssiNotifierActivity.class);
+		        startActivity(i);
+		        finish();
+			}
+		}, true);
 	}
 
 	private void sendSettings() {
-		SettingsSendingTask task = new SettingsSendingTask(this, "", "Sending settings to server..."); // TODO i18n
+		SettingsSendingTask task = new SettingsSendingTask(this, "", "Sending settings to server...");
 		
 		final Context ctx = this;
-		task.setCallback(new Callback<SettingsServerResponse>() {
-			public void doStuff(SettingsServerResponse result) {
+		task.setCallback(new Callback<ServerResponse>() {
+			public void doStuff(ServerResponse result) {
 				if (result == null || !result.wasSuccesful()) {
 					MessageBox.Show(ctx, null, "Unable to send settings to the server! Please try again later!", new Callback<Void>() { // TODO i18n
 						public void doStuff(Void param) {
@@ -83,13 +88,7 @@ public class InitialSettingsActivity extends Activity {
 					});
 					return;
 				}
-				if (result.getMessage() != null || result.getMessage().length() == 0) {
-					MessageBox.Show(ctx, "TITLE", result.getMessage(), new Callback<Void>() {
-						public void doStuff(Void param) {
-							whatNext(3, null);
-						}
-					});
-				}
+				whatNext(3, null);
 			}
 		});
 		
@@ -97,7 +96,7 @@ public class InitialSettingsActivity extends Activity {
 	}
 
 	private void generateToken(Account account) {
-		TokenGenerationTask task = new TokenGenerationTask(this, "", "Generating authentication token..."); // TODO i18n
+		TokenGenerationTask task = new TokenGenerationTask(this, "", "Generating authentication token...");
 		
 		final Context ctx = this;
 		task.setCallback(new Callback<String>() {

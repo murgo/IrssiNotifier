@@ -3,7 +3,7 @@ package fi.iki.murgo.irssinotifier;
 import android.app.Activity;
 import android.util.Log;
 
-public class SettingsSendingTask extends BackgroundAsyncTask<Void, Void, SettingsServerResponse> {
+public class SettingsSendingTask extends BackgroundAsyncTask<Void, Void, ServerResponse> {
 	
 	private static final String TAG = InitialSettingsActivity.class.getSimpleName();
 	
@@ -12,12 +12,12 @@ public class SettingsSendingTask extends BackgroundAsyncTask<Void, Void, Setting
 	}
 
 	@Override
-	protected SettingsServerResponse doInBackground(Void... params) {
+	protected ServerResponse doInBackground(Void... params) {
 		Log.d(TAG, "Sending settings");
 		Preferences prefs = new Preferences(activity);
 		
 		try {
-			SettingsServerResponse response = prefs.sendSettings();
+			ServerResponse response = prefs.sendSettings();
 			return response;
 		} catch (Exception e) {
 			Log.e(TAG, "Unable to send settings: " + e.toString());

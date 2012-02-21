@@ -8,6 +8,7 @@ class Login():
         return str(uuid.uuid4())
     
     def getIrssiUser(self, params):
+        logging.info("Login.getIrssiUser()")
         user = users.get_current_user()
         if not user:
             logging.debug("No Google user found")
@@ -28,11 +29,14 @@ class Login():
     
         irssi_user = IrssiUser.get_by_key_name(user_id)
         if irssi_user is None:
+            logging.debug("IrssiUser not found, adding new one")
             irssi_user = IrssiUser(key_name=user_id)
             irssi_user.user_id = user_id
             irssi_user.user_name = user.nickname()
             irssi_user.email = user.email()
             irssi_user.api_token = self.generateApiToken() 
             irssi_user.put()
+        else:
+            logging.debug("IrssiUser found")
         
         return irssi_user

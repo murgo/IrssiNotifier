@@ -37,19 +37,20 @@ public class DataFetcherTask extends AsyncTask<Void, Void, DataFetchResult> {
 			
 			HashMap<String, String> map = new HashMap<String, String>();
 			map.put("timestamp", Long.toString(lastFetchTime / 1000));
-			ServerResponse response = server.get(new MessageToServer(map), ServerTarget.Message); // TODO: try with empty server
+			MessageServerResponse response = (MessageServerResponse) server.get(new MessageToServer(map), ServerTarget.Message); // TODO: try with empty server
+			result.setResponse(response);
 			if (!response.wasSuccesful()) {
 				throw new ServerException(); 
 			}
-			
+
 			Log.d(TAG, response.getResponseString());
 
-			JSONArray arr = new JSONArray(response.getResponseString());
+			JSONArray arr = response.getJson().getJSONArray("messages");
 			if (arr.length() == 0)
 				return result;
 			
 			for (int i = 0; i < arr.length(); i++) {
-				JSONObject object = arr.getJSONObject(i);
+				JSONObject object = new JSONObject(arr.getString(i));
 				IrcMessage message = new IrcMessage();
 				message.Deserialize(object);
 				message.Decrypt(encryptionKey);

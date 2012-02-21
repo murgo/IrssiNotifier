@@ -55,15 +55,13 @@ public class Preferences {
 
 	public void clear() {
         sharedPreferences.edit().clear().commit();
-        setEncryptionPassword("password");
-        setNotificationMode(NotificationMode.PerChannel);
 	}
 
 	public boolean settingsNeedSending() {
 		return !sharedPreferences.getBoolean(SETTINGS_SENT_KEY, false);
 	}
 
-	public SettingsServerResponse sendSettings() throws IOException, AuthenticationException {
+	public ServerResponse sendSettings() throws IOException, AuthenticationException {
 		HashMap<String, String> map = new HashMap<String, String>();
 		map.put(REGISTRATION_ID_KEY, getRegistrationId());
 		map.put(DEVICE_NAME_KEY, android.os.Build.MODEL);
@@ -74,7 +72,7 @@ public class Preferences {
 		boolean authenticated = server.authenticate(getAuthToken());
 		if (!authenticated) throw new AuthenticationException();
 		
-		SettingsServerResponse response = (SettingsServerResponse) server.send(msg, ServerTarget.SaveSettings);
+		ServerResponse response = server.send(msg, ServerTarget.SaveSettings);
 		if (response.wasSuccesful()) {
 			sharedPreferences.edit().putBoolean(SETTINGS_SENT_KEY, true).commit();
 		}
@@ -88,11 +86,11 @@ public class Preferences {
 	}
 
 	public String getEncryptionPassword() {
-		return sharedPreferences.getString(ENCRYPTION_PASSWORD, null);
+		return sharedPreferences.getString(ENCRYPTION_PASSWORD, "password");
 	}
 
 	public NotificationMode getNotificationMode() {
-		return NotificationMode.values()[sharedPreferences.getInt(NOTIFICATION_MODE, 0)];
+		return NotificationMode.values()[sharedPreferences.getInt(NOTIFICATION_MODE, NotificationMode.PerChannel.ordinal())];
 	}
 	
 	public boolean setNotificationMode(NotificationMode notificationMode) {

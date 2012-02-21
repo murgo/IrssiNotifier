@@ -3,6 +3,7 @@ import logging
 
 class SettingsHandler(object):
     def handle(self, user, array):
+        logging.info("SettingsHandler.handle()")
         newToken = array["RegistrationId"]
 
         tokens = C2dmToken.all()

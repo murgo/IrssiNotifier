@@ -29,39 +29,58 @@ public class DataAccess extends SQLiteOpenHelper {
 	}
 	
 	public void HandleMessage(IrcMessage message) {
-		SQLiteDatabase database = getWritableDatabase();
-		
-		String channelName = message.getLogicalChannel();
-		long channelId = 0;
-		
-		Cursor cursor = database.query("Channel", new String[] {"id"}, "name = ?" , new String[] { channelName }, null, null, null, "LIMIT 1");
-		cursor.moveToFirst();
-		if (!cursor.isAfterLast()) {
-			channelId = cursor.getInt(cursor.getColumnIndex("id"));
+		try {
+			SQLiteDatabase database = getWritableDatabase();
+			
+			Cursor cur = database.query("IrcMessage", new String[] {"externalId"}, "externalId = ?", new String[] {message.getExternalId()}, null, null, null, "1");
+			if (!cur.isAfterLast()) {
+				cur.close();
+				database.close();
+				return;
+			}
+			
+			
+			String channelName = message.getLogicalChannel();
+			long channelId = 0;
+			
+			Cursor cursor = database.query("Channel", new String[] {"id"}, "name = ?" , new String[] { channelName }, null, null, null, "1");
+			cursor.moveToFirst();
+			if (!cursor.isAfterLast()) {
+				channelId = cursor.getInt(cursor.getColumnIndex("id"));
+			}
+			cursor.close();
+			
+			if (channelId == 0) {
+				ContentValues values = new ContentValues();
+				values.put("name", channelName);
+				channelId = database.insert("Channel", null, values);
+			}
+			
+			ContentValues messageValues = new ContentValues();
+			messageValues.put("channelId", channelId);
+			messageValues.put("message", message.getMessage());
+			messageValues.put("nick", message.getNick());
+			messageValues.put("serverTimestamp", message.getServerTimestamp().getTime());
+			messageValues.put("timestamp", message.getTimestamp());
+			messageValues.put("externalId", message.getExternalId());
+			database.insert("IrcMessage", null, messageValues);
+			
+			database.close();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		cursor.close();
-		
-		if (channelId == 0) {
-			ContentValues values = new ContentValues();
-			values.put("name", channelName);
-			channelId = database.insert("Channel", null, values);
-		}
-		
-		ContentValues messageValues = new ContentValues();
-		messageValues.put("channelId", channelId);
-		messageValues.put("message", message.getMessage());
-		messageValues.put("nick", message.getNick());
-		messageValues.put("serverTimestamp", message.getServerTimestamp().getTime());
-		messageValues.put("timestamp", message.getTimestamp());
-		messageValues.put("externalId", message.getExternalId());
-		database.insert("IrcMessage", null, messageValues);
-		
-		database.close();
 	}
 	
 	public void clearChannel(Channel channel) {
 		SQLiteDatabase database = getWritableDatabase();
 		database.delete("IrcMessage", "channelId = ?", new String[] { Long.toString(channel.getId()) });
+		database.close();
+	}
+	
+	public void clearAll() {
+		SQLiteDatabase database = getWritableDatabase();
+		database.delete("Channel", null, null);
+		database.delete("IrcMessage", null, null);
 		database.close();
 	}
 
@@ -76,6 +95,7 @@ public class DataAccess extends SQLiteOpenHelper {
 			ch.setId(cursor.getLong(cursor.getColumnIndex("id")));
 			ch.setName(cursor.getString(cursor.getColumnIndex("name")));
 			list.add(ch);
+			cursor.moveToNext();
 		}
 
 		cursor.close();
@@ -106,6 +126,7 @@ public class DataAccess extends SQLiteOpenHelper {
 			message.setChannel(channel.getName());
 			
 			list.add(message);
+			cursor.moveToNext();
 		}
 
 		cursor.close();

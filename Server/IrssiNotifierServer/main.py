@@ -15,6 +15,7 @@ from wipehandler import WipeHandler
 jinja_environment = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
 class BaseController(webapp2.RequestHandler):
+    data = {}
     def handle_exception(self, exception, debug):
         # Log the error.
         logging.exception(exception)
@@ -29,10 +30,57 @@ class BaseController(webapp2.RequestHandler):
         else:
             self.response.set_status(500)
 
+    def initController(self, name, paramRequirements):
+        logging.info("Method started: %s" % name)
+    
+        if len(self.request.params) > 0:
+            self.data = self.request.params
+        else:
+            try:
+                self.data = self.decode_params(self.request)
+            except:
+                # because of weird assertion error
+                self.data = {}
+    
+        logging.debug("Data: %s" % self.data)
+        
+        self.irssiUser = Login().getIrssiUser(self.data)
+        if not self.irssiUser:
+            self.response.status = "401 Unauthorized"
+            return False
+        
+        if not self.validate_params(self.data, paramRequirements):
+            self.response.status = "400 Bad Request"
+            return False
+        return True
 
-class Main(BaseController):
+    def decode_params(self, request):
+        logging.debug("Decoding parameters: %s" % request.body)
+        #TODO super ugly hack, stupid HttpPost not accepting params in android
+        # Return JSON as request body? Switch to using UrlConnection?
+        d = request.body
+        s = d.split('&')
+        data = {}
+        for l in s:
+            if (len(l) < 2): break
+            spl = l.split('=')
+            k = spl[0]
+            v = spl[1]
+            data[k] = v
+        return data
+    
+    def validate_params(self, data, params):
+        for i in params:
+            if i not in data:
+                logging.error("data error: %s not in %s" % (i, [x for x in data]))
+                return False
+        return True
+    
+
+
+class WebController(BaseController):
     def get(self):
-        logging.debug("main start")
+        logging.debug("WebController.get()")
         user = Login().getIrssiUser(self.request.params)
 
         if not user:
@@ -69,56 +117,16 @@ def getServerMessage(data):
             return (True, "lol joku beta")
     return (True, "")
 
-def decode_params(request):
-    #TODO super ugly hack, stupid HttpPost not accepting params in android
-    # Return JSON as request body? Switch to using UrlConnection?
-    d = request.body
-    s = d.split('&')
-    logging.debug(s)
-    data = {}
-    for l in s:
-        if (len(l) < 2): break
-        logging.debug(l)
-        spl = l.split('=')
-        logging.debug(spl)
-        k = spl[0]
-        v = spl[1]
-        data[k] = v
-    return data
-
-def validate_params(data, params):
-    for i in params:
-        if i not in data:
-            logging.error("data error: %s not in %s" % (i, [x for x in data]))
-            return False
-    return True
-
 
 class SettingsController(BaseController):
     def post(self):
-        logging.debug("settingscontroller start")
-        
-        data = {}
-        if len(self.request.params) > 0:
-            data = self.request.params
-        else:
-            data = decode_params(self.request)
-        logging.debug(data)
-
-        irssiUser = Login().getIrssiUser(data)
-        if not irssiUser:
-            self.response.status = "401 Unauthorized"
+        val = self.initController("SettingsController.post()", ["RegistrationId", "Name", "Enabled"])
+        if not val:
+            logging.debug("InitController returned false")
             return self.response
         
-        logging.debug(self.request.params)
-        logging.debug(self.request.body)
-
-        if not validate_params(data, ["RegistrationId", "Name", "Enabled"]):
-            self.response.status = "400 Bad Request"
-            return self.response
-            
         settingsHandler = SettingsHandler()
-        settingsHandler.handle(irssiUser, data)
+        settingsHandler.handle(self.irssiUser, self.data)
         
         responseJson = json.dumps({ 'response': 'ok' })
 
@@ -128,26 +136,13 @@ class SettingsController(BaseController):
 
 class MessageController(BaseController):
     def post(self):
-        logging.debug("messagecontroller post start")
-        
-        data = {}
-        if len(self.request.params) > 0:
-            data = self.request.params
-        else:
-            data = decode_params(self.request)
-        logging.debug(data)
-
-        irssiUser = Login().getIrssiUser(data)
-        if not irssiUser:
-            self.response.status = "401 Unauthorized"
+        val = self.initController("MessageController.post()", ["message", "channel", "nick", "timestamp"])
+        if not val:
+            logging.debug("InitController returned false")
             return self.response
 
-        if not validate_params(data, ["message", "channel", "nick", "timestamp"]):
-            self.response.status = "400 Bad Request"
-            return self.response
-            
         messageHandler = MessageHandler()
-        ok = messageHandler.handle(irssiUser, data)
+        ok = messageHandler.handle(self.irssiUser, self.data)
 
         if ok:
             responseJson = json.dumps({'response': 'ok' })
@@ -159,40 +154,25 @@ class MessageController(BaseController):
         self.response.out.write(responseJson)
 
     def get(self):
-        #untested
-        logging.debug("messagecontroller get start")
-        
-        data = {}
-        if len(self.request.params) > 0:
-            data = self.request.params
-        else:
-            data = decode_params(self.request)
-        logging.debug(data)
-
-        irssiUser = Login().getIrssiUser(data)
-        if not irssiUser:
-            self.response.status = "401 Unauthorized"
+        val = self.initController("MessageController.get()", [])
+        if not val:
+            logging.debug("InitController returned false")
             return self.response
-       
-        (cont, serverMessage) = getServerMessage(data)
+
+        (cont, serverMessage) = getServerMessage(self.data)
         if not cont:
             self.response.out.write(json.dumps({ 'message': serverMessage }))
             return self.response
-       
-        if not validate_params(data, []):
-            self.response.status = "400 Bad Request"
-            return self.response
-        
-        if "timestamp" not in data:
-            data["timestamp"] = 0
+
+        if "timestamp" not in self.data:
+            self.data["timestamp"] = 0
 
         messageHandler = MessageHandler()
-        messages = messageHandler.getMessages(data["timestamp"], irssiUser)
+        messages = messageHandler.getMessages(self.data["timestamp"], self.irssiUser)
         messageJsons = []
         for message in messages:
             messageJsons.append(message.ToJson())
         responseJson = json.dumps({"servermessage": serverMessage, "messages": messageJsons})
-        #TODO: dump custom message here
 
         self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(responseJson)
@@ -200,27 +180,13 @@ class MessageController(BaseController):
 
 class WipeController(BaseController):
     def post(self):
-        #TODO move to base, refactor
-        logging.debug("wipecontroller start")
-        
-        data = {}
-        if len(self.request.params) > 0:
-            data = self.request.params
-        else:
-            try:
-                data = decode_params(self.request)
-            except:
-                # because of weird assertion error
-                data = {}
-        logging.debug(data)
-
-        irssiUser = Login().getIrssiUser(data)
-        if not irssiUser:
-            self.response.status = "401 Unauthorized"
+        val = self.initController("WipeController.post()", [])
+        if not val:
+            logging.debug("InitController returned false")
             return self.response
-       
+        
         handler = WipeHandler()
-        handler.handle(irssiUser)
+        handler.handle(self.irssiUser)
 
         responseJson = json.dumps({'response': 'ok' })
         self.response.headers['Content-Type'] = 'application/json'
@@ -244,7 +210,7 @@ def handle_404(request, response, exception):
     response.set_status(404)
 
 
-app = webapp2.WSGIApplication([('/', Main), ('/API/Settings', SettingsController), ('/API/Message', MessageController), ('/API/Wipe', WipeController), ('/admin', AdminController), ('/analytics', AnalyticsController)], debug=True)
+app = webapp2.WSGIApplication([('/', WebController), ('/API/Settings', SettingsController), ('/API/Message', MessageController), ('/API/Wipe', WipeController), ('/admin', AdminController), ('/analytics', AnalyticsController)], debug=True)
 app.error_handlers[404] = handle_404
 
 logging.debug("Hello reinstall: loaded main")

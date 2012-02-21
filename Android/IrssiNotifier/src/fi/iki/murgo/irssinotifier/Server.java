@@ -1,21 +1,26 @@
 package fi.iki.murgo.irssinotifier;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
+import java.util.Map.Entry;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.params.ClientPNames;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
+import org.apache.http.util.EntityUtils;
 
 public class Server {
 	//private static final String TAG = InitialSettingsActivity.class.getSimpleName();
@@ -78,7 +83,7 @@ public class Server {
 		
 		HttpParams params = new BasicHttpParams();
 		Map<String, String> map = message.getMap(); 
-		for (Map.Entry<String, String> entry : map.entrySet()) {
+		for (Map.Entry<String, String> entry : map.entrySet()) { // TODO: Headers vs Entity, remove whole HttpConnection
 			params.setParameter(entry.getKey(), entry.getValue());
 		}
 		httpPost.setParams(params);
@@ -86,40 +91,49 @@ public class Server {
 		
 		HttpResponse response = http_client.execute(httpPost);
 		int statusCode = response.getStatusLine().getStatusCode();
-		String responseString = readResponse(response.getEntity().getContent());
+		String responseString = EntityUtils.toString(response.getEntity());
 		
 		// TODO: error handling (authentication etc)
 		
 		ServerResponse serverResponse;
-		if (target == ServerTarget.SaveSettings)
-			serverResponse = new SettingsServerResponse(statusCode == 200, responseString);
-		else
-			serverResponse = new ServerResponse(statusCode == 200, responseString);
+		serverResponse = new ServerResponse(statusCode == 200, responseString);
 
 		return serverResponse;
 	}
 
 	public ServerResponse get(MessageToServer message, ServerTarget target) throws IOException {
-		HttpGet httpGet = new HttpGet(serverUrls.get(target));
-		HttpParams params = new BasicHttpParams();
-		Map<String, String> map = message.getMap(); 
-		for (Map.Entry<String, String> entry : map.entrySet()) {
-			params.setParameter(entry.getKey(), entry.getValue());
-		}
-		httpGet.setParams(params); // TODO UNTESTED
-		
+		String url = serverUrls.get(target);
+		url = buildUrlWithParameters(url, message.getMap());
+		HttpGet httpGet = new HttpGet(url);
+
 		HttpResponse response = http_client.execute(httpGet);
 		int statusCode = response.getStatusLine().getStatusCode();
-		String responseString = readResponse(response.getEntity().getContent());
+		String responseString = EntityUtils.toString(response.getEntity());
 		
 		// TODO: error handling (authentication etc)
 		
-		ServerResponse serverResponse = new ServerResponse(statusCode == 200, responseString);
+		ServerResponse serverResponse;
+		if (target == ServerTarget.Message)
+			serverResponse = new MessageServerResponse(statusCode == 200, responseString);
+		else
+			serverResponse = new ServerResponse(statusCode == 200, responseString);
 		return serverResponse;
 	}
 	
-	private static String readResponse(InputStream is) {
-		return new Scanner(is).useDelimiter("\\A").next();
+	private static String buildUrlWithParameters(String url, Map<String, String> parameters){
+	    if(!url.endsWith("?"))
+	        url += "?";
+
+	    List<NameValuePair> params = new ArrayList<NameValuePair>();
+
+	    for (Entry<String, String> entry : parameters.entrySet()) {
+		    params.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
+	    }
+
+	    String paramString = URLEncodedUtils.format(params, "utf-8");
+
+	    url += paramString;
+	    return url;
 	}
 
 }

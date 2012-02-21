@@ -3,6 +3,13 @@ import logging
 from datamodels import C2dmToken, AuthKey
 
 class C2DM(object):
+    authkey = ""
+    
+    def __init__(self):
+        self.authkey = self.loadAuthKey()
+        if self.authkey is None:
+            self.authkey = self.getAuthKey()
+    
     def loadAuthKey(self):
         logging.debug("Loading auth key from datastore")
         key = AuthKey.get_by_key_name("AUTHKEY")
@@ -12,7 +19,7 @@ class C2DM(object):
         return key.auth 
     
     def saveAuthKey(self, lines):
-        logging.debug("Saving auth key to datastore")
+        logging.info("Saving auth key to datastore")
         key = AuthKey(key_name = "AUTHKEY")
         key.sid = lines[0][4:-1]
         key.lsid = lines[1][5:-1]
@@ -44,6 +51,7 @@ class C2DM(object):
         return auth
     
     def sendC2dmToUser(self, irssiuser, message):
+        logging.debug("Sending c2dm message to user %s" % irssiuser.user_name)
         tokens = C2dmToken.all()
         tokens.ancestor(irssiuser.key())
         tokensList = tokens.fetch(10)
@@ -52,16 +60,11 @@ class C2DM(object):
                 self.sendC2dm(token.c2dm_token, message)
         
     def sendC2dm(self, token, message):
-        logging.debug("Sending c2dm message")
-        authkey = self.loadAuthKey()
-        if authkey is None:
-            authkey = self.getAuthKey()
+        logging.debug("Sending c2dm message to token %s" % token)
             
-        logging.debug("Auth key: %s" % authkey)
-
         request = urllib2.Request("https://android.apis.google.com/c2dm/send")
-        request.add_header('Authorization', 'GoogleLogin auth=%s' % authkey)
-        request.add_data('registration_id=%s&data.message=%s&collapse_key=%s' % (token, message, "ck"))
+        request.add_header('Authorization', 'GoogleLogin auth=%s' % self.authkey)
+        request.add_data('registration_id=%s&data.message=%s&collapse_key=%s' % (token, message, "ck")) # TODO: collapse key
         
         # TODO: errors from the next line, possible email alarms
         response = urllib2.urlopen(request)

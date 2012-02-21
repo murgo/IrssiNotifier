@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.http.auth.AuthenticationException;
+
+import com.google.android.apps.analytics.GoogleAnalyticsTracker;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -13,17 +16,21 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
-// ACRA! http://code.google.com/p/acra/
-// Analytics!
+// TODO: ACRA! http://code.google.com/p/acra/
 
 public class IrssiNotifierActivity extends Activity {
 	private static final String TAG = IrssiNotifierActivity.class.getSimpleName();
 	private Preferences preferences;
+	private GoogleAnalyticsTracker tracker;
+	private final String googleAnalyticsCode = "UA-29385499-1"; 
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
     	Log.i(TAG, "Startup");
         super.onCreate(savedInstanceState);
+        
+        tracker = GoogleAnalyticsTracker.getInstance();
+        tracker.startNewSession(googleAnalyticsCode, this);
         
         try {
         	MessageToServer.setVersion(getPackageManager().getPackageInfo(getPackageName(), 0).versionCode);
@@ -39,12 +46,19 @@ public class IrssiNotifierActivity extends Activity {
 			preferences.clear();
 			Intent i = new Intent(IrssiNotifierActivity.this, InitialSettingsActivity.class);
 			startActivity(i);
+			tracker.dispatch();
 			finish();
 			return;
 		}
         
         startMainApp();
     }
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		tracker.stopSession();
+	}
 	
 	private void startMainApp() {
     	Log.d(TAG, "Main startup");
@@ -92,6 +106,10 @@ public class IrssiNotifierActivity extends Activity {
 				
 				preferences.setLastFetchTime(now);
 				
+				if (param.getResponse().getServerMessage() != null && param.getResponse().getServerMessage().length() > 0) {
+					MessageBox.Show(ctx, null, param.getResponse().getServerMessage(), null);
+				}
+
 				if (param.getMessages().isEmpty())
 					return;
 				
@@ -100,6 +118,7 @@ public class IrssiNotifierActivity extends Activity {
 			}
 		});
         task.execute();
+        tracker.dispatch();
         
 		DataAccessTask datask = new DataAccessTask(ctx, dataAccessCallback);
 		datask.execute();
@@ -111,22 +130,15 @@ public class IrssiNotifierActivity extends Activity {
 	}
 	
 	private void sendSettings() {
-		// TODO: Not tested
-		SettingsSendingTask task = new SettingsSendingTask(this, "", "Generating authentication token..."); // TODO i18n
+		SettingsSendingTask task = new SettingsSendingTask(this, "", "Generating authentication token...");
 		
 		final Context ctx = this;
-		task.setCallback(new Callback<SettingsServerResponse>() {
-			public void doStuff(SettingsServerResponse result) {
+		task.setCallback(new Callback<ServerResponse>() {
+			public void doStuff(ServerResponse result) {
 				if (result == null || !result.wasSuccesful()) {
-					MessageBox.Show(ctx, null, "Unable to register to C2DM! Please try again later!", new Callback<Void>() { // TODO i18n
+					MessageBox.Show(ctx, null, "Unable to register to C2DM! Please try again later!", new Callback<Void>() {
 						public void doStuff(Void param) {
 							finish();
-						}
-					});
-				}
-				if (result.getMessage() != null || result.getMessage().length() == 0) {
-					MessageBox.Show(ctx, "TITLE", result.getMessage(), new Callback<Void>() {
-						public void doStuff(Void param) {
 						}
 					});
 				}

@@ -5,14 +5,14 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
-public class SettingsServerResponse extends ServerResponse {
-	private static final String TAG = SettingsServerResponse.class.getSimpleName();
-	private static final String MESSAGE = "message";
+public class MessageServerResponse extends ServerResponse {
+	private static final String TAG = MessageServerResponse.class.getSimpleName();
+	private static final String MESSAGE = "servermessage";
 	
-	private String message;
+	private String serverMessage;
 	private JSONObject responseJson;
 	
-	public SettingsServerResponse(boolean success, String responseString) {
+	public MessageServerResponse(boolean success, String responseString) {
 		super(success, responseString);
 		
 		if (!wasSuccesful() || getResponseString() == null || getResponseString().length() == 0) 
@@ -26,14 +26,19 @@ public class SettingsServerResponse extends ServerResponse {
 		}
 		
 		try {
-			this.message = responseJson.getString(MESSAGE);
+			this.serverMessage = responseJson.getString(MESSAGE);
 		} catch (JSONException e) {
 			Log.e(TAG, "Invalid JSON response: " + e);
 			e.printStackTrace();
 		}
 	}
 	
-	public String getMessage() {
-		return message;
+	public String getServerMessage() {
+		return serverMessage;
 	}
+	
+	public JSONObject getJson() {
+		return responseJson;
+	}
+	
 }
