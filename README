@@ -1,5 +1,7 @@
 IrssiNotifier - IRC notifications for Android (and possibly other devices).
 
+Web page: https://irssinotifier.appspot.com
+
 Goals:
 1) Low battery usage (users C2dm)
 2) Easy to set up (hosted server)
