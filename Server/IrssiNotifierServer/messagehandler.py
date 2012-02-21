@@ -24,10 +24,11 @@ class MessageHandler(object):
         c2dm.sendC2dmToUser(irssiuser, dbMessage.ToJson()) #TODO don't send whole message?
         
         return True
-    def getMessage(self, timestamp, user):
+    def getMessages(self, timestamp, user):
         logging.debug("Getting messages after: %s" % timestamp)
-        messages = Message.all(parent = user.key())
-        messages.filter("server_timestamp <", timestamp)
+        messages = Message.all()
+        messages.ancestor(user)
+        messages.filter("server_timestamp >", timestamp)
         messages.order("server_timestamp")
 
         c2dm = C2DM()

@@ -168,15 +168,18 @@ class MessageController(webapp2.RequestHandler):
             self.response.status = "401 Unauthorized"
             return self.response
        
-        if not validate_params(data, ["timestamp"]):
+        if not validate_params(data, []):
             self.response.status = "400 Bad Request"
             return self.response
+        
+        if "timestamp" not in data:
+            data["timestamp"] = 0
 
         messageHandler = MessageHandler()
-        messages = messageHandler.getMessages(data, irssiUser)
+        messages = messageHandler.getMessages(data["timestamp"], irssiUser)
         messageJsons = []
         for message in messages:
-            messageJsons.push(message.ToJson())
+            messageJsons.append(message.ToJson())
         responseJson = json.dumps(messageJsons)
         #TODO: dump custom message here
 
@@ -219,7 +222,7 @@ def handle_404(request, response, exception):
     response.set_status(404)
 
 
-app = webapp2.WSGIApplication([('/', Main), ('/API/Settings', SettingsController), ('/Api/Message', MessageController), ('/Api/Wipe', WipeController)], debug=True)
+app = webapp2.WSGIApplication([('/', Main), ('/API/Settings', SettingsController), ('/API/Message', MessageController), ('/API/Wipe', WipeController)], debug=True)
 app.error_handlers[404] = handle_404
 
 logging.debug("Hello reinstall: loaded main")

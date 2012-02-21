@@ -24,7 +24,7 @@ public class C2DMReceiver extends BroadcastReceiver {
     private static int perMessageNotificationId = 2;
 
 	private static Callback<String[]> callback;
-	private static IrcMessages ircMessages = new IrcMessages(); // TODO: Thread safety?
+	private static IrcMessages ircMessages;
 
     public static void registerToC2DM(Context context) {
         Intent registrationIntent = new Intent("com.google.android.c2dm.intent.REGISTER");
@@ -81,9 +81,11 @@ public class C2DMReceiver extends BroadcastReceiver {
         String message = intent.getStringExtra(C2DM_DATA_MESSAGE);
         Log.d(TAG, "Action: " + action + " Message: " + message);
 
-        if (message.startsWith("read")) { // TODO: implement server side
+    	ircMessages = IrcMessages.getInstance();
+        if (message.startsWith("read")) {
         	NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         	notificationManager.cancelAll();
+        	// TODO figure out
         	ircMessages.read();
         	return;
         }
@@ -136,7 +138,7 @@ public class C2DMReceiver extends BroadcastReceiver {
         
         NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         
-        Notification notification = new Notification(R.drawable.ic_launcher, tickerText, when);
+        Notification notification = new Notification(R.drawable.icon, tickerText, when);
 		notification.flags |= Notification.FLAG_AUTO_CANCEL;
 		notification.defaults |= Notification.DEFAULT_SOUND;
 		

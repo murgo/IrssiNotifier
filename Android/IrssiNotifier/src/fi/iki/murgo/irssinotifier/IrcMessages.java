@@ -5,8 +5,20 @@ import java.util.Map;
 
 public class IrcMessages {
 	
+	private static IrcMessages instance;
 	Map<String, Integer> unreadCounts = new HashMap<String, Integer>();
 
+	private IrcMessages() {
+		
+	}
+	
+	public static IrcMessages getInstance() {
+		if (instance == null)
+			instance = new IrcMessages();
+		
+		return instance;
+	}
+	
 	public int getUnreadCount() {
 		int total = 0;
 		for (int i : unreadCounts.values()) {

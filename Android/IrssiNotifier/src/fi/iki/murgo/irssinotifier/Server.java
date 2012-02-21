@@ -25,6 +25,7 @@ public class Server {
 		Test,
 		FetchData,
 		Authenticate,
+		Message,
 	}
 	
 	private Map<ServerTarget, String> serverUrls = new HashMap<ServerTarget, String>();
@@ -35,13 +36,16 @@ public class Server {
 
 	public Server() {
 		serverUrls.put(ServerTarget.SaveSettings, SERVER_BASE_URL + "Settings");
-		serverUrls.put(ServerTarget.Test, SERVER_BASE_URL + "Test");
-		serverUrls.put(ServerTarget.FetchData, SERVER_BASE_URL + "FetchData");
+		serverUrls.put(ServerTarget.Message, SERVER_BASE_URL + "Message");
 		serverUrls.put(ServerTarget.Authenticate, "https://irssinotifier.appspot.com/_ah/login?continue=https://localhost/&auth=");
 	}
 	
 	public boolean authenticate(String token) {
-		try {
+        for(Cookie c : http_client.getCookieStore().getCookies())
+            if(c.getName().equals("SACSID"))
+                return true;
+
+        try {
 			// Don't follow redirects
 	        http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
 	        
@@ -86,10 +90,34 @@ public class Server {
 		
 		// TODO: error handling (authentication etc)
 		
-		ServerResponse serverResponse = new ServerResponse(statusCode == 200, responseString);
+		ServerResponse serverResponse;
+		if (target == ServerTarget.SaveSettings)
+			serverResponse = new SettingsServerResponse(statusCode == 200, responseString);
+		else
+			serverResponse = new ServerResponse(statusCode == 200, responseString);
+
 		return serverResponse;
 	}
 
+	public ServerResponse get(MessageToServer message, ServerTarget target) throws IOException {
+		HttpGet httpGet = new HttpGet(serverUrls.get(target));
+		HttpParams params = new BasicHttpParams();
+		Map<String, String> map = message.getMap(); 
+		for (Map.Entry<String, String> entry : map.entrySet()) {
+			params.setParameter(entry.getKey(), entry.getValue());
+		}
+		httpGet.setParams(params); // TODO UNTESTED
+		
+		HttpResponse response = http_client.execute(httpGet);
+		int statusCode = response.getStatusLine().getStatusCode();
+		String responseString = readResponse(response.getEntity().getContent());
+		
+		// TODO: error handling (authentication etc)
+		
+		ServerResponse serverResponse = new ServerResponse(statusCode == 200, responseString);
+		return serverResponse;
+	}
+	
 	private static String readResponse(InputStream is) {
 		return new Scanner(is).useDelimiter("\\A").next();
 	}

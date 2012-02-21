@@ -73,8 +73,8 @@ public class InitialSettingsActivity extends Activity {
 		SettingsSendingTask task = new SettingsSendingTask(this, "", "Sending settings to server..."); // TODO i18n
 		
 		final Context ctx = this;
-		task.setCallback(new Callback<ServerResponse>() {
-			public void doStuff(ServerResponse result) {
+		task.setCallback(new Callback<SettingsServerResponse>() {
+			public void doStuff(SettingsServerResponse result) {
 				if (result == null || !result.wasSuccesful()) {
 					MessageBox.Show(ctx, null, "Unable to send settings to the server! Please try again later!", new Callback<Void>() { // TODO i18n
 						public void doStuff(Void param) {

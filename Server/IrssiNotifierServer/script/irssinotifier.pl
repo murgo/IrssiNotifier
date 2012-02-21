@@ -73,7 +73,7 @@ sub hilite {
 	my $time = localtime;
 	my $data = "--post-data=apiToken=$api_token&message=$lastMsg&channel=$lastTarget&nick=$lastNick&timestamp=$time";
 
-	@args = ("wget", "--no-check-certificate", "-q", "-O", "/dev/null", $data, "https://irssinotifier.appspot.com/Api/Message");
+	@args = ("wget", "--no-check-certificate", "-q", "-O", "/dev/null", $data, "https://irssinotifier.appspot.com/API/Message");
 	system (@args);
 }
 
@@ -158,6 +158,9 @@ sub cmd {
 }
 
 load_settings;
+if (!$encryption_password) {
+	$encryption_password = "password";
+}
 
 Irssi::command_bind('irssinotifier', 'cmd');
 Irssi::signal_add('message public', 'public');

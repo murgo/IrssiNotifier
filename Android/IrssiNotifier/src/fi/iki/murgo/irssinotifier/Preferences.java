@@ -1,6 +1,7 @@
 package fi.iki.murgo.irssinotifier;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 
 import org.apache.http.auth.AuthenticationException;
@@ -19,6 +20,7 @@ public class Preferences {
 	private static final String SETTINGS_SENT_KEY = "SettingsSent";
 	private static final String ENCRYPTION_PASSWORD = "EncryptionPassword";
 	private static final String NOTIFICATION_MODE = "NotificationMode";
+	private static final String LAST_FETCH_TIME = "LastFetchTime";
 
 	private static final String DEVICE_NAME_KEY = "Name";
 	private static final String ENABLED_KEY = "Enabled";
@@ -53,13 +55,15 @@ public class Preferences {
 
 	public void clear() {
         sharedPreferences.edit().clear().commit();
+        setEncryptionPassword("password");
+        setNotificationMode(NotificationMode.PerChannel);
 	}
 
 	public boolean settingsNeedSending() {
 		return !sharedPreferences.getBoolean(SETTINGS_SENT_KEY, false);
 	}
 
-	public ServerResponse sendSettings() throws IOException, AuthenticationException {
+	public SettingsServerResponse sendSettings() throws IOException, AuthenticationException {
 		HashMap<String, String> map = new HashMap<String, String>();
 		map.put(REGISTRATION_ID_KEY, getRegistrationId());
 		map.put(DEVICE_NAME_KEY, android.os.Build.MODEL);
@@ -70,7 +74,11 @@ public class Preferences {
 		boolean authenticated = server.authenticate(getAuthToken());
 		if (!authenticated) throw new AuthenticationException();
 		
-		return server.send(msg, ServerTarget.SaveSettings);
+		SettingsServerResponse response = (SettingsServerResponse) server.send(msg, ServerTarget.SaveSettings);
+		if (response.wasSuccesful()) {
+			sharedPreferences.edit().putBoolean(SETTINGS_SENT_KEY, true).commit();
+		}
+		return response;
 	}
 	
 	public boolean setEncryptionPassword(String encryptionPassword) {
@@ -91,5 +99,13 @@ public class Preferences {
 		SharedPreferences.Editor editor = sharedPreferences.edit();
 		editor.putInt(NOTIFICATION_MODE, notificationMode.ordinal());
 		return editor.commit();
+	}
+
+	public long getLastFetchTime() {
+		return sharedPreferences.getLong(LAST_FETCH_TIME, new Date().getTime());
+	}
+	
+	public boolean setLastFetchTime(long value) {
+		return sharedPreferences.edit().putLong(LAST_FETCH_TIME, value).commit();
 	}
 }

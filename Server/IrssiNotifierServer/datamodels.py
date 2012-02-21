@@ -18,7 +18,7 @@ class C2dmToken(db.Model):
 
 
 class Message(db.Model):
-    server_timestamp = db.FloatProperty()
+    server_timestamp = db.FloatProperty(indexed=True)
     timestamp = db.StringProperty()
     message = db.TextProperty()
     channel = db.StringProperty()
