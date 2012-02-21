@@ -12,9 +12,6 @@ class C2dmToken(db.Model):
     c2dm_token = db.StringProperty()
     enabled = db.BooleanProperty()
     name = db.StringProperty()
-    # TODO some device info perhaps
-    # TODO maybe it's better to use more generic names than c2dm, and extract c2dm sender into it's own controller
-    # TODO also token types are nice, how to set default stuff to Google
 
 
 class Message(db.Model):
@@ -24,7 +21,9 @@ class Message(db.Model):
     channel = db.StringProperty()
     nick = db.StringProperty()
     def ToJson(self):
-        return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'timestamp': self.timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick})
+        # TODO fix too long message
+        return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'timestamp': self.timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
+
 
 class AuthKey(db.Model):
     sid = db.StringProperty()

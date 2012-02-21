@@ -27,6 +27,7 @@ public class IrcMessage {
 			setNick(obj.getString("nick"));
 			setTimestamp(obj.getString("timestamp"));
 			setServerTimestamp((long) (Double.parseDouble(obj.getString("server_timestamp")) * 1000));
+			setExternalId(obj.getString("id"));
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
