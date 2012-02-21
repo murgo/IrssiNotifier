@@ -94,7 +94,7 @@ def validate_params(data, params):
     return True
 
 
-class SettingsController(webapp2.RequestHandler):
+class SettingsController(BaseController):
     def post(self):
         logging.debug("settingscontroller start")
         
@@ -126,7 +126,7 @@ class SettingsController(webapp2.RequestHandler):
         self.response.out.write(responseJson)
 
 
-class MessageController(webapp2.RequestHandler):
+class MessageController(BaseController):
     def post(self):
         logging.debug("messagecontroller post start")
         
@@ -198,8 +198,9 @@ class MessageController(webapp2.RequestHandler):
         self.response.out.write(responseJson)
 
 
-class WipeController(webapp2.RequestHandler):
+class WipeController(BaseController):
     def post(self):
+        #TODO move to base, refactor
         logging.debug("wipecontroller start")
         
         data = {}
@@ -226,6 +227,16 @@ class WipeController(webapp2.RequestHandler):
         self.response.out.write(responseJson)
 
 
+class AdminController(BaseController):
+    def get(self):
+        self.redirect('https://appengine.google.com/dashboard?&app_id=s~irssinotifier')
+
+
+class AnalyticsController(BaseController):
+    def get(self):
+        self.redirect('https://www.google.com/analytics/web/?pli=1#report/visitors-overview/a29331277w55418008p56422952/')
+
+
 def handle_404(request, response, exception):
     logging.debug("404'd")
     logging.exception(exception)
@@ -233,7 +244,7 @@ def handle_404(request, response, exception):
     response.set_status(404)
 
 
-app = webapp2.WSGIApplication([('/', Main), ('/API/Settings', SettingsController), ('/API/Message', MessageController), ('/API/Wipe', WipeController)], debug=True)
+app = webapp2.WSGIApplication([('/', Main), ('/API/Settings', SettingsController), ('/API/Message', MessageController), ('/API/Wipe', WipeController), ('/admin', AdminController), ('/analytics', AnalyticsController)], debug=True)
 app.error_handlers[404] = handle_404
 
 logging.debug("Hello reinstall: loaded main")
