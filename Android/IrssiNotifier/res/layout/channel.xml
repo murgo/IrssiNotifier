@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:id="@+id/channel_view"
+    >
+    
+    <TextView
+     android:layout_alignParentTop="true"
+    android:id="@+id/channel_name"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="ChannelName"
+    android:textAppearance="?android:attr/textAppearanceLarge"
+    android:typeface="monospace"
+     android:singleLine="true"
+     android:ellipsize="none"
+    />
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+    
+    	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:id="@+id/message_container"
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="vertical" >	    
+    	</LinearLayout>
+        </ScrollView>
+</LinearLayout>

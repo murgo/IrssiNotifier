@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+        <PreferenceCategory android:title="Notification settings">
+                <CheckBoxPreference android:title="Enable notifications" android:key="NotificationsEnabled" android:defaultValue="true" />
+                <CheckBoxPreference android:title="Enable sound" android:key="SoundEnabled" android:defaultValue="true" />
+                <CheckBoxPreference android:title="Enable spam filtering" android:summary="Only plays one notification sound per minute" android:key="SpamFilterEnabled" android:defaultValue="true" />
+                
+                <ListPreference android:title="Notification mode" android:summary="How many notifications you want" android:key="notificationModeString" android:defaultValue="PerChannel" android:entryValues="@array/notification_modes" android:entries="@array/notification_modes" />
+                
+                <!-- 
+                <RingtonePreference android:name="Ringtone Preference" android:summary="Select a ringtone" android:title="Ringtones" android:key="ringtonePref" />
+                 -->
+        </PreferenceCategory>
+	    <PreferenceCategory android:title="Encryption settings">
+	        <EditTextPreference android:name="Encryption password" android:summary="This must be the same as the one in the Irssi script" android:defaultValue="password" android:title="Encryption password" android:key="EncryptionPassword" />
+	        <Preference android:title="Clear data" android:summary="This clears all data from the device" android:key="clear" />
+        </PreferenceCategory>
+</PreferenceScreen>
