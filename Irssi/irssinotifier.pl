@@ -51,7 +51,7 @@ sub print_text {
 }
 
 sub hilite {
-    if (!Irssi::settings_get_str('api_token')) {
+    if (!Irssi::settings_get_str('irssinotifier_api_token')) {
         Irssi::print("Set api token to send andoid notifications: /set irssinotifier_api_token [token]");
         return;
     }
