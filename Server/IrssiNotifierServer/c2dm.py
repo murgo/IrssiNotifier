@@ -69,6 +69,7 @@ class C2DM(object):
         # TODO: errors from the next line, possible email alarms
         response = urllib2.urlopen(request)
         text = response.read()
+        logging.debug(text)
         if "id=" in text: return True
         
         # TODO "Error="

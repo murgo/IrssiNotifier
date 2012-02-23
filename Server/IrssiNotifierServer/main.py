@@ -113,7 +113,7 @@ class WebController(BaseController):
 
 def getServerMessage(data):
     if "version" in data:
-        if int(data["version"]) < 3:
+        if int(data["version"]) < 2:
             return (True, "lol joku beta")
     return (True, "")
 

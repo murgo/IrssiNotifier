@@ -22,6 +22,7 @@ public class C2DMReceiver extends BroadcastReceiver {
     public static final String EMAIL_OF_SENDER = "irssinotifier@gmail.com";
     
     private static int perMessageNotificationId = 2;
+	private static long lastSoundDate = 0;
 
 	private static Callback<String[]> callback;
 	private static IrcMessages ircMessages;
@@ -91,10 +92,11 @@ public class C2DMReceiver extends BroadcastReceiver {
         }
         
         Preferences prefs = new Preferences(context);
-        NotificationMode mode = prefs.getNotificationMode();
-        if (mode == NotificationMode.None) {
+        if (!prefs.isNotificationsEnabled()) {
         	return;
         }
+
+        NotificationMode mode = prefs.getNotificationMode();
         
     	String tickerText;
         String notificationMessage;
@@ -102,7 +104,6 @@ public class C2DMReceiver extends BroadcastReceiver {
         int notificationId;
         long when = new Date().getTime();;
         IrcMessage msg = new IrcMessage();
-        String tag = null; // TODO why tag
 
     	try {
             msg.Deserialize(message);
@@ -113,7 +114,6 @@ public class C2DMReceiver extends BroadcastReceiver {
 			titleText = (String) values[1];
 			notificationId = (Integer) values[2];
             when = msg.getServerTimestamp().getTime();
-            tag = msg.getLogicalChannel();
             
         	if (ircMessages.getUnreadCount() == 0) {
         		tickerText = "New IRC message";
@@ -127,7 +127,6 @@ public class C2DMReceiver extends BroadcastReceiver {
         	notificationMessage = "Unable to decrypt data. Perhaps encryption key is wrong?";
 			tickerText = "IrssiNotifier decryption error";
         	notificationId = 1;
-            tag = "error";
         } catch (JSONException e) {
         	titleText = "IrssiNotifier error";
         	notificationMessage = "Unable to parse data. Server error?";
@@ -140,13 +139,17 @@ public class C2DMReceiver extends BroadcastReceiver {
         
         Notification notification = new Notification(R.drawable.icon, tickerText, when);
 		notification.flags |= Notification.FLAG_AUTO_CANCEL;
-		notification.defaults |= Notification.DEFAULT_SOUND;
+		
+		if (prefs.isSoundEnabled() && (!prefs.isSpamFilterEnabled() || new Date().getTime() > lastSoundDate + 60000L)) {
+			notification.defaults |= Notification.DEFAULT_SOUND;
+			lastSoundDate = new Date().getTime();
+		}
 		
         Intent toLaunch = new Intent(context, IrssiNotifierActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, toLaunch, 0);
 
         notification.setLatestEventInfo(context, titleText, notificationMessage, contentIntent);
-        notificationManager.notify(tag, notificationId, notification);
+        notificationManager.notify(notificationId, notification);
     }
 
 	private Object[] getValues(IrcMessage msg, NotificationMode mode, IrcMessages ircMessages) {
@@ -166,7 +169,7 @@ public class C2DMReceiver extends BroadcastReceiver {
 					text = msg.getMessage();
 				} else {
 					title = "" + unreadCount + " new hilights";
-					text = "Last: " + msg.getChannel() + " (" + msg.getNick() + ") " + msg.getMessage();
+					text = "Last: " + msg.getLogicalChannel() + " (" + msg.getNick() + ") " + msg.getMessage();
 				}
 			} else {
 				if (unreadCount == 0) {
@@ -174,7 +177,7 @@ public class C2DMReceiver extends BroadcastReceiver {
 					text = "(" + msg.getNick() + ") " + msg.getMessage();
 				} else {
 					title = "" + unreadCount + " new hilights";
-					text = "Last: " + msg.getChannel() + " (" + msg.getNick() + ") " + msg.getMessage();
+					text = "Last: " + msg.getLogicalChannel() + " (" + msg.getNick() + ") " + msg.getMessage();
 				}
 			}
 			break;

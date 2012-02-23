@@ -10,6 +10,7 @@ import fi.iki.murgo.irssinotifier.Server.ServerTarget;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 public class Preferences {
 	public static final String PREFERENCES_NAME = "IrssiNotifierPreferences";
@@ -24,11 +25,15 @@ public class Preferences {
 
 	private static final String DEVICE_NAME_KEY = "Name";
 	private static final String ENABLED_KEY = "Enabled";
+	private static final String SOUND_ENABLED = "SoundEnabled";
+	private static final String SPAM_FILTER_ENABLED = "SpamFilterEnabled";
+	private static final String NOTIFICATIONS_ENABLED = "NotificationsEnabled";
 
 	private SharedPreferences sharedPreferences;
 	
 	public Preferences(Context context) {
-		sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, PREFERENCES_MODE);
+		//sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, PREFERENCES_MODE);
+		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 	}
 	
 	public String getRegistrationId() {
@@ -105,5 +110,17 @@ public class Preferences {
 	
 	public boolean setLastFetchTime(long value) {
 		return sharedPreferences.edit().putLong(LAST_FETCH_TIME, value).commit();
+	}
+
+	public boolean isSoundEnabled() {
+		return sharedPreferences.getBoolean(SOUND_ENABLED, true);
+	}
+
+	public boolean isSpamFilterEnabled() {
+		return sharedPreferences.getBoolean(SPAM_FILTER_ENABLED, true);
+	}
+	
+	public boolean isNotificationsEnabled() {
+		return sharedPreferences.getBoolean(NOTIFICATIONS_ENABLED, true);
 	}
 }

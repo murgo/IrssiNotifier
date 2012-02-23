@@ -4,5 +4,4 @@ public enum NotificationMode {
 	Single,
 	PerMessage,
 	PerChannel,
-	None,
 }

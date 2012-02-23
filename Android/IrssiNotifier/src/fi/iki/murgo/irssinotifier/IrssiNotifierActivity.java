@@ -1,6 +1,7 @@
 package fi.iki.murgo.irssinotifier;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,8 +14,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.widget.TextView;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ProgressBar;
 
 // TODO: ACRA! http://code.google.com/p/acra/
 
@@ -22,7 +28,9 @@ public class IrssiNotifierActivity extends Activity {
 	private static final String TAG = IrssiNotifierActivity.class.getSimpleName();
 	private Preferences preferences;
 	private GoogleAnalyticsTracker tracker;
-	private final String googleAnalyticsCode = "UA-29385499-1"; 
+	private final String googleAnalyticsCode = "UA-29385499-1";
+	private MessagePagerAdapter adapter; 
+    private ViewPager pager;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,30 +70,19 @@ public class IrssiNotifierActivity extends Activity {
 	
 	private void startMainApp() {
     	Log.d(TAG, "Main startup");
-        createUi();
-
+        createUi(new HashMap<Channel, List<IrcMessage>>());
+        
         if (preferences.settingsNeedSending()) {
         	Log.d(TAG, "Settings are not saved, odd");
         	sendSettings();
         }
         
-        final Context ctx = this;
-        final TextView textView = (TextView)findViewById(R.id.mainView);
+        final Activity ctx = this;
         
         final Callback<Map<Channel, List<IrcMessage>>> dataAccessCallback = new Callback<Map<Channel,List<IrcMessage>>>() {
 			public void doStuff(Map<Channel, List<IrcMessage>> param) {
-				StringBuilder sb = new StringBuilder();
-				for (Channel channel : param.keySet()) {
-					sb.append(channel.getName());
-					sb.append("\n");
-					for (IrcMessage message : param.get(channel)) {
-						sb.append(message.getMessage());
-						sb.append("\n");
-					}
-					sb.append("\n");
-				}
-				
-				textView.setText(sb.toString());
+				setProgressBarVisibility(View.GONE);
+				createUi(param);
 			}
 		};
         
@@ -100,7 +97,6 @@ public class IrssiNotifierActivity extends Activity {
 					} else {
 						MessageBox.Show(ctx, "Error", "What happen", null);
 					}
-					preferences.clear(); // TODO: Probably not the best way to deal with it
 					return;
 				}
 				
@@ -110,13 +106,18 @@ public class IrssiNotifierActivity extends Activity {
 					MessageBox.Show(ctx, null, param.getResponse().getServerMessage(), null);
 				}
 
-				if (param.getMessages().isEmpty())
+				if (param.getMessages().isEmpty()) {
+					setProgressBarVisibility(View.GONE);
 					return;
+				}
 				
 				DataAccessTask task = new DataAccessTask(ctx, dataAccessCallback);
 				task.execute(param.getMessages().toArray(new IrcMessage[0]));
 			}
 		});
+
+        setProgressBarVisibility(View.VISIBLE);
+
         task.execute();
         tracker.dispatch();
         
@@ -124,9 +125,23 @@ public class IrssiNotifierActivity extends Activity {
 		datask.execute();
 	}
     
-	private void createUi() {
-		Log.d(TAG, "(Re)creating UI");
+	private void setProgressBarVisibility(int visibility) {
+		ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar1);
+		if (pb == null)
+			return;
+		
+		pb.setVisibility(visibility);
+	}
+
+	private void createUi(Map<Channel, List<IrcMessage>> param) {
         setContentView(R.layout.main);
+        
+        if (adapter == null)
+        	adapter = new MessagePagerAdapter(this, getLayoutInflater());
+    	adapter.setIrcMessages(param);
+        
+		pager = (ViewPager) findViewById(R.id.pager);
+        pager.setAdapter(adapter);
 	}
 	
 	private void sendSettings() {
@@ -146,6 +161,25 @@ public class IrssiNotifierActivity extends Activity {
 		});
 		
 		task.execute();
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.mainmenu, menu);
+		
+		return super.onCreateOptionsMenu(menu);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == R.id.settings) {
+            Intent settingsActivity = new Intent(getBaseContext(), SettingsActivity.class);
+            startActivity(settingsActivity);
+			return true;
+		}
+		
+		return super.onOptionsItemSelected(item);
 	}
 	
 	/*
