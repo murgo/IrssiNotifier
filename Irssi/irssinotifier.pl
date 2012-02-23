@@ -17,8 +17,6 @@ $VERSION = "1.0";
     changed     => "2012-02-18"
 );
 
-my $encryption_password;
-
 my $lastMsg;
 my $lastServer;
 my $lastNick;
@@ -54,11 +52,11 @@ sub print_text {
 
 sub hilite {
     if (!Irssi::settings_get_str('api_token')) {
-        Irssi::print("Set api token to send andoid notifications: /irssinotifier apitoken [token]");
+        Irssi::print("Set api token to send andoid notifications: /set irssinotifier_api_token [token]");
         return;
     }
 
-    my $encryption_password = Irssi::settings_get_str('encryption_password');
+    my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
     if ($encryption_password) {
         $lastMsg = encrypt($lastMsg);
         #$lastServer = encrypt($lastServer);
@@ -66,11 +64,11 @@ sub hilite {
         #$lastAddress = encrypt($lastAddress);
         $lastTarget = encrypt($lastTarget);
     } else {
-        Irssi::print("Set encryption password to send android notifications: /irssinotifier encryptionpassword [password");
+        Irssi::print("Set encryption password to send android notifications: /set irssinotifier_encryption_password [password");
     }
 
 #    my $time = strftime(Irssi::settings_get_str('timestamp_format')." ", localtime);
-    my $api_token = Irssi::settings_get_str('api_token');
+    my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
     my $time = localtime;
     my $data = "--post-data=apiToken=$api_token&message=$lastMsg&channel=$lastTarget&nick=$lastNick&timestamp=$time";
 
@@ -89,7 +87,7 @@ sub sanitize {
 sub encrypt {
     my $text = $_[0];
     $text = sanitize $text;
-    my $encryption_password = Irssi::settings_get_str('encryption_password');
+    my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
     my $result = `echo $text| /usr/bin/openssl enc -aes-128-cbc -salt -base64 -A -k $encryption_password | tr -d '\n'`;
     $result =~ s/=//g;
     $result =~ s/\+/-/g;
@@ -101,14 +99,14 @@ sub encrypt {
 sub decrypt {
     my $text = $_[0];
     $text = sanitize $text;
-    my $encryption_password = Irssi::settings_get_str('encryption_password');
+    my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
     my $result = `echo $text| /usr/bin/openssl enc -aes-128-cbc -d -salt -base64 -A -k $encryption_password`;
     chomp($result);
     return $result;
 }
 
-Irssi::settings_add_str('IrssiNotifier', 'encryption_password', 'password');
-Irssi::settings_add_str('IrssiNotifier', 'api_token', '');
+Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_encryption_password', 'password');
+Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_api_token', '');
 
 Irssi::signal_add('message public', 'public');
 Irssi::signal_add('message private', 'private');
