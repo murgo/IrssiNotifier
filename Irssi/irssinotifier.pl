@@ -52,7 +52,7 @@ sub print_text {
 
 sub hilite {
     if (!Irssi::settings_get_str('irssinotifier_api_token')) {
-        Irssi::print("Set api token to send andoid notifications: /set irssinotifier_api_token [token]");
+        Irssi::print("Set API token to send Android notifications: /set irssinotifier_api_token [token]");
         return;
     }
 
@@ -64,7 +64,7 @@ sub hilite {
         #$lastAddress = encrypt($lastAddress);
         $lastTarget = encrypt($lastTarget);
     } else {
-        Irssi::print("Set encryption password to send android notifications: /set irssinotifier_encryption_password [password");
+        Irssi::print("Set encryption password to send Android notifications: /set irssinotifier_encryption_password [password");
     }
 
 #    my $time = strftime(Irssi::settings_get_str('timestamp_format')." ", localtime);
