@@ -45,7 +45,7 @@ sub print_text {
     my ($dest, $text, $stripped) = @_;
 
     my $opt = MSGLEVEL_HILIGHT|MSGLEVEL_MSGS;
-    if(($dest->{level} & ($opt)) && ($dest->{level} & MSGLEVEL_NOHILIGHT) == 0) {
+    if(($dest->{level} & ($opt)) && (($dest->{level} & MSGLEVEL_NOHILIGHT) == 0) && (!Irssi::settings_get_bool("irssinotifier_away_only") || $lastServer->{usermode_away} )) {
         hilite();
     }
 }
@@ -95,7 +95,7 @@ sub encrypt {
     chomp($result);
     return $result;
 }
- 
+
 sub decrypt {
     my $text = $_[0];
     $text = sanitize $text;
@@ -107,6 +107,7 @@ sub decrypt {
 
 Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_encryption_password', 'password');
 Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_api_token', '');
+Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_away_only', false);
 
 Irssi::signal_add('message public', 'public');
 Irssi::signal_add('message private', 'private');
