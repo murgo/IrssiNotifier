@@ -118,10 +118,8 @@ sub decrypt {
 
 sub setup_keypress_handler {
     Irssi::signal_remove('gui key pressed', 'event_key_pressed');
-    Irssi::print('removed keylistener');
     if (Irssi::settings_get_int('irssinotifier_require_idle_seconds') > 0) {
         Irssi::signal_add('gui key pressed', 'event_key_pressed');
-        Irssi::print('registered keylistener');
     }
 }
 
