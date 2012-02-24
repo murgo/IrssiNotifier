@@ -23,7 +23,7 @@ my $lastNick;
 my $lastAddress;
 my $lastTarget;
 
-my $lastActivity = time;
+my $lastKeyboardActivity = time;
 
 sub private {
     my ($server, $msg, $nick, $address) = @_;
@@ -58,7 +58,7 @@ sub print_text {
 
 sub activity_allows_hilight {
     my $timeout = Irssi::settings_get_int('irssinotifier_require_idle_seconds');
-    return ($timeout <= 0 || (time - $lastActivity) > $timeout);
+    return ($timeout <= 0 || (time - $lastKeyboardActivity) > $timeout);
 }
 
 sub hilite {
@@ -124,7 +124,7 @@ sub setup_keypress_handler {
 }
 
 sub event_key_pressed {
-    $lastActivity = time;
+    $lastKeyboardActivity = time;
 }
 
 Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_encryption_password', 'password');
