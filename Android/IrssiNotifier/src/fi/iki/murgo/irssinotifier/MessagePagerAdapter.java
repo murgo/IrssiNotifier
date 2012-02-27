@@ -48,15 +48,14 @@ public class MessagePagerAdapter extends PagerAdapter {
     public Object instantiateItem(View collection, int position) {
     	Channel channel = ircMessages.get(position).getKey();
     	List<IrcMessage> messages = ircMessages.get(position).getValue();
-    	
-    	
+
     	View channelView = layoutInflater.inflate(R.layout.channel, null);
     	// Stupid inflater is broken, gotta do this by hand
 //    	LinearLayout outer = new LinearLayout(ctx);
-    	
+
     	TextView name = (TextView) channelView.findViewById(R.id.channel_name);
     	name.setText(channel.getName());
-    	
+
     	LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
     	for (IrcMessage message : messages) {
 			TextView tv = new TextView(ctx);
@@ -64,7 +63,7 @@ public class MessagePagerAdapter extends PagerAdapter {
 			tv.setTypeface(Typeface.MONOSPACE);
 			messageContainer.addView(tv);
     	}
-		
+
 		((ViewPager) collection).addView(channelView);
 		return channelView;
     }

@@ -20,7 +20,7 @@ public class DataAccess extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL("CREATE TABLE Channel (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)");
+		db.execSQL("CREATE TABLE Channel (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, order INTEGER)");
 		db.execSQL("CREATE TABLE IrcMessage (id INTEGER PRIMARY KEY AUTOINCREMENT, channelId INTEGER, message TEXT, nick TEXT, serverTimestamp INTEGER, timestamp TEXT, externalId TEXT, FOREIGN KEY(channelId) REFERENCES Channel(Id))");
 	}
 
@@ -32,28 +32,26 @@ public class DataAccess extends SQLiteOpenHelper {
 		try {
 			SQLiteDatabase database = getWritableDatabase();
 			
-			Cursor cur = database.query("IrcMessage", new String[] {"externalId"}, "externalId = ?", new String[] {message.getExternalId()}, null, null, null, "1");
-			if (!cur.isAfterLast()) {
-				cur.close();
-				database.close();
-				return;
-			}
-			
-			
 			String channelName = message.getLogicalChannel();
-			long channelId = 0;
+			List<Channel> channels = getChannels(database);
 			
-			Cursor cursor = database.query("Channel", new String[] {"id"}, "name = ?" , new String[] { channelName }, null, null, null, "1");
-			cursor.moveToFirst();
-			if (!cursor.isAfterLast()) {
-				channelId = cursor.getInt(cursor.getColumnIndex("id"));
-			}
-			cursor.close();
+			int biggestOrder = 0;
+			Channel found = null;
+			for (Channel ch : channels)
+				if (ch.getName().equals(channelName)) {
+					found = ch;
+					biggestOrder = Math.max(biggestOrder, ch.getOrder() + 1);
+					break;
+				}
 			
-			if (channelId == 0) {
+			long channelId;
+			if (found == null) {
 				ContentValues values = new ContentValues();
 				values.put("name", channelName);
+				values.put("order", biggestOrder);
 				channelId = database.insert("Channel", null, values);
+			} else {
+				channelId = found.getId();
 			}
 			
 			ContentValues messageValues = new ContentValues();
@@ -63,8 +61,15 @@ public class DataAccess extends SQLiteOpenHelper {
 			messageValues.put("serverTimestamp", message.getServerTimestamp().getTime());
 			messageValues.put("timestamp", message.getTimestamp());
 			messageValues.put("externalId", message.getExternalId());
-			database.insert("IrcMessage", null, messageValues);
-			
+
+			Cursor cur = database.query("IrcMessage", new String[] {"externalId", "message"}, "externalId = ?", new String[] {message.getExternalId()}, null, null, null, "1");
+			if (cur.isAfterLast()) {
+				database.insert("IrcMessage", null, messageValues);
+			} else {
+				// already in database, update if necessary
+				database.update("IrcMessage", messageValues, "externalId = ?", new String[] { message.getExternalId() });
+			}
+			cur.close();
 			database.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -84,23 +89,29 @@ public class DataAccess extends SQLiteOpenHelper {
 		database.close();
 	}
 
-	public List<Channel> getChannels() {
-		SQLiteDatabase database = getReadableDatabase();
-		
-		Cursor cursor = database.query("Channel", new String[] {"id", "name"}, null, null, null, null, null);
+	private List<Channel> getChannels(SQLiteDatabase database) {
+		Cursor cursor = database.query("Channel", new String[] {"id", "name", "order"}, null, null, null, null, "order");
 		cursor.moveToFirst();
 		List<Channel> list = new ArrayList<Channel>();
 		while (!cursor.isAfterLast()) {
 			Channel ch = new Channel();
 			ch.setId(cursor.getLong(cursor.getColumnIndex("id")));
 			ch.setName(cursor.getString(cursor.getColumnIndex("name")));
+			ch.setOrder(cursor.getInt(cursor.getColumnIndex("order")));
 			list.add(ch);
 			cursor.moveToNext();
 		}
 
 		cursor.close();
-		database.close();
 		return list;
+	}
+
+	public List<Channel> getChannels() {
+		SQLiteDatabase database = getReadableDatabase();
+		List<Channel> channels = getChannels(database);
+		database.close();
+		
+		return channels;
 	}
 
 	public List<IrcMessage> getMessagesForChannel(Channel channel) {

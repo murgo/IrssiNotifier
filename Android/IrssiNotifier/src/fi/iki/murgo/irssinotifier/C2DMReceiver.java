@@ -27,6 +27,8 @@ public class C2DMReceiver extends BroadcastReceiver {
 	private static Callback<String[]> callback;
 	private static IrcMessages ircMessages;
 
+	private static DataAccess da;
+
     public static void registerToC2DM(Context context) {
         Intent registrationIntent = new Intent("com.google.android.c2dm.intent.REGISTER");
         registrationIntent.putExtra("app", PendingIntent.getBroadcast(context, 0, new Intent(), 0));
@@ -76,7 +78,7 @@ public class C2DMReceiver extends BroadcastReceiver {
     	}
     }
 
-    private void handleMessage(Context context, Intent intent) {
+    private void handleMessage(Context context, Intent intent) { // TODO: thread safety
         Log.d(TAG, "Handling C2DM notification");
         String action = intent.getStringExtra(C2DM_DATA_ACTION);
         String message = intent.getStringExtra(C2DM_DATA_MESSAGE);
@@ -108,6 +110,10 @@ public class C2DMReceiver extends BroadcastReceiver {
     	try {
             msg.Deserialize(message);
         	msg.Decrypt(prefs.getEncryptionPassword());
+        	
+        	if (da == null)
+        		da = new DataAccess(context);
+        	da.HandleMessage(msg);
 
             Object[] values = getValues(msg, mode, ircMessages);
 			notificationMessage = (String) values[0];
@@ -133,8 +139,7 @@ public class C2DMReceiver extends BroadcastReceiver {
 			tickerText = "IrssiNotifier parse error";
         	notificationId = 1;
 		}
-        
-        
+
         NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         
         Notification notification = new Notification(R.drawable.icon, tickerText, when);
