@@ -1,100 +1,106 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 
-	<link rel="stylesheet" type="text/css" href="static/style.css" />
-	<link rel="icon" type="image/png" href="static/icon.png" />
-	
-	<title>IrssiNotifier</title>
+    <link rel="stylesheet" type="text/css" href="static/style.css" />
+    <link rel="icon" type="image/png" href="static/icon.png" />
+    
+    <title>IrssiNotifier</title>
 
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
-	<script>
-		function wipe() {
-			var answer = confirm("Wipe all user data?");
-			if (answer) {
-				$.post("/API/Wipe", { }, function(data) {
-					window.location.replace('{{ logout_url }}');
-				});
-			}
-		}
+    <script>
+        function wipe() {
+            var answer = confirm("Wipe all user data?");
+            if (answer) {
+                $.post("/API/Wipe", { }, function(data) {
+                    window.location.replace('{{ logout_url }}');
+                });
+            }
+        }
 
-		function toggle(c) {
-			$(c).toggle('fast');
-		}
-	</script>
+        function update(checkbox, name, token) {
+            var enabled = checkbox.checked ? 1 : 0;
+            $.post("/API/Settings", { "Name": name, "RegistrationId": token, "Enabled": enabled }, function(data) {
+                alert("Device " + name + (checkbox.checked ? " enabled." : " disabled."));
+            });
+        }
 
-	<script type="text/javascript">
-		var _gaq = _gaq || [];
-		_gaq.push(['_setAccount', 'UA-29331277-1']);
-		_gaq.push(['_trackPageview']);
-		(function() {
-			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-		})();
-	</script>
+        function toggle(c) {
+            $(c).toggle('fast');
+        }
+    </script>
+
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-29331277-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
 
 </head>
 <body>
-	<h1>IrssiNotifier</h1>
-	
-	<h2>Android client status</h2>
-	{% if c2dmtokencount != 0 %}
-	<p>Android device <span class="working">confirmed as working.</span> Registered devices: {{ c2dmtokencount }}</p>
-	{% else %}
-	<p>Android device <span class="broken">not confirmed as working.</span></p>
-	{% endif %}
-	<p><a href="http://TODO">Market link for Android app.</a></p> 
+    <h1>IrssiNotifier</h1>
+    
+    <h2>Android client status</h2>
+    {% if c2dmtokencount != 0 %}
+    <p>Android device(s) <span class="working">confirmed as working.</span> Registered device count: {{ c2dmtokencount }}</p>
+    
+    <div id="devices" style="display: none;">
+    <h3>Registered devices:</h3>
+    <ul>
+    {% for token in tokens %}
+        <li><input type="checkbox" {% if token.enabled %}checked="checked"{% endif %} onclick="update(this, '{{ token.name }}', '{{ token.c2dm_token }}');" />{{ token.name }}</li>
+    {% endfor %}
+    </ul>
+    </div>
+    <p><a onclick="toggle('#devices');" href="javascript:void(0)">Show/hide device list</a></p>
+    
+    {% else %}
+    <p>Android device <span class="broken">not confirmed as working.</span></p>
+    {% endif %}
+    <p><a href="http://TODO">Market link for Android app.</a></p> 
 
-	<h2>Irssi script status</h2>
-	{% if irssiworking %}
-	<p>Irssi script <span class="working">confirmed as working.</span></p>
-	<div id="instructions" style="display: none;">
-	{% else %}
-	<p>Irssi script <span class="broken">not confirmed as working.</span></p>
-	<div id="instructions">
-	{% endif %}
-		Instructions: <br />
-		1) Get and run android app <br />
-		2) Download irssi script <br />
-		3) Copy and paste the following shell command to your shell (don't mind any "File exists" -errors):
-		<div class="block">wget http://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; mkdir -p ~/.irssi/scripts/autorun; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
-		4) Load irssi script by typing the following command to irssi
-		<div class="block">/script load irssinotifier</div>
-		5) Set api token in irssi <br />
-		<div class="block">/set irssinotifier_api_token {{ user.api_token }}</div>
-		6) Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too.
-		<div class="block">/set irssinotifier_encryption_password password</div>
-		7) Query yourself to see if it works (this instruction text should disappear after refreshing) <br />
-	</div>
-	<p><a onclick="toggle('#instructions');" href="javascript:void(0)">Show/hide instructions</a></p>
+    <h2>Irssi script status</h2>
+    {% if irssiworking %}
+    <p>Irssi script <span class="working">confirmed as working.</span></p>
+    <div id="instructions" style="display: none;">
+    {% else %}
+    <p>Irssi script <span class="broken">not confirmed as working.</span></p>
+    <div id="instructions">
+    {% endif %}
+        Instructions: <br />
+        1) Get and run android app <br />
+        2) Download irssi script <br />
+        3) Copy and paste the following shell command to your shell (don't mind any "File exists" -errors):
+        <div class="block">wget http://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; mkdir -p ~/.irssi/scripts/autorun; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
+        4) Load irssi script by typing the following command to irssi
+        <div class="block">/script load irssinotifier</div>
+        5) Set api token in irssi <br />
+        <div class="block">/set irssinotifier_api_token {{ user.api_token }}</div>
+        6) Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too.
+        <div class="block">/set irssinotifier_encryption_password password</div>
+        7) Query yourself to see if it works (this instruction text should disappear after refreshing) <br />
+        <br /> <br /> <br />
+        Additional commands: <br />
+        <br />
+        <div class="block">/set require_idle_seconds [second count]</div>
+        When set to more than 0, you will not be notified from events that occur between going idle (i.e. not pressing any keys) and the set second count after that.
+        <div class="block">/set irssinotifier_away_only [ON or OFF]</div>
+        When set to ON, notifications will only be sent if you are away. Useful in combination with <a href="http://scripts.irssi.org/scripts/screen_away.pl">screen_away script</a>. 
+        <div class="block">/set irssinotifier_ignore_active_window [ON or OFF]</div>
+        When set to ON, notifications will NOT be sent from the Irssi window currently open. Be aware that if you forget window open while detaching your screen, you will not get notifications from that channel. 
+    </div>
+    <p><a onclick="toggle('#instructions');" href="javascript:void(0)">Show/hide instructions</a></p>
+    
+    <br /> <br />
+    <p><a onclick="wipe();" href="javascript:void(0)">Wipe all data!</a></p>
 
-	<div id="debug" style="display: none;">
-		<h2>Debug stuff</h2>
-		
-		<h3>User details</h3>
-		<ul>
-			<li>User: {{ user.user_name }}</li>
-			<li>Email: {{ user.email }}</li>
-			<li>Id: {{ user.user_id }}</li>
-			<li>Api token: {{ user.api_token }}</li>
-		</ul>
-
-		<h3>C2DM Tokens</h3>
-		<ul>
-		{% for token in tokens %}
-			<li><input type="checkbox" {% if token.enabled %}checked{% endif %} id="{{ token.c2dm_token }}" /><b>{{ token.name }}:</b> {{ token.c2dm_token }}</li>
-		{% endfor %}
-		</ul>
-
-		<p><a onclick="wipe();" href="javascript:void(0)">Wipe all data!</a></p>
-	</div>
-
-	<br /> <br />
-	<p><a onclick="toggle('#debug');" href="javascript:void(0)">Show/hide debug stuff</a></p>
-
-	<p><a href="{{ logout_url }}">Log out</a></p> <br />
+    <p><a href="{{ logout_url }}">Log out</a></p> <br />
 </body>
 </html>
