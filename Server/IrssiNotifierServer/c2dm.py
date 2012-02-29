@@ -4,6 +4,7 @@ from datamodels import C2dmToken, AuthKey
 
 class C2DM(object):
     authkey = ""
+    collapse_key = 1
     
     def __init__(self):
         self.authkey = self.loadAuthKey()
@@ -64,7 +65,8 @@ class C2DM(object):
             
         request = urllib2.Request("https://android.apis.google.com/c2dm/send")
         request.add_header('Authorization', 'GoogleLogin auth=%s' % self.authkey)
-        request.add_data('registration_id=%s&data.message=%s&collapse_key=%s' % (token, message, "ck")) # TODO: collapse key
+        request.add_data('registration_id=%s&data.message=%s&collapse_key=%s' % (token, message, "%s" % self.collapse_key))
+        self.collapse_key += 1
         
         # TODO: errors from the next line, possible email alarms
         response = urllib2.urlopen(request)
