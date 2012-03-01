@@ -7,24 +7,26 @@ import java.util.Map;
 
 import org.apache.http.auth.AuthenticationException;
 
+import com.actionbarsherlock.app.SherlockActivity;
 import com.google.android.apps.analytics.GoogleAnalyticsTracker;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 
 // TODO: ACRA! http://code.google.com/p/acra/
 
-public class IrssiNotifierActivity extends Activity {
+public class IrssiNotifierActivity extends SherlockActivity {
 	private static final String TAG = IrssiNotifierActivity.class.getSimpleName();
 	private Preferences preferences;
 	private GoogleAnalyticsTracker tracker;
@@ -86,7 +88,7 @@ public class IrssiNotifierActivity extends Activity {
 		};
         
 		final long now = new Date().getTime();
-        DataFetcherTask task = new DataFetcherTask(preferences.getAuthToken(), preferences.getEncryptionPassword(), preferences.getLastFetchTime(), new Callback<DataFetchResult>() {
+        new DataFetcherTask(preferences.getAuthToken(), preferences.getEncryptionPassword(), preferences.getLastFetchTime(), new Callback<DataFetchResult>() {
 			public void doStuff(DataFetchResult param) {
 				if (param.getException() != null) {
 					if (param.getException() instanceof AuthenticationException) {
@@ -165,8 +167,8 @@ public class IrssiNotifierActivity extends Activity {
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.mainmenu, menu);
+		super.onCreateOptionsMenu(menu);
+		getSupportMenuInflater().inflate(R.menu.mainmenu, menu);
 		
 		return super.onCreateOptionsMenu(menu);
 	}

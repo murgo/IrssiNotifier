@@ -6,7 +6,7 @@ import fi.iki.murgo.irssinotifier.IrssiNotifierActivity;
 import android.test.ActivityInstrumentationTestCase2;
 import android.util.Log;
 
-public class CryptoTests extends ActivityInstrumentationTestCase2<IrssiNotifierActivity> {
+public class CryptoTests extends ActivityInstrumentationTestCase2 {
 	
 	public CryptoTests() {
 		super("fi.iki.murgo.irssinotifier", IrssiNotifierActivity.class);
