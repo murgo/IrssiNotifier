@@ -11,6 +11,7 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.google.android.apps.analytics.GoogleAnalyticsTracker;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.actionbarsherlock.view.Window;
 
 import android.app.Activity;
 import android.content.Context;
@@ -19,8 +20,6 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.View;
-import android.widget.ProgressBar;
 
 // TODO: ACRA! http://code.google.com/p/acra/
 
@@ -31,6 +30,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	private final String googleAnalyticsCode = "UA-29385499-1";
 	private MessagePagerAdapter adapter; 
     private ViewPager pager;
+	private boolean progressBarVisibility;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,8 +59,20 @@ public class IrssiNotifierActivity extends SherlockActivity {
 			return;
 		}
         
-        startMainApp();
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        setIndeterminateProgressBarVisibility(false);
+        
+        boolean b = false;
+        try {
+        	b = savedInstanceState.getBoolean("foo", false);
+        } catch (Exception e) { }
+        startMainApp(b);
     }
+	
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		outState.putBoolean("foo", true);
+	}
 	
 	@Override
 	protected void onDestroy() {
@@ -68,7 +80,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 		tracker.stopSession();
 	}
 	
-	private void startMainApp() {
+	private void startMainApp(boolean orientationChanged) {
     	Log.d(TAG, "Main startup");
         createUi(new HashMap<Channel, List<IrcMessage>>());
         
@@ -86,8 +98,10 @@ public class IrssiNotifierActivity extends SherlockActivity {
 		};
         
 		final long now = new Date().getTime();
-        new DataFetcherTask(preferences.getAuthToken(), preferences.getEncryptionPassword(), preferences.getLastFetchTime(), new Callback<DataFetchResult>() {
+		DataFetcherTask task = new DataFetcherTask(preferences.getAuthToken(), preferences.getEncryptionPassword(), preferences.getLastFetchTime(), new Callback<DataFetchResult>() {
+			// TODO: Move this into its own activity, so orientation changes work correctly
 			public void doStuff(DataFetchResult param) {
+		        setIndeterminateProgressBarVisibility(false);
 				if (param.getException() != null) {
 					if (param.getException() instanceof AuthenticationException) {
 						MessageBox.Show(ctx, "Authentication error", "Unable to authenticate to server", null);
@@ -106,7 +120,6 @@ public class IrssiNotifierActivity extends SherlockActivity {
 				}
 
 				if (param.getMessages().isEmpty()) {
-					setProgressBarVisibility(View.GONE);
 					return;
 				}
 				
@@ -115,26 +128,21 @@ public class IrssiNotifierActivity extends SherlockActivity {
 			}
 		});
 
-        setProgressBarVisibility(View.VISIBLE);
-
-        //task.execute();
-        tracker.dispatch();
+		if (!orientationChanged) {
+	        setIndeterminateProgressBarVisibility(true);
+	
+	        task.execute();
+	        tracker.dispatch();
+		}
         
 		DataAccessTask datask = new DataAccessTask(ctx, dataAccessCallback);
 		datask.execute();
 	}
     
-	private void setProgressBarVisibility(int visibility) {
-		ProgressBar pb = (ProgressBar) findViewById(R.id.progressBar1);
-		if (pb == null)
-			return;
-		
-		pb.setVisibility(visibility);
-		pb.bringToFront();
-	}
-
 	private void createUi(Map<Channel, List<IrcMessage>> param) {
         setContentView(R.layout.main);
+        setIndeterminateProgressBarVisibility(!progressBarVisibility);
+        setIndeterminateProgressBarVisibility(!progressBarVisibility);
         
         if (adapter == null)
         	adapter = new MessagePagerAdapter(this, getLayoutInflater());
@@ -142,6 +150,11 @@ public class IrssiNotifierActivity extends SherlockActivity {
         
 		pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(adapter);
+	}
+	
+	private void setIndeterminateProgressBarVisibility(boolean state) {
+        setSupportProgressBarIndeterminateVisibility(state);
+        progressBarVisibility = state;
 	}
 	
 	private void sendSettings() {
