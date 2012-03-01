@@ -11,6 +11,9 @@ import android.graphics.Typeface;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -60,8 +63,15 @@ public class MessagePagerAdapter extends PagerAdapter {
     	LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
     	for (IrcMessage message : messages) {
 			TextView tv = new TextView(ctx);
-			tv.setText(message.getServerTimestampAsString() + " (" + message.getNick() + ") " + message.getMessage());
+			String s = message.getServerTimestampAsString() + " (" + message.getNick() + ") " + message.getMessage();
+			final SpannableString ss = new SpannableString(s);
+			Linkify.addLinks(ss, Linkify.ALL);
+			tv.setText(ss);
 			tv.setTypeface(Typeface.MONOSPACE);
+			tv.setAutoLinkMask(Linkify.ALL);
+			tv.setLinksClickable(true);
+			tv.setMovementMethod(LinkMovementMethod.getInstance());
+			
 			messageContainer.addView(tv);
     	}
 

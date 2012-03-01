@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:id="@+id/channel_view"
     >
-    
+
     <TextView
         android:id="@+id/channel_name"
         android:layout_width="wrap_content"
