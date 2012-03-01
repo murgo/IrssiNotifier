@@ -21,7 +21,7 @@ class MessageHandler(object):
             return False
             
         c2dm = C2DM()
-        c2dm.sendC2dmToUser(irssiuser, dbMessage.ToJson()) #TODO don't send whole message?
+        c2dm.sendC2dmToUser(irssiuser, dbMessage.ToC2dmJson())
         
         return True
     def getMessages(self, timestamp, user):

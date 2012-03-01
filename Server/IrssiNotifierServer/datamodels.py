@@ -21,9 +21,12 @@ class Message(db.Model):
     channel = db.StringProperty()
     nick = db.StringProperty()
     def ToJson(self):
-        # TODO fix too long message
         return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'timestamp': self.timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
-
+    def ToC2dmJson(self):
+        m = json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'timestamp': self.timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
+        if len(m) < 1024:
+            return m
+        return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'timestamp': self.timestamp, 'message': 'toolong', 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
 
 class AuthKey(db.Model):
     sid = db.StringProperty()
