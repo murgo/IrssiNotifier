@@ -81,7 +81,6 @@ public class IrssiNotifierActivity extends Activity {
         
         final Callback<Map<Channel, List<IrcMessage>>> dataAccessCallback = new Callback<Map<Channel,List<IrcMessage>>>() {
 			public void doStuff(Map<Channel, List<IrcMessage>> param) {
-				setProgressBarVisibility(View.GONE);
 				createUi(param);
 			}
 		};
@@ -118,7 +117,7 @@ public class IrssiNotifierActivity extends Activity {
 
         setProgressBarVisibility(View.VISIBLE);
 
-        task.execute();
+        //task.execute();
         tracker.dispatch();
         
 		DataAccessTask datask = new DataAccessTask(ctx, dataAccessCallback);
@@ -131,6 +130,7 @@ public class IrssiNotifierActivity extends Activity {
 			return;
 		
 		pb.setVisibility(visibility);
+		pb.bringToFront();
 	}
 
 	private void createUi(Map<Channel, List<IrcMessage>> param) {

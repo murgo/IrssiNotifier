@@ -1,6 +1,7 @@
 package fi.iki.murgo.irssinotifier;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -114,9 +115,29 @@ public class MessagePagerAdapter extends PagerAdapter {
     }
 
 	public void setIrcMessages(Map<Channel, List<IrcMessage>> ircMessages) {
-		this.ircMessages = new ArrayList<Map.Entry<Channel,List<IrcMessage>>>();
+		ArrayList<Map.Entry<Channel,List<IrcMessage>>> list = new ArrayList<Map.Entry<Channel,List<IrcMessage>>>();
+
 		for (Entry<Channel, List<IrcMessage>> entry : ircMessages.entrySet()) {
-			this.ircMessages.add(entry);
+			list.add(entry);
 		}
+		
+		if (ircMessages.size() == 0) {
+			Channel ch = new Channel();
+			ch.setName(":(");
+			ch.setOrder(0);
+			
+			IrcMessage msg = new IrcMessage();
+			msg.setMessage("No messages!");
+			msg.setNick("nobody");
+			msg.setServerTimestamp(new Date().getTime());
+			
+			List<IrcMessage> l = new ArrayList<IrcMessage>();
+			l.add(msg);
+			
+			Entry<Channel, List<IrcMessage>> entry = new SimpleEntry<Channel, List<IrcMessage>>(ch, l);
+			list.add(entry);
+		}
+		
+		this.ircMessages = list;
 	}
 }

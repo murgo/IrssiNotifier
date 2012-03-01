@@ -12,7 +12,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DataAccess extends SQLiteOpenHelper {
 
 	private static final String DATABASE_NAME = "IrssiNotifier";
-	private static final int DATABASE_VERSION = 1;
+	private static final int DATABASE_VERSION = 2;
 
 	public DataAccess(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -20,12 +20,21 @@ public class DataAccess extends SQLiteOpenHelper {
 
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		db.execSQL("CREATE TABLE Channel (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, order INTEGER)");
-		db.execSQL("CREATE TABLE IrcMessage (id INTEGER PRIMARY KEY AUTOINCREMENT, channelId INTEGER, message TEXT, nick TEXT, serverTimestamp INTEGER, timestamp TEXT, externalId TEXT, FOREIGN KEY(channelId) REFERENCES Channel(Id))");
+		try {
+			db.execSQL("CREATE TABLE Channel (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, orderIndex INTEGER)");
+			db.execSQL("CREATE TABLE IrcMessage (id INTEGER PRIMARY KEY AUTOINCREMENT, channelId INTEGER, message TEXT, nick TEXT, serverTimestamp INTEGER, timestamp TEXT, externalId TEXT, FOREIGN KEY(channelId) REFERENCES Channel(Id))");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+		if (oldVersion < 3) {
+			db.execSQL("DROP TABLE IF EXISTS Channel");
+			db.execSQL("DROP TABLE IF EXISTS IrcMessage");
+			onCreate(db);
+		}
 	}
 	
 	public void HandleMessage(IrcMessage message) {
@@ -48,7 +57,7 @@ public class DataAccess extends SQLiteOpenHelper {
 			if (found == null) {
 				ContentValues values = new ContentValues();
 				values.put("name", channelName);
-				values.put("order", biggestOrder);
+				values.put("orderIndex", biggestOrder);
 				channelId = database.insert("Channel", null, values);
 			} else {
 				channelId = found.getId();
@@ -90,14 +99,14 @@ public class DataAccess extends SQLiteOpenHelper {
 	}
 
 	private List<Channel> getChannels(SQLiteDatabase database) {
-		Cursor cursor = database.query("Channel", new String[] {"id", "name", "order"}, null, null, null, null, "order");
+		Cursor cursor = database.query("Channel", new String[] {"id", "name", "orderIndex"}, null, null, null, null, "orderIndex");
 		cursor.moveToFirst();
 		List<Channel> list = new ArrayList<Channel>();
 		while (!cursor.isAfterLast()) {
 			Channel ch = new Channel();
 			ch.setId(cursor.getLong(cursor.getColumnIndex("id")));
 			ch.setName(cursor.getString(cursor.getColumnIndex("name")));
-			ch.setOrder(cursor.getInt(cursor.getColumnIndex("order")));
+			ch.setOrder(cursor.getInt(cursor.getColumnIndex("orderIndex")));
 			list.add(ch);
 			cursor.moveToNext();
 		}
