@@ -17,10 +17,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.MenuInflater;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -170,18 +168,12 @@ public class IrssiNotifierActivity extends SherlockActivity {
 		super.onCreateOptionsMenu(menu);
 		getSupportMenuInflater().inflate(R.menu.mainmenu, menu);
 		
-		return super.onCreateOptionsMenu(menu);
+		return true;
 	}
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == R.id.settings) {
-            Intent settingsActivity = new Intent(getBaseContext(), SettingsActivity.class);
-            startActivity(settingsActivity);
-			return true;
-		}
-		
-		return super.onOptionsItemSelected(item);
+		return false;
 	}
 	
 	/*
