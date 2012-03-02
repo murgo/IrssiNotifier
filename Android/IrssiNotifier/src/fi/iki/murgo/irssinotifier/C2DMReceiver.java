@@ -152,8 +152,10 @@ public class C2DMReceiver extends BroadcastReceiver {
 		}
 
     	if (foreground) {
-    		IrssiNotifierActivity.getInstance().newMessage(msg);
-    		return;
+    		if (IrssiNotifierActivity.getInstance() != null) {
+    			IrssiNotifierActivity.getInstance().newMessage(msg);
+    			//return; hax
+    		}
     	}
     	
         NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);

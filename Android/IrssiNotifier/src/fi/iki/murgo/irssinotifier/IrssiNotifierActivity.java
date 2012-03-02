@@ -93,6 +93,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 		tracker.stopSession();
 		DataAccess da = new DataAccess(this);
 		da.setAllMessagesAsShown();
+		instance = null;
 	}
 	
 	public static IrssiNotifierActivity getInstance() {
@@ -137,7 +138,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 				preferences.setLastFetchTime(now);
 				
 				if (param.getResponse().getServerMessage() != null && param.getResponse().getServerMessage().length() > 0) {
-					MessageBox.Show(ctx, null, param.getResponse().getServerMessage(), null);
+					MessageBox.Show(ctx, null, param.getResponse().getServerMessage(), null, true);
 				}
 
 				if (param.getMessages().isEmpty()) {
