@@ -65,7 +65,17 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
     	name.setText(channel.getName());
 
     	LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
+    	boolean lastShown = false;
     	for (IrcMessage message : messages) {
+    		if (!message.isShown()) {
+    			if (!lastShown) {
+    				lastShown = true;
+    				TextView tvEmpty = new TextView(ctx);
+    				tvEmpty.setText("--");
+    				messageContainer.addView(tvEmpty);
+    			}
+    		}
+    		
 			TextView tv = new TextView(ctx);
 			String s = message.getServerTimestampAsString() + " (" + message.getNick() + ") " + message.getMessage();
 			final SpannableString ss = new SpannableString(s);

@@ -15,6 +15,7 @@ public class IrcMessage {
 	private String timestamp;
 	private Date serverTimestamp;
 	private String externalId;
+	private boolean shown;
 	
 	public void Deserialize(String payload) throws JSONException {
 		Deserialize(new JSONObject(payload));
@@ -104,6 +105,14 @@ public class IrcMessage {
 	
 	public String getExternalId() {
 		return externalId;
+	}
+
+	public void setShown(boolean shown) {
+		this.shown = shown;
+	}
+	
+	public boolean isShown() {
+		return shown;
 	}
 
 }

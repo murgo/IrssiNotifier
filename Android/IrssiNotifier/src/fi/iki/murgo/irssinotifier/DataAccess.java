@@ -22,7 +22,7 @@ public class DataAccess extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase db) {
 		try {
 			db.execSQL("CREATE TABLE Channel (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, orderIndex INTEGER)");
-			db.execSQL("CREATE TABLE IrcMessage (id INTEGER PRIMARY KEY AUTOINCREMENT, channelId INTEGER, message TEXT, nick TEXT, serverTimestamp INTEGER, timestamp TEXT, externalId TEXT, FOREIGN KEY(channelId) REFERENCES Channel(Id))");
+			db.execSQL("CREATE TABLE IrcMessage (id INTEGER PRIMARY KEY AUTOINCREMENT, channelId INTEGER, message TEXT, nick TEXT, serverTimestamp INTEGER, timestamp TEXT, externalId TEXT, shown INTEGER, FOREIGN KEY(channelId) REFERENCES Channel(Id))");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -30,7 +30,7 @@ public class DataAccess extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		if (oldVersion < 3) {
+		if (oldVersion < 666) {
 			db.execSQL("DROP TABLE IF EXISTS Channel");
 			db.execSQL("DROP TABLE IF EXISTS IrcMessage");
 			onCreate(db);
@@ -74,6 +74,7 @@ public class DataAccess extends SQLiteOpenHelper {
 
 			Cursor cur = database.query("IrcMessage", new String[] {"externalId", "message"}, "externalId = ?", new String[] {message.getExternalId()}, null, null, null, "1");
 			if (cur.isAfterLast()) {
+				messageValues.put("shown", 0);
 				database.insert("IrcMessage", null, messageValues);
 			} else {
 				// already in database, update if necessary
@@ -123,11 +124,19 @@ public class DataAccess extends SQLiteOpenHelper {
 		
 		return channels;
 	}
+	
+	public void setAllMessagesAsShown() {
+		SQLiteDatabase database = getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put("shown", true);
+		database.update("IrcMessage", values, "shown = ?", new String[] {"0"});
+		database.close();
+	}
 
 	public List<IrcMessage> getMessagesForChannel(Channel channel) {
 		SQLiteDatabase database = getReadableDatabase();
 
-		Cursor cursor = database.query("IrcMessage", new String[] {"message", "nick", "serverTimestamp", "timestamp", "externalId"}, "channelId = ?", new String[] { Long.toString(channel.getId()) }, null, null, null);
+		Cursor cursor = database.query("IrcMessage", new String[] {"message", "nick", "serverTimestamp", "timestamp", "shown", "externalId" }, "channelId = ?", new String[] { Long.toString(channel.getId()) }, null, null, null);
 		cursor.moveToFirst();
 		List<IrcMessage> list = new ArrayList<IrcMessage>();
 
@@ -136,6 +145,7 @@ public class DataAccess extends SQLiteOpenHelper {
 		int colServerTimestamp = cursor.getColumnIndex("serverTimestamp");
 		int colTimestamp = cursor.getColumnIndex("timestamp");
 		int colExternalId = cursor.getColumnIndex("externalId");
+		int colShown = cursor.getColumnIndex("shown");
 
 		while (!cursor.isAfterLast()) {
 			IrcMessage message = new IrcMessage();
@@ -145,6 +155,7 @@ public class DataAccess extends SQLiteOpenHelper {
 			message.setTimestamp(cursor.getString(colTimestamp));
 			message.setExternalId(cursor.getString(colExternalId));
 			message.setChannel(channel.getName());
+			message.setShown(cursor.getInt(colShown) == 0 ? false : true);
 			
 			list.add(message);
 			cursor.moveToNext();

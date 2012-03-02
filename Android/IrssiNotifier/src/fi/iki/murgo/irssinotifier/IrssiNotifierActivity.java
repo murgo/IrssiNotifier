@@ -86,6 +86,8 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	protected void onDestroy() {
 		super.onDestroy();
 		tracker.stopSession();
+		DataAccess da = new DataAccess(this);
+		da.setAllMessagesAsShown();
 	}
 	
 	private void startMainApp(boolean orientationChanged) {
