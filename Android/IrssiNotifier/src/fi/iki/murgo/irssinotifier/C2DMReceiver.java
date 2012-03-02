@@ -140,6 +140,21 @@ public class C2DMReceiver extends BroadcastReceiver {
         	notificationId = 1;
 		}
 
+        Intent toLaunch = new Intent(context, IrssiNotifierActivity.class);
+        toLaunch.putExtra("Channel", msg.getLogicalChannel());
+    	
+		boolean foreground = false;
+    	try {
+			foreground = new ForegroundCheckTask().execute(context).get();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+    	if (foreground) {
+    		IrssiNotifierActivity.getInstance().newMessage(msg);
+    		return;
+    	}
+    	
         NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         
         Notification notification = new Notification(R.drawable.icon, tickerText, when);
@@ -150,8 +165,6 @@ public class C2DMReceiver extends BroadcastReceiver {
 			lastSoundDate = new Date().getTime();
 		}
 		
-        Intent toLaunch = new Intent(context, IrssiNotifierActivity.class);
-        toLaunch.putExtra("Channel", msg.getLogicalChannel());
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, toLaunch, 0);
 
         notification.setLatestEventInfo(context, titleText, notificationMessage, contentIntent);

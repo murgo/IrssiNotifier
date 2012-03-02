@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
 
 // TODO: ACRA! http://code.google.com/p/acra/
@@ -33,9 +34,13 @@ public class IrssiNotifierActivity extends SherlockActivity {
     private ViewPager pager;
 	private boolean progressBarVisibility;
 	private String initialChannel;
+	private static IrssiNotifierActivity instance;
+	private int lastChannel;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
+		instance = this; 
+		
     	Log.i(TAG, "Startup");
         super.onCreate(savedInstanceState);
         
@@ -88,6 +93,10 @@ public class IrssiNotifierActivity extends SherlockActivity {
 		tracker.stopSession();
 		DataAccess da = new DataAccess(this);
 		da.setAllMessagesAsShown();
+	}
+	
+	public static IrssiNotifierActivity getInstance() {
+		return instance;
 	}
 	
 	private void startMainApp(boolean orientationChanged) {
@@ -154,26 +163,41 @@ public class IrssiNotifierActivity extends SherlockActivity {
         setIndeterminateProgressBarVisibility(!progressBarVisibility); // häx häx
         setIndeterminateProgressBarVisibility(!progressBarVisibility);
         
-        if (adapter == null)
-        	adapter = new MessagePagerAdapter(this, getLayoutInflater());
-    	adapter.setIrcMessages(param);
-    	
 		pager = (ViewPager) findViewById(R.id.pager);
+
+		if (adapter == null) {
+        	adapter = new MessagePagerAdapter(this, getLayoutInflater());
+        }
+    	adapter.setIrcMessages(param);
         pager.setAdapter(adapter);
         
         TitlePageIndicator titleIndicator = (TitlePageIndicator)findViewById(R.id.titles);
         titleIndicator.setViewPager(pager);
-        
-    	if (initialChannel != null && param.size() > 1) {
+        titleIndicator.setOnPageChangeListener(new OnPageChangeListener() {
+			public void onPageSelected(int arg0) {
+				lastChannel = arg0;
+			}
+			
+			public void onPageScrolled(int arg0, float arg1, int arg2) { }
+			public void onPageScrollStateChanged(int arg0) { }
+		});
+       
+        boolean found = false;
+        if (initialChannel != null && param.size() > 1) {
     		for (Channel c : param.keySet()) {
     			if (c.getName().equals(initialChannel)) {
     	    		pager.setCurrentItem(c.getOrder());
+    	    		found = true;
     	    		break;
     			}
     		}
     		
     		initialChannel = null;
     	}
+        
+        if (!found) {
+            pager.setCurrentItem(lastChannel);
+        }
 	}
 	
 	private void setIndeterminateProgressBarVisibility(boolean state) {
@@ -211,6 +235,11 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		return false;
+	}
+
+	public void newMessage(IrcMessage msg) {
+		initialChannel = msg.getLogicalChannel();
+        startMainApp(false);
 	}
 	
 	/*
