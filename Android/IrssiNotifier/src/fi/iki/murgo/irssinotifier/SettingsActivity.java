@@ -25,6 +25,10 @@ public class SettingsActivity extends PreferenceActivity {
 			public boolean onPreferenceClick(Preference preference) {
 				Preferences p = new Preferences(ctx);
 				p.clear();
+				
+				DataAccess da = new DataAccess(ctx);
+				da.clearAll();
+
 				finish();
 				return true;
 			}

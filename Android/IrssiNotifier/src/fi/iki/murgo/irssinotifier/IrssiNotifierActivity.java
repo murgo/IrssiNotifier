@@ -96,7 +96,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	}
 	
 	public static IrssiNotifierActivity getInstance() {
-		return instance;
+		return instance; // TODO: might leak memory
 	}
 	
 	private void startMainApp(boolean orientationChanged) {
@@ -126,6 +126,8 @@ public class IrssiNotifierActivity extends SherlockActivity {
 						MessageBox.Show(ctx, "Authentication error", "Unable to authenticate to server", null);
 					} else if (param.getException() instanceof ServerException) {
 						MessageBox.Show(ctx, "Server error", "Mystical server error, check if updates are available", null);
+					} else if (param.getException() instanceof CryptoException) {
+							MessageBox.Show(ctx, "Decryption error", "Unable to decrypt message, is your decryption password correct?", null);
 					} else {
 						MessageBox.Show(ctx, "Error", "What happen", null);
 					}

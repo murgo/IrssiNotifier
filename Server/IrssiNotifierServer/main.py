@@ -113,8 +113,8 @@ class WebController(BaseController):
 
 def getServerMessage(data):
     if "version" in data:
-        if int(data["version"]) < 2:
-            return (True, "lol joku beta")
+        if int(data["version"]) < 3:
+            return (True, "Hei betamies, haes uusin suljettu beta osoitteesta http://dl.dropbox.com/u/25959245/IrssiNotifier.apk")
     return (True, "")
 
 
