@@ -31,8 +31,8 @@ class MessageHandler(object):
         messages.filter("server_timestamp >", float(timestamp))
         messages.order("server_timestamp")
 
-        c2dm = C2DM()
-        c2dm.sendC2dmToUser(user, "read")
+        #c2dm = C2DM()
+        #c2dm.sendC2dmToUser(user, "read")
         
         m = messages.fetch(100)
         logging.debug("Found %s messages" % len(m))
