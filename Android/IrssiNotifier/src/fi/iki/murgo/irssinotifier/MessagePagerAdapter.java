@@ -21,6 +21,7 @@ import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
@@ -88,6 +89,13 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
 			
 			messageContainer.addView(tv);
     	}
+    	
+    	final ScrollView sv = (ScrollView)channelView.findViewById(R.id.scroll_view);
+    	sv.post(new Runnable() {
+			public void run() {
+				sv.fullScroll(ScrollView.FOCUS_DOWN);
+			}
+		});
 
 		((ViewPager) collection).addView(channelView);
 		return channelView;

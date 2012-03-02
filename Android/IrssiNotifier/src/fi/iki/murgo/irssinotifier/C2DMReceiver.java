@@ -79,6 +79,7 @@ public class C2DMReceiver extends BroadcastReceiver {
     }
 
     private void handleMessage(Context context, Intent intent) { // TODO: thread safety
+    	// TODO: handle toolong
         Log.d(TAG, "Handling C2DM notification");
         String action = intent.getStringExtra(C2DM_DATA_ACTION);
         String message = intent.getStringExtra(C2DM_DATA_MESSAGE);
