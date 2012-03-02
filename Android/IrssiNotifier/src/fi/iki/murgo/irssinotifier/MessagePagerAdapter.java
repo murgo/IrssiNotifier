@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.viewpagerindicator.TitleProvider;
+
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Parcelable;
@@ -21,7 +23,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class MessagePagerAdapter extends PagerAdapter {
+public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
 	private Context ctx;
 	private List<Entry<Channel, List<IrcMessage>>> ircMessages;
 	private final LayoutInflater layoutInflater;
@@ -157,6 +159,10 @@ public class MessagePagerAdapter extends PagerAdapter {
 		});
 		
 		this.ircMessages = list;
+	}
+
+	public String getTitle(int position) {
+		return this.ircMessages.get(position).getKey().getName();
 	}
 
 }

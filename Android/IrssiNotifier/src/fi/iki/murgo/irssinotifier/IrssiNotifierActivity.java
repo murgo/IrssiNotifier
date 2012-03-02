@@ -9,6 +9,7 @@ import org.apache.http.auth.AuthenticationException;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.google.android.apps.analytics.GoogleAnalyticsTracker;
+import com.viewpagerindicator.TitlePageIndicator;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.Window;
@@ -157,6 +158,9 @@ public class IrssiNotifierActivity extends SherlockActivity {
     	
 		pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(adapter);
+        
+        TitlePageIndicator titleIndicator = (TitlePageIndicator)findViewById(R.id.titles);
+        titleIndicator.setViewPager(pager);
         
     	if (initialChannel != null && param.size() > 1) {
     		for (Channel c : param.keySet()) {
