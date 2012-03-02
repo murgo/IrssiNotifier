@@ -31,6 +31,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	private MessagePagerAdapter adapter; 
     private ViewPager pager;
 	private boolean progressBarVisibility;
+	private String initialChannel;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,10 +63,16 @@ public class IrssiNotifierActivity extends SherlockActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setIndeterminateProgressBarVisibility(false);
         
+        if (initialChannel == null) {
+        	Intent i = getIntent();
+        	if (i != null) {
+            	initialChannel = i.getStringExtra("Channel");
+        	}
+        }
+        
         boolean b = false;
-        try {
+        if (savedInstanceState != null)
         	b = savedInstanceState.getBoolean("foo", false);
-        } catch (Exception e) { }
         startMainApp(b);
     }
 	
@@ -141,15 +148,26 @@ public class IrssiNotifierActivity extends SherlockActivity {
     
 	private void createUi(Map<Channel, List<IrcMessage>> param) {
         setContentView(R.layout.main);
-        setIndeterminateProgressBarVisibility(!progressBarVisibility);
+        setIndeterminateProgressBarVisibility(!progressBarVisibility); // häx häx
         setIndeterminateProgressBarVisibility(!progressBarVisibility);
         
         if (adapter == null)
         	adapter = new MessagePagerAdapter(this, getLayoutInflater());
     	adapter.setIrcMessages(param);
-        
+    	
 		pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(adapter);
+        
+    	if (initialChannel != null && param.size() > 1) {
+    		for (Channel c : param.keySet()) {
+    			if (c.getName().equals(initialChannel)) {
+    	    		pager.setCurrentItem(c.getOrder());
+    	    		break;
+    			}
+    		}
+    		
+    		initialChannel = null;
+    	}
 	}
 	
 	private void setIndeterminateProgressBarVisibility(boolean state) {

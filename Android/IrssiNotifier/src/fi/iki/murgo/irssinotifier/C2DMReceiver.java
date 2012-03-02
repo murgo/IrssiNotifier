@@ -151,6 +151,7 @@ public class C2DMReceiver extends BroadcastReceiver {
 		}
 		
         Intent toLaunch = new Intent(context, IrssiNotifierActivity.class);
+        toLaunch.putExtra("Channel", msg.getLogicalChannel());
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, toLaunch, 0);
 
         notification.setLatestEventInfo(context, titleText, notificationMessage, contentIntent);

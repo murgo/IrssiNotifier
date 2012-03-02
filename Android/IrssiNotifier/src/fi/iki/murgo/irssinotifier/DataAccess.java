@@ -46,12 +46,13 @@ public class DataAccess extends SQLiteOpenHelper {
 			
 			int biggestOrder = 0;
 			Channel found = null;
-			for (Channel ch : channels)
+			for (Channel ch : channels) {
+				biggestOrder = Math.max(biggestOrder, ch.getOrder() + 1);
 				if (ch.getName().equals(channelName)) {
 					found = ch;
-					biggestOrder = Math.max(biggestOrder, ch.getOrder() + 1);
 					break;
 				}
+			}
 			
 			long channelId;
 			if (found == null) {

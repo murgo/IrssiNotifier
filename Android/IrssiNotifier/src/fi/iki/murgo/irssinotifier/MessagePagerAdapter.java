@@ -1,6 +1,8 @@
 package fi.iki.murgo.irssinotifier;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -148,6 +150,13 @@ public class MessagePagerAdapter extends PagerAdapter {
 			list.add(entry);
 		}
 		
+		Collections.sort(list, new Comparator<Map.Entry<Channel,List<IrcMessage>>>() {
+			public int compare(Entry<Channel, List<IrcMessage>> lhs, Entry<Channel, List<IrcMessage>> rhs) {
+				return ((Integer)lhs.getKey().getOrder()).compareTo(rhs.getKey().getOrder());
+			}
+		});
+		
 		this.ircMessages = list;
 	}
+
 }
