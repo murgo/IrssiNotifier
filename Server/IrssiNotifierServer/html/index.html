@@ -72,23 +72,25 @@
     <div id="instructions" style="display: none;">
     {% else %}
     <p>Irssi script <span class="broken">not confirmed as working.</span></p>
+    
     <div id="instructions">
     {% endif %}
         Instructions: <br />
         1) Get and run android app <br />
-        2) Download irssi script <br />
-        3) Copy and paste the following shell command to your shell (don't mind any "File exists" -errors):
+        2) Download irssi script by copying and pasting the following command to your shell (don't mind any "File exists" -errors):
         <div class="block">mkdir -p ~/.irssi/scripts/autorun; wget http://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
-        4) Load irssi script by typing the following command to irssi
+        3) Load irssi script by typing the following command to irssi
         <div class="block">/script load irssinotifier</div>
-        5) Set api token in irssi <br />
+        4) Set api token in irssi <br />
         <div class="block">/set irssinotifier_api_token {{ user.api_token }}</div>
-        6) Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too.
+        5) Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too.
         <div class="block">/set irssinotifier_encryption_password password</div>
-        7) Query yourself to see if it works (this instruction text should disappear after refreshing) <br />
-        <br /> <br /> <br />
-        Additional commands: <br />
-        <br />
+        6) Query yourself to see if it works (this instruction text should disappear after refreshing) <br />
+    </div>
+    <p><a onclick="toggle('#instructions');" href="javascript:void(0)">Show/hide Irssi script instructions</a></p>
+    
+    <h2>Additional Irssi commands</h2>
+    <div id="commands" style="display: none;">
         <div class="block">/set require_idle_seconds [second count]</div>
         When set to more than 0, you will not be notified from events that occur between going idle (i.e. not pressing any keys) and the set second count after that.
         <div class="block">/set irssinotifier_away_only [ON or OFF]</div>
@@ -96,9 +98,22 @@
         <div class="block">/set irssinotifier_ignore_active_window [ON or OFF]</div>
         When set to ON, notifications will NOT be sent from the Irssi window currently open. Be aware that if you forget window open while detaching your screen, you will not get notifications from that channel. 
     </div>
-    <p><a onclick="toggle('#instructions');" href="javascript:void(0)">Show/hide instructions</a></p>
-    
-    <br /> <br />
+    <p><a onclick="toggle('#commands');" href="javascript:void(0)">Show/hide Irssi commands</a></p>
+
+    <h2>Troubleshooting</h2>
+    <div id="troubleshooting" style="display: none;">
+        <p class="question">Notifications are not working!</p>
+        <p class="answer">If both the Android client and the Irssi script are confirmed as working above, be patient. Sometimes Android push notifications have unexpected delays, and some messages may even get lost. There's nothing I can do about it.</p>
+
+        <p class="question">I'm getting decryption errors on my Android device!</p>
+        <p class="answer">Check that the Android device has the same encryption password as the Irssi script. Instructions to set the Irssi script encryption key are above. On Android, just go to the settings menu.</p>
+
+        <p class="question">Help!</p>
+        <p class="answer">If you need more info, drop by #irssinotifier @ IRCnet or drop me a line at <a href="mailto:murgo@iki.fi">murgo@iki.fi</a>.</p>
+    </div>
+    <p><a onclick="toggle('#troubleshooting');" href="javascript:void(0)">Show/hide troubleshooting</a></p>
+
+    <h2>Misc</h2>
     <p><a onclick="wipe();" href="javascript:void(0)">Wipe all data!</a></p>
 
     <p><a href="{{ logout_url }}">Log out</a></p> <br />
