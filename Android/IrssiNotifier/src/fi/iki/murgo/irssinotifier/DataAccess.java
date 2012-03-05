@@ -135,7 +135,7 @@ public class DataAccess extends SQLiteOpenHelper {
 	public List<IrcMessage> getMessagesForChannel(Channel channel) {
 		SQLiteDatabase database = getReadableDatabase();
 
-		Cursor cursor = database.query("IrcMessage", new String[] {"message", "nick", "serverTimestamp", "shown", "externalId" }, "channelId = ?", new String[] { Long.toString(channel.getId()) }, null, null, null);
+		Cursor cursor = database.query("IrcMessage", new String[] {"message", "nick", "serverTimestamp", "shown", "externalId" }, "channelId = ?", new String[] { Long.toString(channel.getId()) }, null, null, "serverTimestamp");
 		cursor.moveToFirst();
 		List<IrcMessage> list = new ArrayList<IrcMessage>();
 
