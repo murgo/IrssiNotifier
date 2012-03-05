@@ -11,6 +11,7 @@ from login import Login
 from datamodels import C2dmToken, Message
 import json
 from wipehandler import WipeHandler
+import emaillogginghandler
 
 jinja_environment = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
@@ -222,3 +223,4 @@ app = webapp2.WSGIApplication([('/', WebController), ('/API/Settings', SettingsC
 app.error_handlers[404] = handle_404
 
 logging.debug("loaded main")
+emaillogginghandler.register_logger(["irssinotifier@gmail.com"])
