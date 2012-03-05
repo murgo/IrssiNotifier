@@ -120,7 +120,7 @@ def getAndroidServerMessage(data):
 
 def getIrssiServerMessage(data):
     if "version" in data:
-        if int(data["version"]) < 2:
+        if int(data["version"]) < 1:
             return (True, "Testiviesti")
     return (True, "")
 
