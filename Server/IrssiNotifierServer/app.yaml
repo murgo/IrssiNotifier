@@ -9,9 +9,13 @@ handlers:
   static_dir: script
 - url: /static
   static_dir: static
+- url: /cron/clear
+  script: cron.app
+  login: admin
 - url: /.*
   script: main.app
   secure: always
+  
 libraries:
 - name: jinja2
   version: latest

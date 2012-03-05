@@ -221,4 +221,4 @@ def handle_404(request, response, exception):
 app = webapp2.WSGIApplication([('/', WebController), ('/API/Settings', SettingsController), ('/API/Message', MessageController), ('/API/Wipe', WipeController), ('/admin', AdminController), ('/analytics', AnalyticsController)], debug=True)
 app.error_handlers[404] = handle_404
 
-logging.debug("Hello reinstall: loaded main")
+logging.debug("loaded main")

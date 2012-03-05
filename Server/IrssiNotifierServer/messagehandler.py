@@ -12,7 +12,7 @@ class MessageHandler(object):
             dbMessage.message = array["message"]
             dbMessage.channel = array['channel']
             dbMessage.nick = array['nick']
-            dbMessage.server_timestamp = time.time()
+            dbMessage.server_timestamp = int(time.time())
             dbMessage.put()
         except Exception as e:
             logging.error("Error while creating new message, exception %s", e)
@@ -27,13 +27,13 @@ class MessageHandler(object):
         logging.debug("Getting messages after: %s" % timestamp)
         messages = Message.all()
         messages.ancestor(user)
-        messages.filter("server_timestamp >", float(timestamp))
+        messages.filter("server_timestamp >", int(timestamp))
         messages.order("server_timestamp")
 
         #c2dm = C2DM()
         #c2dm.sendC2dmToUser(user, "read")
         
-        m = messages.fetch(100)
+        m = messages.fetch(50)
         logging.debug("Found %s messages" % len(m))
 
         return m
