@@ -12,7 +12,6 @@ class MessageHandler(object):
             dbMessage.message = array["message"]
             dbMessage.channel = array['channel']
             dbMessage.nick = array['nick']
-            dbMessage.timestamp = array['timestamp']
             dbMessage.server_timestamp = time.time()
             dbMessage.put()
         except Exception as e:

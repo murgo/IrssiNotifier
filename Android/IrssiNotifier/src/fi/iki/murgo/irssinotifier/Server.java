@@ -58,6 +58,7 @@ public class Server {
 	        HttpResponse response;
 	        response = http_client.execute(http_get);
 	        
+	        EntityUtils.toString(response.getEntity()); // read response to prevent warning
 	        if(response.getStatusLine().getStatusCode() != 302)
                 return false;
 	        

@@ -12,7 +12,6 @@ public class IrcMessage {
 	private String message;
 	private String channel;
 	private String nick;
-	private String timestamp;
 	private Date serverTimestamp;
 	private String externalId;
 	private boolean shown;
@@ -26,7 +25,6 @@ public class IrcMessage {
 			setMessage(obj.getString("message"));
 			setChannel(obj.getString("channel"));
 			setNick(obj.getString("nick"));
-			setTimestamp(obj.getString("timestamp"));
 			setServerTimestamp((long) (Double.parseDouble(obj.getString("server_timestamp")) * 1000));
 			setExternalId(obj.getString("id"));
 		} catch (JSONException e) {
@@ -58,14 +56,6 @@ public class IrcMessage {
 
 	public void setNick(String sender) {
 		this.nick = sender;
-	}
-
-	public String getTimestamp() {
-		return timestamp;
-	}
-
-	public void setTimestamp(String timestamp) {
-		this.timestamp = timestamp;
 	}
 
 	public Date getServerTimestamp() {

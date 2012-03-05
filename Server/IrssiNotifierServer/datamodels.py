@@ -16,17 +16,17 @@ class C2dmToken(db.Model):
 
 class Message(db.Model):
     server_timestamp = db.FloatProperty(indexed=True)
-    timestamp = db.StringProperty()
     message = db.TextProperty()
     channel = db.StringProperty()
     nick = db.StringProperty()
     def ToJson(self):
-        return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'timestamp': self.timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
+        return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
     def ToC2dmJson(self):
-        m = json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'timestamp': self.timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
+        m = json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
         if len(m) < 1024:
             return m
-        return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'timestamp': self.timestamp, 'message': 'toolong', 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
+        return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'message': 'toolong', 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
+
 
 class AuthKey(db.Model):
     sid = db.StringProperty()

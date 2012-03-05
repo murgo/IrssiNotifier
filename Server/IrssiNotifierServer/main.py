@@ -111,10 +111,17 @@ class WebController(BaseController):
         self.response.out.write(template.render(template_values))
 
 
-def getServerMessage(data):
+def getAndroidServerMessage(data):
     if "version" in data:
         if int(data["version"]) < 3:
             return (True, "Koitas nyt, http://dl.dropbox.com/u/25959245/IrssiNotifier.apk")
+    return (True, "")
+
+
+def getIrssiServerMessage(data):
+    if "version" in data:
+        if int(data["version"]) < 2:
+            return (True, "Testiviesti")
     return (True, "")
 
 
@@ -136,22 +143,23 @@ class SettingsController(BaseController):
 
 class MessageController(BaseController):
     def post(self):
-        val = self.initController("MessageController.post()", ["message", "channel", "nick", "timestamp"])
+        val = self.initController("MessageController.post()", ["message", "channel", "nick", "version"])
         if not val:
             logging.debug("InitController returned false")
+            return self.response
+
+        (cont, serverMessage) = getIrssiServerMessage(self.data)
+        if not cont:
+            self.response.out.write(json.dumps({ 'servermessage': serverMessage }))
             return self.response
 
         messageHandler = MessageHandler()
         ok = messageHandler.handle(self.irssiUser, self.data)
 
-        if ok:
-            responseJson = json.dumps({'response': 'ok' })
-        else:
-            responseJson = json.dumps({'response': 'fail' })
+        if not ok:
             self.response.status = '400 Bad Request'
-
-        self.response.headers['Content-Type'] = 'application/json'
-        self.response.out.write(responseJson)
+            return False
+        self.response.out.write(serverMessage)
 
     def get(self):
         val = self.initController("MessageController.get()", [])
@@ -159,9 +167,9 @@ class MessageController(BaseController):
             logging.debug("InitController returned false")
             return self.response
 
-        (cont, serverMessage) = getServerMessage(self.data)
+        (cont, serverMessage) = getAndroidServerMessage(self.data)
         if not cont:
-            self.response.out.write(json.dumps({ 'message': serverMessage }))
+            self.response.out.write(json.dumps({ 'servermessage': serverMessage }))
             return self.response
 
         if "timestamp" not in self.data:

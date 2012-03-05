@@ -12,7 +12,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DataAccess extends SQLiteOpenHelper {
 
 	private static final String DATABASE_NAME = "IrssiNotifier";
-	private static final int DATABASE_VERSION = 2;
+	private static final int DATABASE_VERSION = 3;
 
 	public DataAccess(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -22,7 +22,7 @@ public class DataAccess extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase db) {
 		try {
 			db.execSQL("CREATE TABLE Channel (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, orderIndex INTEGER)");
-			db.execSQL("CREATE TABLE IrcMessage (id INTEGER PRIMARY KEY AUTOINCREMENT, channelId INTEGER, message TEXT, nick TEXT, serverTimestamp INTEGER, timestamp TEXT, externalId TEXT, shown INTEGER, FOREIGN KEY(channelId) REFERENCES Channel(Id))");
+			db.execSQL("CREATE TABLE IrcMessage (id INTEGER PRIMARY KEY AUTOINCREMENT, channelId INTEGER, message TEXT, nick TEXT, serverTimestamp INTEGER, externalId TEXT, shown INTEGER, FOREIGN KEY(channelId) REFERENCES Channel(Id))");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -69,7 +69,6 @@ public class DataAccess extends SQLiteOpenHelper {
 			messageValues.put("message", message.getMessage());
 			messageValues.put("nick", message.getNick());
 			messageValues.put("serverTimestamp", message.getServerTimestamp().getTime());
-			messageValues.put("timestamp", message.getTimestamp());
 			messageValues.put("externalId", message.getExternalId());
 
 			Cursor cur = database.query("IrcMessage", new String[] {"externalId", "message"}, "externalId = ?", new String[] {message.getExternalId()}, null, null, null, "1");
@@ -136,14 +135,13 @@ public class DataAccess extends SQLiteOpenHelper {
 	public List<IrcMessage> getMessagesForChannel(Channel channel) {
 		SQLiteDatabase database = getReadableDatabase();
 
-		Cursor cursor = database.query("IrcMessage", new String[] {"message", "nick", "serverTimestamp", "timestamp", "shown", "externalId" }, "channelId = ?", new String[] { Long.toString(channel.getId()) }, null, null, null);
+		Cursor cursor = database.query("IrcMessage", new String[] {"message", "nick", "serverTimestamp", "shown", "externalId" }, "channelId = ?", new String[] { Long.toString(channel.getId()) }, null, null, null);
 		cursor.moveToFirst();
 		List<IrcMessage> list = new ArrayList<IrcMessage>();
 
 		int colMessage = cursor.getColumnIndex("message");
 		int colNick = cursor.getColumnIndex("nick");
 		int colServerTimestamp = cursor.getColumnIndex("serverTimestamp");
-		int colTimestamp = cursor.getColumnIndex("timestamp");
 		int colExternalId = cursor.getColumnIndex("externalId");
 		int colShown = cursor.getColumnIndex("shown");
 
@@ -152,7 +150,6 @@ public class DataAccess extends SQLiteOpenHelper {
 			message.setMessage(cursor.getString(colMessage));
 			message.setNick(cursor.getString(colNick));
 			message.setServerTimestamp(cursor.getLong(colServerTimestamp));
-			message.setTimestamp(cursor.getString(colTimestamp));
 			message.setExternalId(cursor.getString(colExternalId));
 			message.setChannel(channel.getName());
 			message.setShown(cursor.getInt(colShown) == 0 ? false : true);
