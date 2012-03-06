@@ -16,6 +16,6 @@ IrssiNotifier depends on [ActionBarSherlock](https://github.com/JakeWharton/Acti
 
 ##License
 
-    Copyright 2012 Lauri Härsilä where applicable (my commits).
+    Copyright 2012 Lauri Härsilä where applicable (commits made by murgo, Lauri Härsilä or Unknown on this repository. I'm new to this github stuff).
 
     Licensed under the Apache License, Version 2.0, see LICENSE.
