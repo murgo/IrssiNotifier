@@ -92,21 +92,26 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	protected void onDestroy() {
 		super.onDestroy();
 		tracker.stopSession();
-		
-		DataAccess da = new DataAccess(this);
-		da.setAllMessagesAsShown(); // TODO not on rotate!
 	}
 	
 	@Override
 	protected void onPause() {
-		instance = null;
 		super.onPause();
+		instance = null;
 	}
 	
 	@Override
 	protected void onResume() {
-		instance = this;
 		super.onResume();
+		instance = this;
+	}
+	
+	@Override
+	protected void onUserLeaveHint() {
+		super.onUserLeaveHint();
+		
+		DataAccess da = new DataAccess(this);
+		da.setAllMessagesAsShown();
 	}
 	
 	public static IrssiNotifierActivity getForegroundInstance() {
