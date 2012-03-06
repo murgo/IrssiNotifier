@@ -1,6 +1,7 @@
 package fi.iki.murgo.irssinotifier;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import android.content.ContentValues;
@@ -135,7 +136,7 @@ public class DataAccess extends SQLiteOpenHelper {
 	public List<IrcMessage> getMessagesForChannel(Channel channel) {
 		SQLiteDatabase database = getReadableDatabase();
 
-		Cursor cursor = database.query("IrcMessage", new String[] {"message", "nick", "serverTimestamp", "shown", "externalId" }, "channelId = ?", new String[] { Long.toString(channel.getId()) }, null, null, "serverTimestamp");
+		Cursor cursor = database.query("IrcMessage", new String[] {"message", "nick", "serverTimestamp", "shown", "externalId" }, "channelId = ?", new String[] { Long.toString(channel.getId()) }, null, null, "serverTimestamp DESC", "100");
 		cursor.moveToFirst();
 		List<IrcMessage> list = new ArrayList<IrcMessage>();
 
@@ -160,6 +161,7 @@ public class DataAccess extends SQLiteOpenHelper {
 
 		cursor.close();
 		database.close();
+		Collections.reverse(list);
 		return list;
 	}
 }

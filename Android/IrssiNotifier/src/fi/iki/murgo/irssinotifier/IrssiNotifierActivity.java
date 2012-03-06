@@ -39,8 +39,6 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
-		instance = this; 
-		
     	Log.i(TAG, "Startup");
         super.onCreate(savedInstanceState);
         
@@ -93,13 +91,25 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	protected void onDestroy() {
 		super.onDestroy();
 		tracker.stopSession();
+		
 		DataAccess da = new DataAccess(this);
 		da.setAllMessagesAsShown();
-		instance = null;
 	}
 	
-	public static IrssiNotifierActivity getInstance() {
-		return instance; // TODO: might leak memory
+	@Override
+	protected void onPause() {
+		instance = null;
+		super.onPause();
+	}
+	
+	@Override
+	protected void onResume() {
+		instance = this;
+		super.onResume();
+	}
+	
+	public static IrssiNotifierActivity getForegroundInstance() {
+		return instance;
 	}
 	
 	private void startMainApp(boolean orientationChanged) {

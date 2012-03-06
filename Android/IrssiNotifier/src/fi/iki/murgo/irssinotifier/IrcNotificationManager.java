@@ -73,10 +73,6 @@ public class IrcNotificationManager {
         */
         
         Preferences prefs = new Preferences(context);
-        if (!prefs.isNotificationsEnabled()) {
-        	return;
-        }
-
         NotificationMode mode = prefs.getNotificationMode();
 
     	String tickerText;
@@ -122,20 +118,26 @@ public class IrcNotificationManager {
         Intent toLaunch = new Intent(context, IrssiNotifierActivity.class);
         toLaunch.putExtra("Channel", msg.getLogicalChannel());
     	
+        /*
+        // Stupid piece of shit always returns true
 		boolean foreground = false;
     	try {
-			foreground = new ForegroundCheckTask().execute(context).get();
+			// foreground = new ForegroundCheckTask().execute(context).get(); 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		*/
+        
+        IrssiNotifierActivity foregroundInstance = IrssiNotifierActivity.getForegroundInstance();
+		if (foregroundInstance != null) {
+			foregroundInstance.newMessage(msg);
+			return;
+		}
 
-    	if (foreground) {
-    		if (IrssiNotifierActivity.getInstance() != null) {
-    			IrssiNotifierActivity.getInstance().newMessage(msg);
-    			//return; hax
-    		}
-    	}
-    	
+        if (!prefs.isNotificationsEnabled()) {
+        	return;
+        }
+
         NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         Notification notification = new Notification(R.drawable.icon, tickerText, when);
