@@ -79,6 +79,8 @@ public class IrssiNotifierActivity extends SherlockActivity {
         boolean b = false;
         if (savedInstanceState != null)
         	b = savedInstanceState.getBoolean("foo", false);
+        
+        IrcNotificationManager.getInstance().mainActivityOpened(this);
         startMainApp(b);
     }
 	

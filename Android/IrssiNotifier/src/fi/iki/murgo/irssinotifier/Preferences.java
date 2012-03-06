@@ -12,6 +12,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+/**
+ * Default settings are actually stored in preference_screen.xml :(
+ */
 public class Preferences {
 	public static final String PREFERENCES_NAME = "IrssiNotifierPreferences";
 	public static final int PREFERENCES_MODE = Context.MODE_PRIVATE;
@@ -95,7 +98,7 @@ public class Preferences {
 	}
 
 	public NotificationMode getNotificationMode() {
-		return NotificationMode.values()[sharedPreferences.getInt(NOTIFICATION_MODE, NotificationMode.PerChannel.ordinal())];
+		return NotificationMode.values()[sharedPreferences.getInt(NOTIFICATION_MODE, NotificationMode.Single.ordinal())];
 	}
 	
 	public boolean setNotificationMode(NotificationMode notificationMode) {
