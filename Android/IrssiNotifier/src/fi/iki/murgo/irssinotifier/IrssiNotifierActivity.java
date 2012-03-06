@@ -1,9 +1,7 @@
 package fi.iki.murgo.irssinotifier;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.http.auth.AuthenticationException;
 
@@ -33,9 +31,8 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	private MessagePagerAdapter adapter; 
     private ViewPager pager;
 	private boolean progressBarVisibility;
-	private String initialChannel;
 	private static IrssiNotifierActivity instance;
-	private int lastChannel;
+	private String channelToView;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,16 +64,18 @@ public class IrssiNotifierActivity extends SherlockActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setIndeterminateProgressBarVisibility(false);
         
-        if (initialChannel == null) {
-        	Intent i = getIntent();
-        	if (i != null) {
-            	initialChannel = i.getStringExtra("Channel");
-        	}
-        }
+    	Intent i = getIntent();
+    	if (i != null) {
+    		String intentChannelToView = i.getStringExtra("Channel");
+    		if (intentChannelToView != null)
+    			channelToView = intentChannelToView;
+    	}
         
         boolean b = false;
-        if (savedInstanceState != null)
-        	b = savedInstanceState.getBoolean("foo", false);
+        if (savedInstanceState != null) {
+        	b = savedInstanceState.getBoolean("rotated", false);
+        	channelToView = savedInstanceState.getString("channelToView");
+        }
         
         IrcNotificationManager.getInstance().mainActivityOpened(this);
         startMainApp(b);
@@ -84,7 +83,9 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		outState.putBoolean("foo", true);
+		super.onSaveInstanceState(outState);
+		outState.putBoolean("rotated", true);
+		outState.putString("channelToView", channelToView);
 	}
 	
 	@Override
@@ -93,7 +94,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 		tracker.stopSession();
 		
 		DataAccess da = new DataAccess(this);
-		da.setAllMessagesAsShown();
+		da.setAllMessagesAsShown(); // TODO not on rotate!
 	}
 	
 	@Override
@@ -114,7 +115,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	
 	private void startMainApp(boolean orientationChanged) {
     	Log.d(TAG, "Main startup");
-        createUi(new HashMap<Channel, List<IrcMessage>>());
+        createUi(null);
         
         if (preferences.settingsNeedSending()) {
         	Log.d(TAG, "Settings are not saved, odd");
@@ -123,8 +124,8 @@ public class IrssiNotifierActivity extends SherlockActivity {
         
         final Activity ctx = this;
         
-        final Callback<Map<Channel, List<IrcMessage>>> dataAccessCallback = new Callback<Map<Channel,List<IrcMessage>>>() {
-			public void doStuff(Map<Channel, List<IrcMessage>> param) {
+        final Callback<List<Channel>> dataAccessCallback = new Callback<List<Channel>>() {
+			public void doStuff(List<Channel> param) {
 				createUi(param);
 			}
 		};
@@ -173,7 +174,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 		datask.execute();
 	}
     
-	private void createUi(Map<Channel, List<IrcMessage>> param) {
+	private void createUi(final List<Channel> channels) {
         setContentView(R.layout.main);
         setIndeterminateProgressBarVisibility(!progressBarVisibility); // häx häx
         setIndeterminateProgressBarVisibility(!progressBarVisibility);
@@ -183,36 +184,30 @@ public class IrssiNotifierActivity extends SherlockActivity {
 		if (adapter == null) {
         	adapter = new MessagePagerAdapter(this, getLayoutInflater());
         }
-    	adapter.setIrcMessages(param);
+		if (channels != null) {
+			adapter.setChannels(channels);
+		}
         pager.setAdapter(adapter);
         
         TitlePageIndicator titleIndicator = (TitlePageIndicator)findViewById(R.id.titles);
         titleIndicator.setViewPager(pager);
         titleIndicator.setOnPageChangeListener(new OnPageChangeListener() {
 			public void onPageSelected(int arg0) {
-				lastChannel = arg0;
+				channelToView = channels.get(arg0).getName();
 			}
 			
 			public void onPageScrolled(int arg0, float arg1, int arg2) { }
 			public void onPageScrollStateChanged(int arg0) { }
 		});
-       
-        boolean found = false;
-        if (initialChannel != null && param.size() > 1) {
-    		for (Channel c : param.keySet()) {
-    			if (c.getName().equals(initialChannel)) {
-    	    		pager.setCurrentItem(c.getOrder());
-    	    		found = true;
+
+        if (channelToView != null && channels != null && channels.size() > 1) {
+        	for (int i = 0; i < channels.size(); i++) {
+    			if (channels.get(i).getName().equals(channelToView)) {
+    	    		pager.setCurrentItem(i);
     	    		break;
     			}
-    		}
-    		
-    		initialChannel = null;
+        	}
     	}
-        
-        if (!found) {
-            pager.setCurrentItem(lastChannel);
-        }
 	}
 	
 	private void setIndeterminateProgressBarVisibility(boolean state) {
@@ -253,7 +248,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	}
 
 	public void newMessage(IrcMessage msg) {
-		initialChannel = msg.getLogicalChannel();
+		channelToView = msg.getLogicalChannel();
         startMainApp(false);
 	}
 	

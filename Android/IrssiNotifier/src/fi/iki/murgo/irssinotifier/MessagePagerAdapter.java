@@ -1,12 +1,8 @@
 package fi.iki.murgo.irssinotifier;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import com.viewpagerindicator.TitleProvider;
 
@@ -26,7 +22,7 @@ import android.widget.TextView;
 
 public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
 	private Context ctx;
-	private List<Entry<Channel, List<IrcMessage>>> ircMessages;
+	private List<Channel> channels;
 	private final LayoutInflater layoutInflater;
     
 	public MessagePagerAdapter(Context ctx, LayoutInflater layoutInflater) {
@@ -37,9 +33,9 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
 
 	@Override
     public int getCount() {
-		if (ircMessages == null)
+		if (channels == null)
 			return 0;
-		return ircMessages.size();
+		return channels.size();
     }
 
 /**
@@ -55,13 +51,11 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
  */
     @Override
     public Object instantiateItem(View collection, int position) {
-    	Channel channel = ircMessages.get(position).getKey();
-    	List<IrcMessage> messages = ircMessages.get(position).getValue();
+    	Channel channel = channels.get(position);
+    	List<IrcMessage> messages = channel.getMessages();
 
     	View channelView = layoutInflater.inflate(R.layout.channel, null);
-    	// Stupid inflater is broken, gotta do this by hand
-//    	LinearLayout outer = new LinearLayout(ctx);
-
+    	
     	TextView name = (TextView) channelView.findViewById(R.id.channel_name);
     	name.setText(channel.getName());
 
@@ -146,15 +140,12 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
             return null;
     }
 
-	public void setIrcMessages(Map<Channel, List<IrcMessage>> ircMessages) {
-		ArrayList<Map.Entry<Channel,List<IrcMessage>>> list = new ArrayList<Map.Entry<Channel,List<IrcMessage>>>();
-
-		for (Entry<Channel, List<IrcMessage>> entry : ircMessages.entrySet()) {
-			list.add(entry);
-		}
-		
+	public void setChannels(List<Channel> ircMessages) {
 		if (ircMessages.size() == 0) {
+			List<Channel> channelList = new ArrayList<Channel>();
 			Channel ch = new Channel();
+			channelList.add(ch);
+			
 			ch.setName(":(");
 			ch.setOrder(0);
 			
@@ -163,24 +154,19 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
 			msg.setNick("nobody");
 			msg.setServerTimestamp(new Date().getTime());
 			
-			List<IrcMessage> l = new ArrayList<IrcMessage>();
-			l.add(msg);
+			List<IrcMessage> messageList = new ArrayList<IrcMessage>();
+			messageList.add(msg);
+			ch.setMessages(messageList);
 			
-			Entry<Channel, List<IrcMessage>> entry = new SimpleEntry<Channel, List<IrcMessage>>(ch, l);
-			list.add(entry);
+			this.channels = channelList;
+			return;
 		}
 		
-		Collections.sort(list, new Comparator<Map.Entry<Channel,List<IrcMessage>>>() {
-			public int compare(Entry<Channel, List<IrcMessage>> lhs, Entry<Channel, List<IrcMessage>> rhs) {
-				return ((Integer)lhs.getKey().getOrder()).compareTo(rhs.getKey().getOrder());
-			}
-		});
-		
-		this.ircMessages = list;
+		this.channels = ircMessages;
 	}
 
 	public String getTitle(int position) {
-		return this.ircMessages.get(position).getKey().getName();
+		return this.channels.get(position).getName();
 	}
 
 }

@@ -1,9 +1,12 @@
 package fi.iki.murgo.irssinotifier;
 
+import java.util.List;
+
 public class Channel {
 	private long id;
 	private String name;
 	private int order;
+	private List<IrcMessage> messages;
 	
 	public long getId() {
 		return id;
@@ -22,5 +25,11 @@ public class Channel {
 	}
 	public int getOrder() {
 		return this.order;
+	}
+	public List<IrcMessage> getMessages() {
+		return messages;
+	}
+	public void setMessages(List<IrcMessage> messages) {
+		this.messages = messages;
 	}
 }

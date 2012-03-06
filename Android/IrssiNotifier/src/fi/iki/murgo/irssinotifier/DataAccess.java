@@ -120,6 +120,9 @@ public class DataAccess extends SQLiteOpenHelper {
 	public List<Channel> getChannels() {
 		SQLiteDatabase database = getReadableDatabase();
 		List<Channel> channels = getChannels(database);
+		for (Channel channel : channels) {
+			channel.setMessages(getMessagesForChannel(database, channel));
+		}
 		database.close();
 		
 		return channels;
@@ -133,9 +136,7 @@ public class DataAccess extends SQLiteOpenHelper {
 		database.close();
 	}
 
-	public List<IrcMessage> getMessagesForChannel(Channel channel) {
-		SQLiteDatabase database = getReadableDatabase();
-
+	private List<IrcMessage> getMessagesForChannel(SQLiteDatabase database, Channel channel) {
 		Cursor cursor = database.query("IrcMessage", new String[] {"message", "nick", "serverTimestamp", "shown", "externalId" }, "channelId = ?", new String[] { Long.toString(channel.getId()) }, null, null, "serverTimestamp DESC", "100");
 		cursor.moveToFirst();
 		List<IrcMessage> list = new ArrayList<IrcMessage>();
@@ -160,7 +161,6 @@ public class DataAccess extends SQLiteOpenHelper {
 		}
 
 		cursor.close();
-		database.close();
 		Collections.reverse(list);
 		return list;
 	}

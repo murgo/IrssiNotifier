@@ -1,24 +1,21 @@
 package fi.iki.murgo.irssinotifier;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import android.content.Context;
 import android.os.AsyncTask;
 
-public class DataAccessTask extends AsyncTask<IrcMessage, Void, Map<Channel, List<IrcMessage>>> {
+public class DataAccessTask extends AsyncTask<IrcMessage, Void, List<Channel>> {
 
 	private final Context context;
-	private Callback<Map<Channel, List<IrcMessage>>> callback;
+	private Callback<List<Channel>> callback;
 
-	public DataAccessTask(Context context, Callback<Map<Channel, List<IrcMessage>>> callback) {
+	public DataAccessTask(Context context, Callback<List<Channel>> callback) {
 		this.context = context;
 		this.callback = callback;
 	}
 	
 	@Override
-	protected Map<Channel, List<IrcMessage>> doInBackground(IrcMessage... params) {
+	protected List<Channel> doInBackground(IrcMessage... params) {
 		DataAccess da = new DataAccess(context);
 		if (params != null) {
 			for (IrcMessage im : params) {
@@ -27,16 +24,11 @@ public class DataAccessTask extends AsyncTask<IrcMessage, Void, Map<Channel, Lis
 		}
 		
 		List<Channel> channels = da.getChannels();
-		Map<Channel, List<IrcMessage>> data = new HashMap<Channel, List<IrcMessage>>();
-		for (Channel channel : channels) {
-			data.put(channel, da.getMessagesForChannel(channel));
-		}
-		
-		return data;
+		return channels;
 	}
 	
 	@Override
-	protected void onPostExecute(Map<Channel, List<IrcMessage>> result) {
+	protected void onPostExecute(List<Channel> result) {
 		if (callback != null)
 			callback.doStuff(result);
 	}
