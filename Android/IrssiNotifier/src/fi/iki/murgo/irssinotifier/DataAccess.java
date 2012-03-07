@@ -164,4 +164,12 @@ public class DataAccess extends SQLiteOpenHelper {
 		Collections.reverse(list);
 		return list;
 	}
+
+	public void setChannelAsShown(Channel channel) {
+		SQLiteDatabase database = getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put("shown", true);
+		database.update("IrcMessage", values, "shown = ? AND channelId = ?", new String[] {"0", "" + channel.getId()});
+		database.close();
+	}
 }

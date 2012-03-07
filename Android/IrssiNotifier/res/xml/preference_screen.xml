@@ -5,7 +5,7 @@
                 <CheckBoxPreference android:title="Enable sound" android:key="SoundEnabled" android:defaultValue="true" />
                 <CheckBoxPreference android:title="Enable spam filtering" android:summary="Only plays one notification sound per minute" android:key="SpamFilterEnabled" android:defaultValue="true" />
                 
-                <ListPreference android:title="Notification mode" android:summary="How many notifications you want" android:key="notificationModeString" android:defaultValue="PerChannel" android:entryValues="@array/notification_modes" android:entries="@array/notification_modes" />
+                <ListPreference android:title="Notification mode" android:summary="How many notifications you want" android:key="notificationModeString" android:defaultValue="Single" android:entryValues="@array/notification_modes" android:entries="@array/notification_modes" />
                 
                 <!-- 
                 <RingtonePreference android:name="Ringtone Preference" android:summary="Select a ringtone" android:title="Ringtones" android:key="ringtonePref" />

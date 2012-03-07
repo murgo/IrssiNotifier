@@ -32,4 +32,28 @@ public class Channel {
 	public void setMessages(List<IrcMessage> messages) {
 		this.messages = messages;
 	}
+	
+	public int getUnreadCount() {
+		int size = messages.size();
+		int lastShown = size;
+		for (int i = 0; i < size; i++) {
+			if (!messages.get(i).isShown()) {
+				lastShown = i;
+				break;
+			}
+		}
+		
+		return size - lastShown;
+	}
+	
+	public boolean markAllAsRead() {
+		boolean change = false;
+		for (IrcMessage m : messages) {
+			if (!m.isShown()) {
+				change = true;
+				m.setShown(true);
+			}
+		}
+		return change;
+	}
 }

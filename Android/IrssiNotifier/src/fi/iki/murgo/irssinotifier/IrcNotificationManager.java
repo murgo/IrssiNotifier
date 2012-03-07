@@ -96,11 +96,14 @@ public class IrcNotificationManager {
 			notificationId = (Integer) values[2];
             when = msg.getServerTimestamp().getTime();
             
-        	if (getUnreadCount() == 0) {
+            /*
+        	if (getUnreadCount() <= 1) {
         		tickerText = "New IRC message";
         	} else {
         		tickerText = "" + getUnreadCount() + " new IRC messages";
         	}
+        	*/
+            tickerText = titleText;
         	
             addUnread(msg);
         } catch (CryptoException e) {
@@ -155,6 +158,7 @@ public class IrcNotificationManager {
 	}
 	
 	public void mainActivityOpened(Context context) {
+		unreadCounts = new HashMap<String, Integer>();
         NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 		notificationManager.cancelAll();
 	}
@@ -164,14 +168,13 @@ public class IrcNotificationManager {
 		String title = null;
 		int id = 0;
 
-        int unreadCount = getUnreadCount() + 1;
-        int channelUnreadCount = msg.isPrivate() ? getUnreadCountForChannel(msg.getNick()) : getUnreadCountForChannel(msg.getChannel()) + 1;
-
+        int unreadCount = getUnreadCount() + 1; // this is called before adding latest
+        
 		switch (mode) {
 		case Single:
 			id = 1;
 			if (msg.isPrivate()) {
-				if (unreadCount == 0) {
+				if (unreadCount <= 1) {
 					title = "Private message from " + msg.getNick();
 					text = msg.getMessage();
 				} else {
@@ -179,7 +182,7 @@ public class IrcNotificationManager {
 					text = "Last: " + msg.getLogicalChannel() + " (" + msg.getNick() + ") " + msg.getMessage();
 				}
 			} else {
-				if (unreadCount == 0) {
+				if (unreadCount <= 1) {
 					title = "Hilight at " + msg.getChannel();
 					text = "(" + msg.getNick() + ") " + msg.getMessage();
 				} else {
@@ -201,9 +204,10 @@ public class IrcNotificationManager {
 			break;
 			
 		case PerChannel:
-			id = msg.getNick().hashCode();
+	        int channelUnreadCount = getUnreadCountForChannel(msg.getLogicalChannel()) + 1;
+			id = msg.getLogicalChannel().hashCode();
 			if (msg.isPrivate()) {
-				if (channelUnreadCount == 0) {
+				if (channelUnreadCount <= 1) {
 					title = "Private message from " + msg.getNick();
 					text = msg.getMessage();
 				} else {
@@ -211,7 +215,7 @@ public class IrcNotificationManager {
 					text = "Last: " + msg.getMessage();
 				}
 			} else {
-				if (channelUnreadCount == 0) {
+				if (channelUnreadCount <= 1) {
 					title = "Hilight at " + msg.getChannel();
 					text = "(" + msg.getNick() + ") " + msg.getMessage();
 				} else {
