@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.widget.LinearLayout;
 
 public class AboutActivity extends Activity {
@@ -29,6 +30,8 @@ public class AboutActivity extends Activity {
 		}
 
 		ftvs.add(new FancyTextView("About IrssiNotifier, version " + pi.versionName + " (" + pi.versionCode + ")" , this));
+		ftvs.get(0).setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+		
 		ftvs.add(new FancyTextView("Made by Lauri Härsilä, murgo@iki.fi." , this));
 		ftvs.add(new FancyTextView("For instructions and help, please visit http://irssinotifier.appspot.com or join #IrssiNotifier @ IRCnet." , this));
 		ftvs.add(new FancyTextView("IrssiNotifier was created entirely on my free time. If you have found IrssiNotifier useful, please consider donating TODO donatelink to help keep project alive." , this));

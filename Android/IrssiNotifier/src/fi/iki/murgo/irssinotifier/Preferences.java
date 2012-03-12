@@ -10,7 +10,9 @@ import fi.iki.murgo.irssinotifier.Server.ServerTarget;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 
 /**
  * Default settings are actually stored in preference_screen.xml :(
@@ -31,6 +33,9 @@ public class Preferences {
 	private static final String SOUND_ENABLED = "SoundEnabled";
 	private static final String SPAM_FILTER_ENABLED = "SpamFilterEnabled";
 	private static final String NOTIFICATIONS_ENABLED = "NotificationsEnabled";
+	private static final String NOTIFICATION_SOUND = "NotificationSound";
+	private static final String LIGHTS_ENABLED = "LightsEnabled";
+	private static final String VIBRATION_ENABLED = "VibrationEnabled";
 
 	private SharedPreferences sharedPreferences;
 	
@@ -125,5 +130,17 @@ public class Preferences {
 	
 	public boolean isNotificationsEnabled() {
 		return sharedPreferences.getBoolean(NOTIFICATIONS_ENABLED, true);
+	}
+
+	public Uri getNotificationSound() {
+		return Uri.parse(sharedPreferences.getString(NOTIFICATION_SOUND, Settings.System.DEFAULT_NOTIFICATION_URI.toString()));
+	}
+
+	public boolean isVibrationEnabled() {
+		return sharedPreferences.getBoolean(VIBRATION_ENABLED, true);
+	}
+
+	public boolean isLightsEnabled() {
+		return sharedPreferences.getBoolean(LIGHTS_ENABLED, true);
 	}
 }

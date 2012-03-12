@@ -5,6 +5,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
+import android.graphics.Typeface;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.widget.TextView;
@@ -32,6 +33,7 @@ public class FancyTextView extends TextView {
 		setLinksClickable(true);
 		setMovementMethod(LinkMovementMethod.getInstance());
 		setPadding(0, 10, 0, 0);
+		setTypeface(Typeface.MONOSPACE);
 	}
 	
 	private char getRandomChar() {

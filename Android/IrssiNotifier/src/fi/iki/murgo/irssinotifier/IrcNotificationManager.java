@@ -146,8 +146,19 @@ public class IrcNotificationManager {
         Notification notification = new Notification(R.drawable.icon, tickerText, when);
 		notification.flags |= Notification.FLAG_AUTO_CANCEL;
 		
-		if (prefs.isSoundEnabled() && (!prefs.isSpamFilterEnabled() || new Date().getTime() > lastSoundDate + 60000L)) {
-			notification.defaults |= Notification.DEFAULT_SOUND;
+		if ((!prefs.isSpamFilterEnabled() || new Date().getTime() > lastSoundDate + 60000L)) {
+			if (prefs.isSoundEnabled()) {
+				notification.sound = prefs.getNotificationSound();
+			}
+			
+			if (prefs.isVibrationEnabled()) {
+				notification.defaults |= Notification.DEFAULT_VIBRATE;
+			}
+			
+			if (prefs.isLightsEnabled()) {
+				notification.defaults |= Notification.DEFAULT_LIGHTS;
+			}
+
 			lastSoundDate = new Date().getTime();
 		}
 		
