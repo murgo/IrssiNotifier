@@ -4,7 +4,6 @@
 use Irssi;
 use POSIX;
 use vars qw($VERSION %IRSSI);
-use File::Path qw(make_path);
 
 $VERSION = "1";
 %IRSSI = (
