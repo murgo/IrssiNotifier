@@ -13,6 +13,8 @@
         </PreferenceCategory>
 	    <PreferenceCategory android:title="Encryption settings">
 	        <EditTextPreference android:name="Encryption password" android:summary="This must be the same as the one in the Irssi script" android:defaultValue="password" android:title="Encryption password" android:key="EncryptionPassword" />
-	        <Preference android:title="Clear data" android:summary="This clears all data from the device" android:key="clear" />
+        </PreferenceCategory>
+        <PreferenceCategory android:title="Misc">
+            <Preference android:title="About IrssiNotifier" android:key="about" />
         </PreferenceCategory>
 </PreferenceScreen>

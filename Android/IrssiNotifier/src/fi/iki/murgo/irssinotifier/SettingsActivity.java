@@ -1,6 +1,7 @@
 package fi.iki.murgo.irssinotifier;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -20,15 +21,12 @@ public class SettingsActivity extends PreferenceActivity {
 		addPreferencesFromResource(R.xml.preference_screen);
 		
 		final Context ctx = this;
-		Preference clearPref = (Preference)findPreference("clear");
-		clearPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+		Preference aboutPref = (Preference)findPreference("about");
+		aboutPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 			public boolean onPreferenceClick(Preference preference) {
-				Preferences p = new Preferences(ctx);
-				p.clear();
+				Intent i = new Intent(ctx, AboutActivity.class);
+				startActivity(i);
 				
-				DataAccess da = new DataAccess(ctx);
-				da.clearAll();
-
 				finish();
 				return true;
 			}
