@@ -6,7 +6,7 @@ use POSIX;
 use vars qw($VERSION %IRSSI);
 use File::Path qw(make_path);
 
-$VERSION = "1.0";
+$VERSION = "1";
 %IRSSI = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -14,7 +14,7 @@ $VERSION = "1.0";
     description => "Send notifications about irssi highlights to server",
     license     => "Public Domain",
     url         => "http://github.com/murgo/irssinotifier",
-    changed     => "2012-02-18"
+    changed     => "2012-03-05"
 );
 
 my $lastMsg;
@@ -70,21 +70,19 @@ sub hilite {
     my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
     if ($encryption_password) {
         $lastMsg = encrypt($lastMsg);
-        #$lastServer = encrypt($lastServer);
         $lastNick = encrypt($lastNick);
-        #$lastAddress = encrypt($lastAddress);
         $lastTarget = encrypt($lastTarget);
     } else {
         Irssi::print("Set encryption password to send Android notifications: /set irssinotifier_encryption_password [password");
     }
 
-#    my $time = strftime(Irssi::settings_get_str('timestamp_format')." ", localtime);
     my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
-    my $time = localtime;
-    my $data = "--post-data=apiToken=$api_token&message=$lastMsg&channel=$lastTarget&nick=$lastNick&timestamp=$time";
-
-    @args = ("wget", "--no-check-certificate", "-q", "-O", "/dev/null", $data, "https://irssinotifier.appspot.com/API/Message");
-    system (@args);
+    my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
+    my $result = `wget --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
+    
+    if (length($result) > 0) {
+        Irssi::print($result);
+    }
 }
 
 sub sanitize {

@@ -223,4 +223,4 @@ app = webapp2.WSGIApplication([('/', WebController), ('/API/Settings', SettingsC
 app.error_handlers[404] = handle_404
 
 logging.debug("loaded main")
-emaillogginghandler.register_logger(["irssinotifier@gmail.com"])
+#emaillogginghandler.register_logger(["irssinotifier@gmail.com"])
