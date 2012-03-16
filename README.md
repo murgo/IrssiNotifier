@@ -12,7 +12,10 @@ Web page: https://irssinotifier.appspot.com/
 
 ##Dependencies
 
-IrssiNotifier depends on [ActionBarSherlock](https://github.com/JakeWharton/ActionBarSherlock) and [ViewPagerIndicator](https://github.com/JakeWharton/Android-ViewPagerIndicator/). Thanks, [Jake Wharton](https://github.com/JakeWharton)!
+IrssiNotifier depends on
+- [ActionBarSherlock](https://github.com/JakeWharton/ActionBarSherlock). Thanks, [Jake Wharton](https://github.com/JakeWharton).
+- [ViewPagerIndicator](https://github.com/JakeWharton/Android-ViewPagerIndicator/). Thanks, [Jake Wharton](https://github.com/JakeWharton).
+- [cwac-touchlist](https://github.com/commonsguy/cwac-touchlist). Thanks, commonsguy.
 
 ##License
 
