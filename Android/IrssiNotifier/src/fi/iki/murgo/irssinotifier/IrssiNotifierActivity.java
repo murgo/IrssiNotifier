@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.http.auth.AuthenticationException;
 
 import com.actionbarsherlock.app.SherlockActivity;
-import com.google.android.apps.analytics.GoogleAnalyticsTracker;
 import com.viewpagerindicator.TitlePageIndicator;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
@@ -21,13 +20,10 @@ import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
 
-// TODO: ACRA! http://code.google.com/p/acra/
-
 public class IrssiNotifierActivity extends SherlockActivity {
 	private static final String TAG = IrssiNotifierActivity.class.getSimpleName();
 	private Preferences preferences;
-	private GoogleAnalyticsTracker tracker;
-	private final String googleAnalyticsCode = "UA-29385499-1";
+	//private final String googleAnalyticsCode = "UA-29385499-1";
 	private MessagePagerAdapter adapter; 
     private ViewPager pager;
 	private boolean progressBarVisibility;
@@ -39,9 +35,6 @@ public class IrssiNotifierActivity extends SherlockActivity {
     public void onCreate(Bundle savedInstanceState) {
     	Log.i(TAG, "Startup");
         super.onCreate(savedInstanceState);
-        
-        tracker = GoogleAnalyticsTracker.getInstance();
-        tracker.startNewSession(googleAnalyticsCode, this);
         
         try {
         	MessageToServer.setVersion(getPackageManager().getPackageInfo(getPackageName(), 0).versionCode);
@@ -57,7 +50,6 @@ public class IrssiNotifierActivity extends SherlockActivity {
 			preferences.clear();
 			Intent i = new Intent(this, InitialSettingsActivity.class);
 			startActivity(i);
-			tracker.dispatch();
 			finish();
 			return;
 		}
@@ -92,7 +84,6 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		tracker.stopSession();
 	}
 	
 	@Override
@@ -188,7 +179,6 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	        setIndeterminateProgressBarVisibility(true);
 	
 	        task.execute();
-	        tracker.dispatch();
 		}
         
 		DataAccessTask datask = new DataAccessTask(ctx, dataAccessCallback);

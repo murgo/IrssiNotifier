@@ -20,9 +20,6 @@
    <!-- Send the registration id to the server -->
    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
    
-   <!-- Analytics requires this -->
-   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-   
    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="15"/>
 
     <application
