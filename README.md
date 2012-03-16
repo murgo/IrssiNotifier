@@ -4,7 +4,7 @@ IRC notifications for Android (and possibly other devices).
 
 Web page: https://irssinotifier.appspot.com/
 
-###Goals:
+##Goals:
 
 - Low battery usage (users C2dm)
 - Easy to set up (hosted server)
@@ -12,7 +12,6 @@ Web page: https://irssinotifier.appspot.com/
 
 ##Dependencies
 
-IrssiNotifier depends on
 - [ActionBarSherlock](https://github.com/JakeWharton/ActionBarSherlock). Thanks, [Jake Wharton](https://github.com/JakeWharton).
 - [ViewPagerIndicator](https://github.com/JakeWharton/Android-ViewPagerIndicator/). Thanks, [Jake Wharton](https://github.com/JakeWharton).
 - [cwac-touchlist](https://github.com/commonsguy/cwac-touchlist). Thanks, commonsguy.
