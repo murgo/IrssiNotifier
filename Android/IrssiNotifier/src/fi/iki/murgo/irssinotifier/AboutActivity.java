@@ -42,5 +42,7 @@ public class AboutActivity extends Activity {
 			base.addView(ftv);
 			ftv.start();
 		}
+		
+		throw new RuntimeException("asdf");
 	}
 }
