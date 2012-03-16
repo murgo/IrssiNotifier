@@ -32,6 +32,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
     private ViewPager pager;
 	private boolean progressBarVisibility;
 	private static IrssiNotifierActivity instance;
+	private static boolean needsRefresh;
 	private String channelToView;
 	
 	@Override
@@ -104,6 +105,21 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	protected void onResume() {
 		super.onResume();
 		instance = this;
+		
+		if (needsRefresh) {
+			needsRefresh = false;
+			restart();
+		}
+	}
+	
+    public void restart() {
+	    Intent intent = getIntent();
+	    overridePendingTransition(0, 0);
+	    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+	    finish();
+	
+	    overridePendingTransition(0, 0);
+	    startActivity(intent);
 	}
 	
 	@Override
@@ -255,6 +271,10 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	public void newMessage(IrcMessage msg) {
 		channelToView = msg.getLogicalChannel();
         startMainApp(false);
+	}
+
+	public static void needsRefresh() {
+		needsRefresh = true;
 	}
 	
 	/*

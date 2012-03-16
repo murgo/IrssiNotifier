@@ -26,8 +26,17 @@ public class SettingsActivity extends PreferenceActivity {
 			public boolean onPreferenceClick(Preference preference) {
 				Intent i = new Intent(ctx, AboutActivity.class);
 				startActivity(i);
-				
+
 				finish();
+				return true;
+			}
+		});
+
+		Preference channelsPref = (Preference)findPreference("channels");
+		channelsPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+			public boolean onPreferenceClick(Preference preference) {
+				Intent i = new Intent(ctx, ChannelSettingsActivity.class);
+				startActivity(i);
 				return true;
 			}
 		});

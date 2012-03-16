@@ -15,6 +15,7 @@
         </PreferenceCategory>
         
         <PreferenceCategory android:title="Misc">
+            <Preference android:title="Channel settings" android:summary="Reorder and remove channels" android:key="channels" />
             <Preference android:title="About IrssiNotifier" android:key="about" />
         </PreferenceCategory>
 </PreferenceScreen>

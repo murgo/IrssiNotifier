@@ -19,7 +19,7 @@ public class DataAccessTask extends AsyncTask<IrcMessage, Void, List<Channel>> {
 		DataAccess da = new DataAccess(context);
 		if (params != null) {
 			for (IrcMessage im : params) {
-				da.HandleMessage(im);
+				da.handleMessage(im);
 			}
 		}
 		

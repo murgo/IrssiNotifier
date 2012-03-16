@@ -38,7 +38,7 @@ public class DataAccess extends SQLiteOpenHelper {
 		}
 	}
 	
-	public void HandleMessage(IrcMessage message) {
+	public void handleMessage(IrcMessage message) {
 		try {
 			SQLiteDatabase database = getWritableDatabase();
 			
@@ -87,9 +87,13 @@ public class DataAccess extends SQLiteOpenHelper {
 		}
 	}
 	
+	public void clearChannel(Channel channel, SQLiteDatabase database) {
+		database.delete("IrcMessage", "channelId = ?", new String[] { Long.toString(channel.getId()) });
+	}
+	
 	public void clearChannel(Channel channel) {
 		SQLiteDatabase database = getWritableDatabase();
-		database.delete("IrcMessage", "channelId = ?", new String[] { Long.toString(channel.getId()) });
+		clearChannel(channel, database);
 		database.close();
 	}
 	
@@ -170,6 +174,29 @@ public class DataAccess extends SQLiteOpenHelper {
 		ContentValues values = new ContentValues();
 		values.put("shown", true);
 		database.update("IrcMessage", values, "shown = ? AND channelId = ?", new String[] {"0", "" + channel.getId()});
+		database.close();
+	}
+
+	public void handleChannelSettings(List<String> names) {
+	}
+
+	public void removeChannel(Channel channel) {
+		SQLiteDatabase database = getWritableDatabase();
+		
+		clearChannel(channel, database);
+		database.delete("Channel", "id = ?", new String[] { Long.toString(channel.getId()) });
+
+		database.close();
+	}
+
+	public void updateChannel(Channel channel) {
+		SQLiteDatabase database = getWritableDatabase();
+
+		ContentValues values = new ContentValues();
+		values.put("name", channel.getName());
+		values.put("orderIndex", channel.getOrder());
+		
+		database.update("Channel", values, "id = ?", new String[] { Long.toString(channel.getId()) });
 		database.close();
 	}
 }

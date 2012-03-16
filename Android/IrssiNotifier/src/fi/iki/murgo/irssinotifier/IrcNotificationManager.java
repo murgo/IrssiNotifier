@@ -88,7 +88,7 @@ public class IrcNotificationManager {
 
         	if (da == null)
         		da = new DataAccess(context);
-        	da.HandleMessage(msg);
+        	da.handleMessage(msg);
 
             Object[] values = getValues(msg, mode);
 			notificationMessage = (String) values[0];
