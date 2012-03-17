@@ -111,9 +111,6 @@ public class IrcNotificationManager {
         	notificationId = 1;
 		}
 
-        Intent toLaunch = new Intent(context, IrssiNotifierActivity.class);
-        toLaunch.putExtra("Channel", msg.getLogicalChannel());
-    	
         /*
         // Stupid piece of shit always returns true
 		boolean foreground = false;
@@ -127,6 +124,7 @@ public class IrcNotificationManager {
         IrssiNotifierActivity foregroundInstance = IrssiNotifierActivity.getForegroundInstance();
 		if (foregroundInstance != null) {
 			foregroundInstance.newMessage(msg);
+			unreadCounts = new HashMap<String, Integer>();
 			return;
 		}
 
@@ -155,10 +153,15 @@ public class IrcNotificationManager {
 			lastSoundDate = new Date().getTime();
 		}
 		
-        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, toLaunch, 0);
+        Intent toLaunch = new Intent(context, IrssiNotifierActivity.class);
+        toLaunch.putExtra("Channel", msg.getLogicalChannel());
+        toLaunch.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        toLaunch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent contentIntent = PendingIntent.getActivity(context, 0, toLaunch, PendingIntent.FLAG_UPDATE_CURRENT);
 
         notification.setLatestEventInfo(context, titleText, notificationMessage, contentIntent);
         notificationManager.notify(notificationId, notification);
+        System.out.println("LOGICALCHANNEL: " + msg.getLogicalChannel());
 	}
 	
 	public void mainActivityOpened(Context context) {

@@ -26,6 +26,7 @@
         android:icon="@drawable/icon"
         android:label="@string/app_name" android:name="IrssiNotifierApplication">
         <activity
+            android:launchMode="singleTop"
             android:name=".IrssiNotifierActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.Sherlock" >

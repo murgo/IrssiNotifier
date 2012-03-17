@@ -75,6 +75,16 @@ public class IrssiNotifierActivity extends SherlockActivity {
     }
 	
 	@Override
+	protected void onNewIntent(Intent intent) {
+		String intentChannelToView = intent.getStringExtra("Channel");
+		if (intentChannelToView != null)
+			channelToView = intentChannelToView;
+		
+        IrcNotificationManager.getInstance().mainActivityOpened(this);
+        startMainApp(false);
+    }
+	
+	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putBoolean("rotated", true);
@@ -125,7 +135,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 		return instance;
 	}
 	
-	private void startMainApp(boolean orientationChanged) {
+	private void startMainApp(boolean uptodate) {
     	Log.d(TAG, "Main startup");
         createUi(null);
         
@@ -153,7 +163,8 @@ public class IrssiNotifierActivity extends SherlockActivity {
 					} else if (param.getException() instanceof ServerException) {
 						MessageBox.Show(ctx, "Server error", "Mystical server error, check if updates are available", null);
 					} else if (param.getException() instanceof CryptoException) {
-							MessageBox.Show(ctx, "Decryption error", "Unable to decrypt message, is your decryption password correct?", null);
+						MessageBox.Show(ctx, "Decryption error", "Unable to decrypt message, is your decryption password correct?", null);
+						preferences.setLastFetchTime(now);
 					} else {
 						MessageBox.Show(ctx, "Error", "What happen", null);
 					}
@@ -175,7 +186,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 			}
 		});
 
-		if (!orientationChanged) {
+		if (!uptodate) {
 	        setIndeterminateProgressBarVisibility(true);
 	
 	        task.execute();
