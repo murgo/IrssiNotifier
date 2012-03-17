@@ -28,7 +28,7 @@ public class UserHelper {
 	}
 
 	private String buildToken(AccountManager manager, Account account, Activity activity) throws OperationCanceledException, AuthenticatorException, IOException {
-		AccountManagerFuture<Bundle> future = manager.getAuthToken(account, "ah", null, activity, null, null); // TODO
+		AccountManagerFuture<Bundle> future = manager.getAuthToken(account, "ah", null, activity, null, null); // ah is app engine
 		Bundle token = future.getResult();
 		return token.get(AccountManager.KEY_AUTHTOKEN).toString();
 	}

@@ -10,7 +10,6 @@ public class CryptoTests extends ActivityInstrumentationTestCase2 {
 	
 	public CryptoTests() {
 		super("fi.iki.murgo.irssinotifier", IrssiNotifierActivity.class);
-		// TODO Auto-generated constructor stub
 	}
 
 	public void testCrypto() {

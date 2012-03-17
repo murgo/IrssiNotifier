@@ -8,7 +8,8 @@ import org.json.JSONObject;
 
 public class IrcMessage {
 	
-	public static final String PRIVATE = "!PRIVATE";
+	private static final String PRIVATE = "!PRIVATE";
+	private static final String TOOLONG = "toolong";
 	private String message;
 	private String channel;
 	private String nick;
@@ -28,7 +29,6 @@ public class IrcMessage {
 			setServerTimestamp((long) (Double.parseDouble(obj.getString("server_timestamp")) * 1000));
 			setExternalId(obj.getString("id"));
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -72,7 +72,10 @@ public class IrcMessage {
 	}
 
 	public void Decrypt(String encryptionKey) throws CryptoException {
-		message = Crypto.decrypt(encryptionKey, message);
+		if (message.equals(TOOLONG))
+			message = "Message too long";
+		else
+			message = Crypto.decrypt(encryptionKey, message);
 		channel = Crypto.decrypt(encryptionKey, channel);
 		nick = Crypto.decrypt(encryptionKey, nick);
 		

@@ -37,10 +37,10 @@ public class DataFetcherTask extends AsyncTask<Void, Void, DataFetchResult> {
 			
 			HashMap<String, String> map = new HashMap<String, String>();
 			map.put("timestamp", Long.toString(lastFetchTime / 1000));
-			MessageServerResponse response = (MessageServerResponse) server.get(new MessageToServer(map), ServerTarget.Message); // TODO: try with empty server
+			MessageServerResponse response = (MessageServerResponse)server.get(new MessageToServer(map), ServerTarget.Message);
 			result.setResponse(response);
 			if (!response.wasSuccesful()) {
-				throw new ServerException(); 
+				throw new ServerException();
 			}
 
 			Log.d(TAG, response.getResponseString());

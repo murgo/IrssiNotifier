@@ -9,6 +9,7 @@
     style="?attr/actionButtonStyle">
     
         <ImageButton
+        android:contentDescription="Launch settings"
         android:id="@+id/button_settings"
         android:background="@drawable/ic_menu_preferences"
         android:layout_width="32dip"

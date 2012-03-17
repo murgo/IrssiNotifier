@@ -1,5 +1,7 @@
 package fi.iki.murgo.irssinotifier;
 
+import org.acra.ErrorReporter;
+
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -48,14 +50,15 @@ public class C2DMReceiver extends BroadcastReceiver {
     private void handleRegistration(Context context, Intent intent) {
         String registrationId = intent.getStringExtra("registration_id");
         String error = intent.getStringExtra("error");
-        String unregistered = intent.getStringExtra("unregistered"); // TODO
+        String unregistered = intent.getStringExtra("unregistered");
 
         Log.i(TAG, "RegistrationId: " + registrationId + " Error: " + error + " Unregistered: " + unregistered);
         
     	Preferences preferences = new Preferences(context);
-
+    	
         if (error != null || unregistered != null) {
         	preferences.setRegistrationId(null);
+        	ErrorReporter.getInstance().handleSilentException(new Exception("Error while registering to c2dm. Error: " + error + " Unregistered: " + unregistered));
         } else {
         	preferences.setRegistrationId(registrationId);
         }
@@ -65,8 +68,7 @@ public class C2DMReceiver extends BroadcastReceiver {
     	}
     }
 
-    private void handleMessage(Context context, Intent intent) { // TODO: thread safety
-    	// TODO: handle toolong
+    private void handleMessage(Context context, Intent intent) {
         Log.d(TAG, "Handling C2DM notification");
         String action = intent.getStringExtra(C2DM_DATA_ACTION);
         String message = intent.getStringExtra(C2DM_DATA_MESSAGE);

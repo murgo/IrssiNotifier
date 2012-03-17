@@ -67,10 +67,8 @@ public class Server {
                     return true;
 	        }
 	    } catch (ClientProtocolException e) {
-	        // TODO Auto-generated catch block
 	        e.printStackTrace();
     	} catch (IOException e) { 		
-	        // TODO Auto-generated catch block
 	        e.printStackTrace();
 		} finally {
 			if (http_client != null)
@@ -81,13 +79,6 @@ public class Server {
 	
 	public ServerResponse send(MessageToServer message, ServerTarget target) throws IOException {
 		HttpPost httpPost = new HttpPost(serverUrls.get(target));
-		
-		HttpParams params = new BasicHttpParams();
-		Map<String, String> map = message.getMap(); 
-		for (Map.Entry<String, String> entry : map.entrySet()) { // TODO: Headers vs Entity, remove whole HttpConnection
-			params.setParameter(entry.getKey(), entry.getValue());
-		}
-		httpPost.setParams(params);
 		httpPost.setEntity(new StringEntity(message.getHttpString()));
 		
 		HttpResponse response = http_client.execute(httpPost);

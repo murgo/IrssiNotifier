@@ -45,12 +45,6 @@ public class IrcNotificationManager {
 		return unreadCounts.get(channel);
 	}
 
-	/*
-	private void read() {
-		unreadCounts = new HashMap<String, Integer>();
-	}
-	*/
-
 	private void addUnread(IrcMessage msg) {
 		String key = msg.isPrivate() ? msg.getNick() : msg.getChannel();
 		
@@ -66,13 +60,12 @@ public class IrcNotificationManager {
         if (message.startsWith("read")) {
         	NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
         	notificationManager.cancelAll();
-        	// TODO figure out
         	ircMessages.read();
         	return;
         }
         */
         
-        Preferences prefs = new Preferences(context);
+		Preferences prefs = new Preferences(context);
         NotificationMode mode = prefs.getNotificationMode();
 
     	String tickerText;

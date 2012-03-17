@@ -9,6 +9,7 @@
     style="?attr/actionButtonStyle">
     
         <ImageButton
+        android:contentDescription="Launch Irssi ConnectBot"
         android:id="@+id/button_launch_irssi"
         android:background="@drawable/irssi_connectbot"
         android:layout_width="32dip"

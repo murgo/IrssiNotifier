@@ -18,7 +18,7 @@ public class AboutActivity extends Activity {
 		
 		setContentView(R.layout.about);
 		
-		LinearLayout base = (LinearLayout) findViewById(R.id.aboutBase);
+		LinearLayout base = (LinearLayout) findViewById(R.id.about_base);
 		
 		List<FancyTextView> ftvs = new ArrayList<FancyTextView>();
 
