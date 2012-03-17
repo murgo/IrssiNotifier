@@ -73,7 +73,7 @@ class BaseController(webapp2.RequestHandler):
     def validate_params(self, data, params):
         for i in params:
             if i not in data:
-                logging.error("data error: %s not in %s" % (i, [x for x in data]))
+                logging.warn("data error: %s not in %s" % (i, [x for x in data]))
                 return False
         return True
     
@@ -214,7 +214,6 @@ class AnalyticsController(BaseController):
 
 def handle_404(request, response, exception):
     logging.debug("404'd")
-    logging.exception(exception)
     response.write("lol 404'd")
     response.set_status(404)
 
@@ -223,4 +222,4 @@ app = webapp2.WSGIApplication([('/', WebController), ('/API/Settings', SettingsC
 app.error_handlers[404] = handle_404
 
 logging.debug("loaded main")
-#emaillogginghandler.register_logger(["irssinotifier@gmail.com"])
+emaillogginghandler.register_logger(["irssinotifier@gmail.com"])

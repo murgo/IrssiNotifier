@@ -62,7 +62,19 @@ sub activity_allows_hilight {
 
 sub hilite {
     if (!Irssi::settings_get_str('irssinotifier_api_token')) {
-        Irssi::print("Set API token to send Android notifications: /set irssinotifier_api_token [token]");
+        Irssi::print("IrssiNotifier: Set API token to send notifications: /set irssinotifier_api_token [token]");
+        return;
+    }
+
+    `/usr/bin/openssl version`;
+    if ($? != 0) {
+        Irssi::print("IrssiNotifier: You'll need to install OpenSSL to use IrssiNotifier");
+        return;
+    }
+
+    `/usr/bin/wget --version`;
+    if ($? != 0) {
+        Irssi::print("IrssiNotifier: You'll need to install Wget to use IrssiNotifier");
         return;
     }
 
@@ -72,15 +84,23 @@ sub hilite {
         $lastNick = encrypt($lastNick);
         $lastTarget = encrypt($lastTarget);
     } else {
-        Irssi::print("Set encryption password to send Android notifications: /set irssinotifier_encryption_password [password");
+        Irssi::print("IrssiNotifier: Set encryption password to send notifications (must be same as in the Android device): /set irssinotifier_encryption_password [password]");
     }
 
     my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
     my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
     my $result = `wget --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
+    if ($? != 0) {
+        if ($? != 4) {
+            Irssi::print("IrssiNotifier: Unauthorized, please check your api token");
+            return;
+        }
+        Irssi::print("IrssiNotifier: Sending hilight to server failed, check http://irssinotifier.appspot.com for updates");
+        return;
+    }
     
     if (length($result) > 0) {
-        Irssi::print($result);
+        Irssi::print("IrssiNotifier: $result");
     }
 }
 

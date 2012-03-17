@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2012 Lauri Härsilä
+# Copyright 2012 Lauri Harsila
 # based on EmailLoggingHandler, Copyright 2011 Pamela Fox
 # based on XMPPLoggingHandler, Copyright 2011 Calvin Rien,
 # based on ExceptionRecordHandler, Copyright 2007 Google Inc.
@@ -62,34 +62,37 @@ class EmailLoggingHandler(logging.Handler):
                             are generating the same log message.
         @param log_level: default log level that will be sent over XMPP
         """
-        self.log_interval = log_interval
-
-        if isinstance(recipients, basestring):
-            recipients = recipients.split(',')
-        elif isinstance(recipients, tuple):
-            recipients = dict([recipients])
-
-        if isinstance(recipients, (list, set)):
-            self.recipients = {}
-            for recipient in recipients:
-                self.recipients[recipient] = {}
-        elif isinstance(recipients, dict):
-            self.recipients = recipients
-        else:
-            raise Exception('recipients argument must be string, list, or dict')
-
-        for address, params in self.recipients.items():
-            if not isinstance(params, dict):
-                params = {'level': params}
-
-            if 'level' not in params:
-                params['level'] = log_level
-
-            self.recipients[address] = params
-
-        logging.Handler.__init__(self)
-
-        self.setFormatter(logging.Formatter(LOG_FORMAT))
+        try:
+            self.log_interval = log_interval
+    
+            if isinstance(recipients, basestring):
+                recipients = recipients.split(',')
+            elif isinstance(recipients, tuple):
+                recipients = dict([recipients])
+    
+            if isinstance(recipients, (list, set)):
+                self.recipients = {}
+                for recipient in recipients:
+                    self.recipients[recipient] = {}
+            elif isinstance(recipients, dict):
+                self.recipients = recipients
+            else:
+                raise Exception('recipients argument must be string, list, or dict')
+    
+            for address, params in self.recipients.items():
+                if not isinstance(params, dict):
+                    params = {'level': params}
+    
+                if 'level' not in params:
+                    params['level'] = log_level
+    
+                self.recipients[address] = params
+    
+            logging.Handler.__init__(self)
+    
+            self.setFormatter(logging.Formatter(LOG_FORMAT))
+        except Exception as e:
+            logging.warn("Problem in emaillogginghandler: %s", e)
 
     @classmethod
     def __GetRecordSignature(cls, record):
@@ -101,11 +104,14 @@ class EmailLoggingHandler(logging.Handler):
         Returns:
             A unique signature string for the record.
         """
-        signature = ':'.join([str(e) for e in [record.levelno, record.pathname, record.lineno, record.funcName]])
-        if len(signature) > MAX_SIGNATURE_LENGTH:
-            signature = 'hash:%s' % hashlib.sha256(signature).hexdigest()
-
-        return signature
+        try:
+            signature = ':'.join([str(e) for e in [record.levelno, record.pathname, record.lineno, record.funcName]])
+            if len(signature) > MAX_SIGNATURE_LENGTH:
+                signature = 'hash:%s' % hashlib.sha256(signature).hexdigest()
+    
+            return signature
+        except Exception as e:
+            logging.warn("Problem in emaillogginghandler: %s", e)
 
     def emit(self, record):
         """Send a log error over email.
@@ -114,30 +120,33 @@ class EmailLoggingHandler(logging.Handler):
             The logging.LogRecord object.
                 See http://docs.python.org/library/logging.html#logging.LogRecord
         """
-        if debug or record.levelno < logging.WARNING:
-            # NOTE: You don't want to try this on dev_appserver. Trust me.
-            return
-
-        signature = self.__GetRecordSignature(record)
-
-        if not memcache.add(signature, True, time=self.log_interval):
-            return
-
-        formatted_record = self.format(record)
-            
         try:
-            for jid, params in self.recipients.items():
-                if record.levelno < params['level']:
-                    continue
-
-                sender = 'errors@%s.appspotmail.com' % (app_id)
-                message = mail.EmailMessage(sender=sender, to=self.recipients)
-                message.subject = '(%s) error reported for %s, version %s' % (record.levelname, app_id, app_ver)
-                message.body = formatted_record
-                message.send()
-
-        except Exception:
-            self.handleError(record)
+            if debug or record.levelno < logging.ERROR:
+                # NOTE: You don't want to try this on dev_appserver. Trust me.
+                return
+    
+            signature = self.__GetRecordSignature(record)
+    
+            if not memcache.add(signature, True, time=self.log_interval):
+                return
+    
+            formatted_record = self.format(record)
+                
+            try:
+                for jid, params in self.recipients.items():
+                    if record.levelno < params['level']:
+                        continue
+    
+                    sender = 'errors@%s.appspotmail.com' % (app_id)
+                    message = mail.EmailMessage(sender=sender, to=self.recipients)
+                    message.subject = '(%s) error reported for %s, version %s' % (record.levelname, app_id, app_ver)
+                    message.body = formatted_record
+                    message.send()
+    
+            except Exception:
+                self.handleError(record)
+        except Exception as e:
+            logging.warn("Problem in emaillogginghandler: %s", e)
 
 
 def register_logger(recipients, logger=None):
@@ -149,8 +158,25 @@ def register_logger(recipients, logger=None):
     @param logger: optional logger to add the handler to.    
 
     """
-    if not logger:
-        logger = logging.getLogger()
-    handler = EmailLoggingHandler(recipients)
-    logger.addHandler(handler)
-    return handler
+    try:
+        logging.debug("Registering new email logger")
+        if not logger:
+            logger = logging.getLogger()
+        
+        handlers = []
+        if len(logger.handlers) > 0:
+            for h in logger.handlers:
+                if isinstance(h, EmailLoggingHandler):
+                    handlers.append(h)
+        
+        if len(handlers) == 1:
+            return
+        elif len(handlers) > 1:
+            for h in handlers:
+                logger.removeHandler(h)
+                    
+        handler = EmailLoggingHandler(recipients)
+        logger.addHandler(handler)
+        return
+    except Exception as e:
+        logging.warn("Problem in emaillogginghandler: %s", e)

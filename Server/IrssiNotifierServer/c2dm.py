@@ -41,7 +41,6 @@ class C2DM(object):
         request = urllib2.Request("https://www.google.com/accounts/ClientLogin")
         request.add_data('Email=%s&Passwd=%s&service=ac2dm' % (email, passwd))
         
-        # TODO: errors from the next line, possible email alarms
         response = urllib2.urlopen(request)
         lines = response.readlines()
         logging.debug("auth key response: %s" % lines)
@@ -68,11 +67,10 @@ class C2DM(object):
         request.add_data('registration_id=%s&data.message=%s&collapse_key=%s' % (token, message, "%s" % self.collapse_key))
         self.collapse_key += 1
         
-        # TODO: errors from the next line, possible email alarms
         response = urllib2.urlopen(request)
         text = response.read()
         logging.debug(text)
         if "id=" in text: return True
-        
+
         # TODO "Error="
-        logging.warning(text)
+        logging.error(text)

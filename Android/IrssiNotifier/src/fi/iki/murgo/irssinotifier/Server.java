@@ -85,8 +85,6 @@ public class Server {
 		int statusCode = response.getStatusLine().getStatusCode();
 		String responseString = EntityUtils.toString(response.getEntity());
 		
-		// TODO: error handling (authentication etc)
-		
 		ServerResponse serverResponse;
 		serverResponse = new ServerResponse(statusCode == 200, responseString);
 
@@ -101,8 +99,6 @@ public class Server {
 		HttpResponse response = http_client.execute(httpGet);
 		int statusCode = response.getStatusLine().getStatusCode();
 		String responseString = EntityUtils.toString(response.getEntity());
-		
-		// TODO: error handling (authentication etc)
 		
 		ServerResponse serverResponse;
 		if (target == ServerTarget.Message)
