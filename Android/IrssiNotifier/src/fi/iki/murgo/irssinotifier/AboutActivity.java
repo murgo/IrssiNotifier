@@ -34,7 +34,7 @@ public class AboutActivity extends Activity {
 		
 		ftvs.add(new FancyTextView("Made by Lauri Härsilä, murgo@iki.fi." , this));
 		ftvs.add(new FancyTextView("For instructions and help, please visit http://irssinotifier.appspot.com or join #IrssiNotifier @ IRCnet." , this));
-		ftvs.add(new FancyTextView("IrssiNotifier was created entirely on my free time. If you have found IrssiNotifier useful, please consider donating TODO donatelink to help keep project alive." , this));
+		ftvs.add(new FancyTextView("IrssiNotifier was created entirely on my free time. If you have found IrssiNotifier useful, please consider donating at the web page (http://irssinotifier.appspot.com) to help keep project alive." , this));
 		ftvs.add(new FancyTextView("Project is open source, see http://github.com/murgo/IrssiNotifier for more info." , this));
 		ftvs.add(new FancyTextView("Thanks to everyone who has donated money or contributed source! Also thanks to everyone working on the Irssi team." , this));
 		
@@ -42,7 +42,5 @@ public class AboutActivity extends Activity {
 			base.addView(ftv);
 			ftv.start();
 		}
-		
-		throw new RuntimeException("asdf");
 	}
 }
