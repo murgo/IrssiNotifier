@@ -1,5 +1,7 @@
 #IrssiNotifier
 
+Now released on [Google Play](https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier)!
+
 IRC notifications for Android (and possibly other devices).
 
 Web page: https://irssinotifier.appspot.com/
