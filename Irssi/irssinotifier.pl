@@ -5,7 +5,7 @@ use Irssi;
 use POSIX;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "1";
+$VERSION = "2";
 %IRSSI = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -13,7 +13,7 @@ $VERSION = "1";
     description => "Send notifications about irssi highlights to server",
     license     => "Public Domain",
     url         => "http://github.com/murgo/irssinotifier",
-    changed     => "2012-03-05"
+    changed     => "2012-03-19"
 );
 
 my $lastMsg;

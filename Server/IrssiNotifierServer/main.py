@@ -114,15 +114,15 @@ class WebController(BaseController):
 
 def getAndroidServerMessage(data):
     if "version" in data:
-        if int(data["version"]) < 3:
-            return (True, "Koitas nyt, http://dl.dropbox.com/u/25959245/IrssiNotifier.apk")
+        if int(data["version"]) < 5:
+            return (True, "Get latest version of IrssiNotifier from http://irssinotifier.appspot.com")
     return (True, "")
 
 
 def getIrssiServerMessage(data):
     if "version" in data:
-        if int(data["version"]) < 1:
-            return (True, "Testiviesti")
+        if int(data["version"]) < 2:
+            return (True, "Update your IrssiNotifier script to latest version from http://irssinotifier.appspot.com")
     return (True, "")
 
 
