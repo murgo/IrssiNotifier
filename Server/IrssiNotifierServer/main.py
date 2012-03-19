@@ -115,14 +115,14 @@ class WebController(BaseController):
 def getAndroidServerMessage(data):
     if "version" in data:
         if int(data["version"]) < 5:
-            return (True, "Get latest version of IrssiNotifier from http://irssinotifier.appspot.com")
+            return (False, "Get latest version of IrssiNotifier from http://irssinotifier.appspot.com")
     return (True, "")
 
 
 def getIrssiServerMessage(data):
     if "version" in data:
         if int(data["version"]) < 2:
-            return (True, "Update your IrssiNotifier script to latest version from http://irssinotifier.appspot.com")
+            return (False, "Update your IrssiNotifier script to latest version from http://irssinotifier.appspot.com")
     return (True, "")
 
 
@@ -151,7 +151,7 @@ class MessageController(BaseController):
 
         (cont, serverMessage) = getIrssiServerMessage(self.data)
         if not cont:
-            self.response.out.write(json.dumps({ 'servermessage': serverMessage }))
+            self.response.out.write(serverMessage)
             return self.response
 
         messageHandler = MessageHandler()
