@@ -87,7 +87,7 @@
         <div class="block">/script load irssinotifier</div>
         4) Set api token in irssi <br />
         <div class="block">/set irssinotifier_api_token {{ user.api_token }}</div>
-        5) Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too.
+        5) Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too. Currently only alphanumeric passwords work.
         <div class="block">/set irssinotifier_encryption_password password</div>
         6) Query yourself to see if it works (this instruction text should disappear after refreshing) <br />
     </div>
@@ -95,7 +95,7 @@
     
     <h2>Additional Irssi commands</h2>
     <div id="commands" style="display: none;">
-        <div class="block">/set require_idle_seconds [second count]</div>
+        <div class="block">/set irssinotifier_require_idle_seconds [second count]</div>
         When set to more than 0, you will not be notified from events that occur between going idle (i.e. not pressing any keys) and the set second count after that.
         <div class="block">/set irssinotifier_away_only [ON or OFF]</div>
         When set to ON, notifications will only be sent if you are away. Useful in combination with <a href="http://scripts.irssi.org/scripts/screen_away.pl">screen_away script</a>. 
