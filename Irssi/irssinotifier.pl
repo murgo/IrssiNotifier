@@ -5,15 +5,15 @@ use Irssi;
 use POSIX;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "2";
+$VERSION = "3";
 %IRSSI = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
     name        => "IrssiNotifier",
     description => "Send notifications about irssi highlights to server",
-    license     => "Public Domain",
-    url         => "http://github.com/murgo/irssinotifier",
-    changed     => "2012-03-19"
+    license     => "Apache License, version 2.0",
+    url         => "http://irssinotifier.appspot.com",
+    changed     => "2012-03-20"
 );
 
 my $lastMsg;
@@ -66,13 +66,13 @@ sub hilite {
         return;
     }
 
-    `/usr/bin/openssl version`;
+    `/usr/bin/env openssl version`;
     if ($? != 0) {
         Irssi::print("IrssiNotifier: You'll need to install OpenSSL to use IrssiNotifier");
         return;
     }
 
-    `/usr/bin/wget --version`;
+    `/usr/bin/env wget --version`;
     if ($? != 0) {
         Irssi::print("IrssiNotifier: You'll need to install Wget to use IrssiNotifier");
         return;
@@ -89,7 +89,7 @@ sub hilite {
 
     my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
     my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
-    my $result = `wget --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
+    my $result = `/usr/bin/env wget --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
     if ($? != 0) {
         if ($? != 4) {
             Irssi::print("IrssiNotifier: Unauthorized, please check your api token");
@@ -116,7 +116,7 @@ sub encrypt {
     my $text = $_[0];
     $text = sanitize $text;
     my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
-    my $result = `echo $text| /usr/bin/openssl enc -aes-128-cbc -salt -base64 -A -k $encryption_password | tr -d '\n'`;
+    my $result = `echo $text| /usr/bin/env openssl enc -aes-128-cbc -salt -base64 -A -k $encryption_password | tr -d '\n'`;
     $result =~ s/=//g;
     $result =~ s/\+/-/g;
     $result =~ s/\//_/g;
@@ -128,7 +128,7 @@ sub decrypt {
     my $text = $_[0];
     $text = sanitize $text;
     my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
-    my $result = `echo $text| /usr/bin/openssl enc -aes-128-cbc -d -salt -base64 -A -k $encryption_password`;
+    my $result = `echo $text| /usr/bin/env openssl enc -aes-128-cbc -d -salt -base64 -A -k $encryption_password`;
     chomp($result);
     return $result;
 }
