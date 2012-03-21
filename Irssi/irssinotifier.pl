@@ -5,7 +5,7 @@ use Irssi;
 use POSIX;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "3";
+$VERSION = "4";
 %IRSSI = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -13,7 +13,7 @@ $VERSION = "3";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "http://irssinotifier.appspot.com",
-    changed     => "2012-03-20"
+    changed     => "2012-03-21"
 );
 
 my $lastMsg;
@@ -60,6 +60,11 @@ sub activity_allows_hilight {
     return ($timeout <= 0 || (time - $lastKeyboardActivity) > $timeout);
 }
 
+sub dangerous_string {
+  my $s = @_ ? shift : $_;
+  return $s =~ m/"/ || $s =~ m/`/ || $s =~ m/\\/;
+}
+
 sub hilite {
     if (!Irssi::settings_get_str('irssinotifier_api_token')) {
         Irssi::print("IrssiNotifier: Set API token to send notifications: /set irssinotifier_api_token [token]");
@@ -77,9 +82,19 @@ sub hilite {
         Irssi::print("IrssiNotifier: You'll need to install Wget to use IrssiNotifier");
         return;
     }
+    
+    my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
+    if (dangerous_string $api_token) {
+        Irssi::print("IrssiNotifier: Api token cannot contain backticks, double quotes or backslashes");
+        return;
+    }
 
     my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
     if ($encryption_password) {
+        if (dangerous_string $encryption_password) {
+            Irssi::print("IrssiNotifier: Encryption password cannot contain backticks, double quotes or backslashes");
+            return;
+        }
         $lastMsg = encrypt($lastMsg);
         $lastNick = encrypt($lastNick);
         $lastTarget = encrypt($lastTarget);
@@ -87,7 +102,6 @@ sub hilite {
         Irssi::print("IrssiNotifier: Set encryption password to send notifications (must be same as in the Android device): /set irssinotifier_encryption_password [password]");
     }
 
-    my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
     my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
     my $result = `/usr/bin/env wget --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
     if ($? != 0) {
@@ -116,7 +130,7 @@ sub encrypt {
     my $text = $_[0];
     $text = sanitize $text;
     my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
-    my $result = `echo $text| /usr/bin/env openssl enc -aes-128-cbc -salt -base64 -A -k $encryption_password | tr -d '\n'`;
+    my $result = `/usr/bin/env echo $text| /usr/bin/env openssl enc -aes-128-cbc -salt -base64 -A -k "$encryption_password" | tr -d '\n'`;
     $result =~ s/=//g;
     $result =~ s/\+/-/g;
     $result =~ s/\//_/g;
@@ -128,7 +142,7 @@ sub decrypt {
     my $text = $_[0];
     $text = sanitize $text;
     my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
-    my $result = `echo $text| /usr/bin/env openssl enc -aes-128-cbc -d -salt -base64 -A -k $encryption_password`;
+    my $result = `/usr/bin/env echo $text| /usr/bin/env openssl enc -aes-128-cbc -d -salt -base64 -A -k "$encryption_password"`;
     chomp($result);
     return $result;
 }
