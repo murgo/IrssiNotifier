@@ -5,7 +5,7 @@ use Irssi;
 use POSIX;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "4";
+$VERSION = "5";
 %IRSSI = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -13,7 +13,7 @@ $VERSION = "4";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "http://irssinotifier.appspot.com",
-    changed     => "2012-03-21"
+    changed     => "2012-03-22"
 );
 
 my $lastMsg;
@@ -105,11 +105,8 @@ sub hilite {
     my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
     my $result = `/usr/bin/env wget --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
     if ($? != 0) {
-        if ($? != 4) {
-            Irssi::print("IrssiNotifier: Unauthorized, please check your api token");
-            return;
-        }
-        Irssi::print("IrssiNotifier: Sending hilight to server failed, check http://irssinotifier.appspot.com for updates");
+        # Something went wrong, might be network error or authorization issue. Probably no need to alert user, though.
+        # Irssi::print("IrssiNotifier: Sending hilight to server failed, check http://irssinotifier.appspot.com for updates");
         return;
     }
     
