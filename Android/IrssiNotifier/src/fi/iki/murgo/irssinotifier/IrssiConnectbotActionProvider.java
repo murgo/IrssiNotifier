@@ -9,6 +9,8 @@ import android.widget.ImageButton;
 import com.actionbarsherlock.view.ActionProvider;
 
 public class IrssiConnectbotActionProvider extends ActionProvider {
+	public static final String INTENT_IRSSICONNECTBOT = "org.woltage.irssiconnectbot";
+	
 	private Context context;
 
 	public IrssiConnectbotActionProvider(Context context) {
@@ -25,7 +27,9 @@ public class IrssiConnectbotActionProvider extends ActionProvider {
 
         button.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View v) {
-                Intent settingsActivity = new Intent(context.getPackageManager().getLaunchIntentForPackage("org.woltage.irssiconnectbot"));
+		        if (!IntentSniffer.isIntentAvailable(context, IrssiConnectbotActionProvider.INTENT_IRSSICONNECTBOT))
+		        	return;
+                Intent settingsActivity = new Intent(context.getPackageManager().getLaunchIntentForPackage(INTENT_IRSSICONNECTBOT));
                 context.startActivity(settingsActivity);
 			}
         });
@@ -34,7 +38,10 @@ public class IrssiConnectbotActionProvider extends ActionProvider {
 	
 	@Override
 	public boolean onPerformDefaultAction() {
-        Intent settingsActivity = new Intent(context.getPackageManager().getLaunchIntentForPackage("org.woltage.irssiconnectbot"));
+        if (!IntentSniffer.isIntentAvailable(context, IrssiConnectbotActionProvider.INTENT_IRSSICONNECTBOT))
+        	return false;
+        
+        Intent settingsActivity = new Intent(context.getPackageManager().getLaunchIntentForPackage(INTENT_IRSSICONNECTBOT));
         context.startActivity(settingsActivity);
         return true;
 	}

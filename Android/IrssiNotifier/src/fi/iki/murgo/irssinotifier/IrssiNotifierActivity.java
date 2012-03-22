@@ -198,6 +198,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
     
 	private void createUi(final List<Channel> channels) {
         setContentView(R.layout.main);
+        
         setIndeterminateProgressBarVisibility(!progressBarVisibility); // häx häx
         setIndeterminateProgressBarVisibility(!progressBarVisibility);
         
@@ -260,6 +261,10 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
 		getSupportMenuInflater().inflate(R.menu.mainmenu, menu);
+        if (!IntentSniffer.isIntentAvailable(this, IrssiConnectbotActionProvider.INTENT_IRSSICONNECTBOT)) {
+            menu.findItem(R.id.irssi_connectbot).setVisible(false);
+            menu.findItem(R.id.irssi_connectbot).setEnabled(false);
+        }
 		
 		return true;
 	}
