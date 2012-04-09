@@ -159,7 +159,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 		        setIndeterminateProgressBarVisibility(false);
 				if (param.getException() != null) {
 					if (param.getException() instanceof AuthenticationException) {
-						MessageBox.Show(ctx, "Authentication error", "Unable to authenticate to server", null);
+						MessageBox.Show(ctx, "Authentication error", "Unable to authenticate to server.", null);
 						preferences.setAuthToken(null);
 						restart();
 					} else if (param.getException() instanceof ServerException) {
