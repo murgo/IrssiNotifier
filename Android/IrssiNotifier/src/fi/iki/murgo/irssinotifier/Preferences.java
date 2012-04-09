@@ -83,7 +83,10 @@ public class Preferences {
 
 		Server server = new Server();
 		boolean authenticated = server.authenticate(getAuthToken());
-		if (!authenticated) throw new AuthenticationException();
+		if (!authenticated) {
+			setAuthToken(null);
+			throw new AuthenticationException();
+		}
 		
 		ServerResponse response = server.send(msg, ServerTarget.SaveSettings);
 		if (response.wasSuccesful()) {

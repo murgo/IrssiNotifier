@@ -43,7 +43,7 @@ public class Server {
 		serverUrls.put(ServerTarget.Authenticate, "https://irssinotifier.appspot.com/_ah/login?continue=https://localhost/&auth=");
 	}
 	
-	public boolean authenticate(String token) {
+	public boolean authenticate(String token) throws IOException {
         for(Cookie c : http_client.getCookieStore().getCookies())
             if(c.getName().equals("SACSID"))
                 return true;
@@ -64,10 +64,6 @@ public class Server {
                 if(cookie.getName().equals("SACSID"))
                     return true;
 	        }
-	    } catch (ClientProtocolException e) {
-	        e.printStackTrace();
-    	} catch (IOException e) { 		
-	        e.printStackTrace();
 		} finally {
 			if (http_client != null)
 		        http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);

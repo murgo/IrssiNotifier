@@ -1,5 +1,6 @@
 package fi.iki.murgo.irssinotifier;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -47,7 +48,6 @@ public class IrssiNotifierActivity extends SherlockActivity {
         // do initial settings
         if (preferences.getAuthToken() == null || preferences.getRegistrationId() == null) {
 			Log.d(TAG, "Asking for initial settings");
-			preferences.clear();
 			Intent i = new Intent(this, InitialSettingsActivity.class);
 			startActivity(i);
 			finish();
@@ -160,10 +160,15 @@ public class IrssiNotifierActivity extends SherlockActivity {
 				if (param.getException() != null) {
 					if (param.getException() instanceof AuthenticationException) {
 						MessageBox.Show(ctx, "Authentication error", "Unable to authenticate to server", null);
+						preferences.setAuthToken(null);
+						restart();
 					} else if (param.getException() instanceof ServerException) {
 						MessageBox.Show(ctx, "Server error", "Mystical server error, check if updates are available", null);
 					} else if (param.getException() instanceof CryptoException) {
 						MessageBox.Show(ctx, "Decryption error", "Unable to decrypt message, is your decryption password correct?", null);
+						preferences.setLastFetchTime(now);
+					} else if (param.getException() instanceof IOException) {
+						MessageBox.Show(ctx, "Network error", "Is your internet connection available?", null);
 						preferences.setLastFetchTime(now);
 					} else {
 						MessageBox.Show(ctx, "Error", "What happen", null);
