@@ -5,7 +5,7 @@ use Irssi;
 use POSIX;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "5";
+$VERSION = "6";
 %IRSSI = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -13,7 +13,7 @@ $VERSION = "5";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "http://irssinotifier.appspot.com",
-    changed     => "2012-03-22"
+    changed     => "2012-04-10"
 );
 
 my $lastMsg;
@@ -161,6 +161,7 @@ Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_away_only', false);
 Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_ignore_active_window', false);
 Irssi::settings_add_int('IrssiNotifier', 'irssinotifier_require_idle_seconds', 0);
 
+Irssi::signal_add('message irc action', 'public');
 Irssi::signal_add('message public', 'public');
 Irssi::signal_add('message private', 'private');
 Irssi::signal_add('print text', 'print_text');
