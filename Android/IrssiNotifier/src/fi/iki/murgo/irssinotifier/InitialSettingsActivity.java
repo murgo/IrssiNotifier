@@ -1,5 +1,7 @@
 package fi.iki.murgo.irssinotifier;
 
+import java.io.IOException;
+
 import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
@@ -99,18 +101,23 @@ public class InitialSettingsActivity extends Activity {
 		TokenGenerationTask task = new TokenGenerationTask(this, "", "Generating authentication token...");
 		
 		final Context ctx = this;
-		task.setCallback(new Callback<String>() {
-			public void doStuff(String result) {
-				if (result == null) {
-					MessageBox.Show(ctx, null, "Unable to generate authentication token for account! Please try again later!", new Callback<Void>() { // TODO i18n
+		task.setCallback(new Callback<StringOrException>() {
+			public void doStuff(StringOrException result) {
+				if (result.getException() != null) {
+					Callback<Void> callback = new Callback<Void>() {
 						public void doStuff(Void param) {
 							whatNext(-1, null);
 						}
-					});
+					};
+					if (result.getException() instanceof IOException) {
+						MessageBox.Show(ctx, "Network error", "Ensure your internet connection works and try again.", callback); // TODO i18n
+					} else {
+						MessageBox.Show(ctx, null, "Unable to generate authentication token for account! Please try again later!", callback);  // TODO i18n
+					}
 					return;
 				}
 
-				whatNext(1, result);
+				whatNext(1, result.getString());
 			}
 		});
 
