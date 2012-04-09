@@ -58,6 +58,12 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
     	
     	TextView name = (TextView) channelView.findViewById(R.id.channel_name);
     	name.setText(channel.getName());
+    	if (channel.getName().startsWith("#")) {
+    		// some channels might not start with #, but they're really rare
+    		name.setTextColor(0xFF6060FF);
+    	} else {
+    		name.setTextColor(0xFFFF6060);
+    	}
 
     	LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
     	boolean lastShown = false;
