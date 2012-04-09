@@ -8,6 +8,7 @@ import android.content.DialogInterface.OnDismissListener;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
+import android.view.WindowManager.BadTokenException;
 import android.widget.TextView;
 
 public class MessageBox {
@@ -36,10 +37,14 @@ public class MessageBox {
 			}
 		});
 		
-		dialog.show();
-		
-		if (linkify) {
-			((TextView)dialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+		try {
+			dialog.show();
+			
+			if (linkify) {
+				((TextView)dialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+			}
+		} catch (BadTokenException e) {
+			// weird bug when clicking back at the wrong time
 		}
 	}
 }

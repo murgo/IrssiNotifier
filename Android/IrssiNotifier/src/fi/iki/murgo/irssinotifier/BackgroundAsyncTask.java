@@ -26,7 +26,12 @@ public abstract class BackgroundAsyncTask<A, B, C> extends AsyncTask<A, B, C> {
 	
 	@Override
 	protected void onPostExecute(C result) {
-		getDialog().dismiss();
+		try {
+			getDialog().dismiss();
+		} catch (Exception e) {
+	        // nothing
+	    }
+		
 		if (callback != null) {
 			callback.doStuff(result);
 		}
