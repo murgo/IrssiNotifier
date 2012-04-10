@@ -86,7 +86,7 @@ class WebController(BaseController):
 
         if not user:
             template = jinja_environment.get_template('html/login.html')
-            template_values = { 'login_url': users.create_login_url(self.request.uri).replace("&", "&amp;"), }
+            template_values = { 'login_url': users.create_login_url("https://irssinotifier.appspot.com").replace("&", "&amp;"), }
             self.response.out.write(template.render(template_values))
             return
         
@@ -101,7 +101,7 @@ class WebController(BaseController):
         template_values = {
              'user': user,
              'tokens': tokensList,
-             'logout_url': users.create_logout_url(self.request.uri).replace("&", "&amp;"),
+             'logout_url': users.create_logout_url("https://irssinotifier.appspot.com").replace("&", "&amp;"),
              'irssiworking': count != 0,
              'c2dmtokencount': len(tokensList),
         }

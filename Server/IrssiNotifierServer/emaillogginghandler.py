@@ -146,7 +146,8 @@ class EmailLoggingHandler(logging.Handler):
             except Exception:
                 self.handleError(record)
         except Exception as e:
-            logging.warn("Problem in emaillogginghandler: %s", e)
+            if logging:
+                logging.warn("Problem in emaillogginghandler: %s", e)
 
 
 def register_logger(recipients, logger=None):
@@ -179,4 +180,5 @@ def register_logger(recipients, logger=None):
         logger.addHandler(handler)
         return
     except Exception as e:
-        logging.warn("Problem in emaillogginghandler: %s", e)
+        if logging:
+            logging.warn("Problem in emaillogginghandler: %s", e)
