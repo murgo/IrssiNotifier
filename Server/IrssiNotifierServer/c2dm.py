@@ -78,6 +78,10 @@ class C2DM(object):
             token.delete()
             return
 
+        if "Error=DeviceQuotaExceeded" in text:
+            logging.warn("Device Quota Exceeded")
+            return
+
         # TODO "Error="
         logging.error(text)
         return
