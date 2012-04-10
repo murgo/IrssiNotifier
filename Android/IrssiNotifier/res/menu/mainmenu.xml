@@ -2,19 +2,35 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
     
     <item
-        android:id="@+id/irssi_connectbot"
+        android:id="@+id/menu_irssi_connectbot"
         android:icon="@drawable/irssi_connectbot"
-        android:showAsAction="always"
+        android:showAsAction="ifRoom|withText"
         android:title="Launch Irssi ConnectBot"
         android:actionProviderClass="fi.iki.murgo.irssinotifier.IrssiConnectbotActionProvider"
         />
     
     <item
-        android:id="@+id/settings"
+        android:id="@+id/menu_settings"
         android:icon="@drawable/ic_menu_preferences"
-        android:showAsAction="ifRoom"
+        android:showAsAction="ifRoom|withText"
         android:title="Settings"
         android:actionProviderClass="fi.iki.murgo.irssinotifier.SettingsActionProvider"
         />
 
+    <item
+        android:id="@+id/menu_clear_channel"
+        android:icon="@drawable/ic_menu_close_clear_cancel"
+        android:showAsAction="never|withText"
+        android:title="Clear channel messages"
+        android:actionProviderClass="fi.iki.murgo.irssinotifier.ClearChannelActionProvider"
+        />
+
+    <item
+        android:id="@+id/menu_remove_all_channels"
+        android:icon="@drawable/ic_menu_close_clear_cancel"
+        android:showAsAction="never|withText"
+        android:title="Remove all channels"
+        android:actionProviderClass="fi.iki.murgo.irssinotifier.RemoveAllChannelsActionProvider"
+        />
+    
 </menu>

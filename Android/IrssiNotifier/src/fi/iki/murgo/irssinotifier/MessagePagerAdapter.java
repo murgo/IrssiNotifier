@@ -152,11 +152,11 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
 			Channel ch = new Channel();
 			channelList.add(ch);
 			
-			ch.setName(":(");
+			ch.setName("Empty");
 			ch.setOrder(0);
 			
 			IrcMessage msg = new IrcMessage();
-			msg.setMessage("No messages!");
+			msg.setMessage("No IRC hilights yet!");
 			msg.setNick("nobody");
 			msg.setServerTimestamp(new Date().getTime());
 			

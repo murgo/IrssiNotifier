@@ -31,6 +31,8 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	private static IrssiNotifierActivity instance;
 	private static boolean needsRefresh;
 	private String channelToView;
+	private List<Channel> channels;
+	private Object channelsLock = new Object();
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -137,7 +139,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	
 	private void startMainApp(boolean uptodate) {
     	Log.d(TAG, "Main startup");
-        createUi(null);
+        refreshUi();
         
         if (preferences.settingsNeedSending()) {
         	Log.d(TAG, "Settings are not saved, odd");
@@ -148,7 +150,10 @@ public class IrssiNotifierActivity extends SherlockActivity {
         
         final Callback<List<Channel>> dataAccessCallback = new Callback<List<Channel>>() {
 			public void doStuff(List<Channel> param) {
-				createUi(param);
+				synchronized (channelsLock) {
+					channels = param;
+				}
+				refreshUi();
 			}
 		};
         
@@ -201,46 +206,48 @@ public class IrssiNotifierActivity extends SherlockActivity {
 		datask.execute();
 	}
     
-	private void createUi(final List<Channel> channels) {
-        setContentView(R.layout.main);
-        
-        setIndeterminateProgressBarVisibility(!progressBarVisibility); // häx häx
-        setIndeterminateProgressBarVisibility(!progressBarVisibility);
-        
-		pager = (ViewPager) findViewById(R.id.pager);
-
-		if (adapter == null) {
-        	adapter = new MessagePagerAdapter(this, getLayoutInflater());
-        }
-		if (channels != null) {
-			adapter.setChannels(channels);
-		}
-        pager.setAdapter(adapter);
-        
-        TitlePageIndicator titleIndicator = (TitlePageIndicator)findViewById(R.id.titles);
-        titleIndicator.setViewPager(pager);
-        titleIndicator.setOnPageChangeListener(new OnPageChangeListener() {
-			public void onPageSelected(int arg0) {
-				if (channels != null) {
-					Channel ch = channels.get(arg0);
-					if (ch != null) {
-						channelToView = ch.getName();
+	private void refreshUi() {
+		synchronized (channelsLock) {
+	        setContentView(R.layout.main);
+	        
+	        setIndeterminateProgressBarVisibility(!progressBarVisibility); // häx häx
+	        setIndeterminateProgressBarVisibility(!progressBarVisibility);
+	        
+			pager = (ViewPager) findViewById(R.id.pager);
+	
+			if (adapter == null) {
+	        	adapter = new MessagePagerAdapter(this, getLayoutInflater());
+	        }
+			if (channels != null) {
+				adapter.setChannels(channels);
+			}
+	        pager.setAdapter(adapter);
+	        
+	        TitlePageIndicator titleIndicator = (TitlePageIndicator)findViewById(R.id.titles);
+	        titleIndicator.setViewPager(pager);
+	        titleIndicator.setOnPageChangeListener(new OnPageChangeListener() {
+				public void onPageSelected(int arg0) {
+					if (channels != null) {
+						Channel ch = channels.get(arg0);
+						if (ch != null) {
+							channelToView = ch.getName();
+						}
 					}
 				}
-			}
-			
-			public void onPageScrolled(int arg0, float arg1, int arg2) { }
-			public void onPageScrollStateChanged(int arg0) { }
-		});
-
-        if (channelToView != null && channels != null && channels.size() > 1) {
-        	for (int i = 0; i < channels.size(); i++) {
-    			if (channels.get(i).getName().equals(channelToView)) {
-    	    		pager.setCurrentItem(i);
-    	    		break;
-    			}
-        	}
-    	}
+				
+				public void onPageScrolled(int arg0, float arg1, int arg2) { }
+				public void onPageScrollStateChanged(int arg0) { }
+			});
+	
+	        if (channelToView != null && channels != null && channels.size() > 1) {
+	        	for (int i = 0; i < channels.size(); i++) {
+	    			if (channels.get(i).getName().equals(channelToView)) {
+	    	    		pager.setCurrentItem(i);
+	    	    		break;
+	    			}
+	        	}
+	    	}
+		}
 	}
 	
 	private void setIndeterminateProgressBarVisibility(boolean state) {
@@ -271,9 +278,9 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
 		getSupportMenuInflater().inflate(R.menu.mainmenu, menu);
-        if (!IntentSniffer.isIntentAvailable(this, IrssiConnectbotActionProvider.INTENT_IRSSICONNECTBOT)) {
-            menu.findItem(R.id.irssi_connectbot).setVisible(false);
-            menu.findItem(R.id.irssi_connectbot).setEnabled(false);
+        if (!IntentSniffer.isIntentAvailable(this, IrssiConnectbotLauncher.INTENT_IRSSICONNECTBOT)) {
+            menu.findItem(R.id.menu_irssi_connectbot).setVisible(false);
+            menu.findItem(R.id.menu_irssi_connectbot).setEnabled(false);
         }
 		
 		return true;
@@ -281,7 +288,31 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		return false;
+		if (item.getItemId() == R.id.menu_irssi_connectbot) {
+			IrssiConnectbotLauncher.launchIrssiConnectbot(this);
+		} else if (item.getItemId() == R.id.menu_settings)  {
+	        Intent settingsActivity = new Intent(this, SettingsActivity.class);
+	        startActivity(settingsActivity);
+		} else if (item.getItemId() == R.id.menu_clear_channel)  {
+			DataAccess da = new DataAccess(this);
+			List<Channel> channels = da.getChannels();
+			Channel channelToClear = null;
+			for (Channel ch : channels) {
+				if (ch.getName().equals(channelToView)) {
+					channelToClear = ch;
+					break;
+				}
+			}
+			if (channelToClear != null) {
+				da.clearChannel(channelToClear);
+				startMainApp(true);
+			}
+		} else if (item.getItemId() == R.id.menu_remove_all_channels)  {
+			DataAccess da = new DataAccess(this);
+			da.clearAll();
+			startMainApp(true);
+		}
+		return true;
 	}
 
 	public void newMessage(IrcMessage msg) {
