@@ -43,18 +43,6 @@
         })();
     </script>
     
-    <script type="text/javascript">
-/* <![CDATA[ */
-    (function() {
-        var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
-        s.type = 'text/javascript';
-        s.async = true;
-        s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
-        t.parentNode.insertBefore(s, t);
-    })();
-/* ]]> */
-    </script>
-
 </head>
 <body>
     <h1>IrssiNotifier</h1>
@@ -94,7 +82,7 @@
         Installation instructions (to update script, just follow these same steps): <br />
         1) Get and run android app <br />
         2) Download irssi script by copying and pasting the following command to your shell (don't mind any "File exists" -errors):
-        <div class="block">mkdir -p ~/.irssi/scripts/autorun; wget http://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
+        <div class="block">mkdir -p ~/.irssi/scripts/autorun; wget https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
         3) Load irssi script by typing the following command to irssi
         <div class="block">/script load irssinotifier</div>
         4) Set api token in irssi <br />
@@ -144,12 +132,8 @@
     <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
     </form>
     
-    <a class="FlattrButton" style="display:none;" rev="flattr;button:compact;" href="https://irssinotifier.appspot.com"></a>
-    <noscript>
     <a href="http://flattr.com/thing/628213/IrssiNotifier" target="_blank">
-    <img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" border="0" />
-    </a>
-    </noscript>
+    <img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" border="0" style="margin-top: 10px;"/></a>
 
     <h2>Misc</h2>
     <p><a onclick="wipe();" href="javascript:void(0)">Wipe your account and all data!</a></p>
