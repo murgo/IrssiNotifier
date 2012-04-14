@@ -42,6 +42,18 @@
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
         })();
     </script>
+    
+    <script type="text/javascript">
+/* <![CDATA[ */
+    (function() {
+        var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
+        s.type = 'text/javascript';
+        s.async = true;
+        s.src = 'http://api.flattr.com/js/0.6/load.js?mode=auto';
+        t.parentNode.insertBefore(s, t);
+    })();
+/* ]]> */
+    </script>
 
 </head>
 <body>
@@ -122,7 +134,7 @@
 
     <h2>Donate</h2>
     <p>
-    IrssiNotifier was created entirely on my free time. If you have found IrssiNotifier useful and want to help keep project alive, please consider donating through PayPal or straight to my bank account (IBAN: FI0810455000756308). PayPal takes 0,35€ per transaction. 
+    IrssiNotifier was created entirely on my free time. If you have found IrssiNotifier useful and want to help keep project alive, please consider donating through PayPal or straight to my bank account (IBAN: FI0810455000756308). PayPal takes 0,35€ per transaction. Flattr donations are now also available.
     </p>
 
     <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
@@ -132,6 +144,13 @@
     <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
     </form>
     
+    <a class="FlattrButton" style="display:none;" rev="flattr;button:compact;" href="https://irssinotifier.appspot.com"></a>
+    <noscript>
+    <a href="http://flattr.com/thing/628213/IrssiNotifier" target="_blank">
+    <img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" border="0" />
+    </a>
+    </noscript>
+
     <h2>Misc</h2>
     <p><a onclick="wipe();" href="javascript:void(0)">Wipe your account and all data!</a></p>
 
