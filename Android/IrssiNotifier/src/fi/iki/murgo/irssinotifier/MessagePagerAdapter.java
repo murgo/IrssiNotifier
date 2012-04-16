@@ -1,7 +1,8 @@
 package fi.iki.murgo.irssinotifier;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.viewpagerindicator.TitleProvider;
@@ -24,6 +25,7 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
 	private Context ctx;
 	private List<Channel> channels;
 	private final LayoutInflater layoutInflater;
+	private ChannelMode channelMode;
     
 	public MessagePagerAdapter(Context ctx, LayoutInflater layoutInflater) {
 		super();
@@ -33,9 +35,14 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
 
 	@Override
     public int getCount() {
-		if (channels == null)
+		if (channels == null) {
 			return 0;
-		return channels.size();
+		}
+		
+		if (channels.size() == 0) return 1;
+		if (channelMode == ChannelMode.Feed) return 1;
+		if (channelMode == ChannelMode.Channels) return channels.size();
+		return channels.size() + 1; // if (channelMode == ChannelMode.Both)
     }
 
 /**
@@ -51,32 +58,82 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
  */
     @Override
     public Object instantiateItem(View collection, int position) {
-    	Channel channel = channels.get(position);
-    	List<IrcMessage> messages = channel.getMessages();
+    	View view;
+    	
+		if (channels.size() == 0) {
+			view = createEmptyChannel();
+		} else if (channelMode == ChannelMode.Channels) {
+			view = createChannel(position);
+		} else if (position == 0) {
+			view = createFeed();
+		} else {
+			view = createChannel(position - 1);
+		}
+
+		((ViewPager) collection).addView(view);
+    	return view;
+    }
+
+	private View createEmptyChannel() {
+		View channelView = layoutInflater.inflate(R.layout.channel, null);
+		TextView name = (TextView) channelView.findViewById(R.id.channel_name);
+		name.setText("Empty");
+	
+		LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
+		TextView tv = new TextView(ctx);
+		tv.setText("No IRC hilights yet!");
+		tv.setTypeface(Typeface.MONOSPACE);
+		
+		messageContainer.addView(tv);
+
+		return channelView;
+	}
+
+	private View createFeed() {
+		List<IrcMessage> messages = new ArrayList<IrcMessage>();
+		for (Channel ch : channels) {
+			messages.addAll(ch.getMessages());
+		}
+		
+		Collections.sort(messages, new Comparator<IrcMessage>(){
+			public int compare(IrcMessage lhs, IrcMessage rhs) {
+				return lhs.getServerTimestamp().compareTo(rhs.getServerTimestamp());
+			}});
 
     	View channelView = layoutInflater.inflate(R.layout.channel, null);
-    	
-    	TextView name = (TextView) channelView.findViewById(R.id.channel_name);
-    	name.setText(channel.getName());
-    	if (channel.getName().startsWith("#")) {
-    		// some channels might not start with #, but they're really rare
-    		name.setTextColor(0xFF6060FF);
-    	} else {
-    		name.setTextColor(0xFFFF6060);
-    	}
+		TextView name = (TextView) channelView.findViewById(R.id.channel_name);
+		name.setText("Feed");
+		name.setTextColor(0xFF60FF60);
 
-    	LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
-    	boolean lastShown = false;
-    	for (IrcMessage message : messages) {
-    		if (!message.isShown()) {
-    			if (!lastShown) {
-    				lastShown = true;
-    				TextView tvEmpty = new TextView(ctx);
-    				tvEmpty.setText("--");
-    				messageContainer.addView(tvEmpty);
-    			}
-    		}
-    		
+		LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
+		String lastChannel = "";
+		boolean lastShown = false;
+		for (IrcMessage message : messages) {
+			if (!message.isShown()) {
+				if (!lastShown) {
+					lastShown = true;
+					TextView tvEmpty = new TextView(ctx);
+					tvEmpty.setText("--");
+					messageContainer.addView(tvEmpty);
+				}
+			}
+			
+			if (!message.getLogicalChannel().equals(lastChannel)) {
+				TextView tv = new TextView(ctx);
+				lastChannel = message.getLogicalChannel();
+				
+				tv.setText(lastChannel);
+				tv.setTypeface(Typeface.MONOSPACE);
+				tv.setTextSize(tv.getTextSize() * 1.05f);
+				if (lastChannel.startsWith("#")) {
+					// some channels might not start with #, but they're really rare
+					tv.setTextColor(0xFF6060FF);
+				} else {
+					tv.setTextColor(0xFFFF6060);
+				}				
+				messageContainer.addView(tv);
+			}
+
 			TextView tv = new TextView(ctx);
 			String s = message.getServerTimestampAsString() + " (" + message.getNick() + ") " + message.getMessage();
 			final SpannableString ss = new SpannableString(s);
@@ -88,18 +145,66 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
 			tv.setMovementMethod(LinkMovementMethod.getInstance());
 			
 			messageContainer.addView(tv);
-    	}
-    	
-    	final ScrollView sv = (ScrollView)channelView.findViewById(R.id.scroll_view);
-    	sv.post(new Runnable() {
+		}
+		
+		final ScrollView sv = (ScrollView)channelView.findViewById(R.id.scroll_view);
+		sv.post(new Runnable() {
 			public void run() {
 				sv.fullScroll(ScrollView.FOCUS_DOWN);
 			}
 		});
-
-		((ViewPager) collection).addView(channelView);
+	
 		return channelView;
-    }
+	}
+
+	private View createChannel(int position) {
+    	Channel channel = channels.get(position);
+    	List<IrcMessage> messages = channel.getMessages();
+
+    	View channelView = layoutInflater.inflate(R.layout.channel, null);
+		TextView name = (TextView) channelView.findViewById(R.id.channel_name);
+		name.setText(channel.getName());
+		if (channel.getName().startsWith("#")) {
+			// some channels might not start with #, but they're really rare
+			name.setTextColor(0xFF6060FF);
+		} else {
+			name.setTextColor(0xFFFF6060);
+		}
+	
+		LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
+		boolean lastShown = false;
+		for (IrcMessage message : messages) {
+			if (!message.isShown()) {
+				if (!lastShown) {
+					lastShown = true;
+					TextView tvEmpty = new TextView(ctx);
+					tvEmpty.setText("--");
+					messageContainer.addView(tvEmpty);
+				}
+			}
+			
+			TextView tv = new TextView(ctx);
+			String s = message.getServerTimestampAsString() + " (" + message.getNick() + ") " + message.getMessage();
+			final SpannableString ss = new SpannableString(s);
+			Linkify.addLinks(ss, Linkify.ALL);
+			tv.setText(ss);
+			tv.setTypeface(Typeface.MONOSPACE);
+			tv.setAutoLinkMask(Linkify.ALL);
+			tv.setLinksClickable(true);
+			tv.setMovementMethod(LinkMovementMethod.getInstance());
+			
+			messageContainer.addView(tv);
+		}
+		
+		final ScrollView sv = (ScrollView)channelView.findViewById(R.id.scroll_view);
+		sv.post(new Runnable() {
+			public void run() {
+				sv.fullScroll(ScrollView.FOCUS_DOWN);
+			}
+		});
+	
+		return channelView;
+	}
 
 /**
  * Remove a page for the given position.  The adapter is responsible
@@ -147,32 +252,14 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
     }
 
 	public void setChannels(List<Channel> ircMessages) {
-		if (ircMessages.size() == 0) {
-			List<Channel> channelList = new ArrayList<Channel>();
-			Channel ch = new Channel();
-			channelList.add(ch);
-			
-			ch.setName("Empty");
-			ch.setOrder(0);
-			
-			IrcMessage msg = new IrcMessage();
-			msg.setMessage("No IRC hilights yet!");
-			msg.setNick("nobody");
-			msg.setServerTimestamp(new Date().getTime());
-			
-			List<IrcMessage> messageList = new ArrayList<IrcMessage>();
-			messageList.add(msg);
-			ch.setMessages(messageList);
-			
-			this.channels = channelList;
-			return;
-		}
-		
 		this.channels = ircMessages;
 	}
 
 	public String getTitle(int position) {
-		return this.channels.get(position).getName();
+		if (channels.size() == 0) return "";
+		if (channelMode == ChannelMode.Channels) return channels.get(position).getName();
+		if (position == 0) return "Feed";
+		return channels.get(position - 1).getName(); // if (channelMode == ChannelMode.Both)
 	}
 
 }

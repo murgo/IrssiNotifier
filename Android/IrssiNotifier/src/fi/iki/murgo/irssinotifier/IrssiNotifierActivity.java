@@ -228,7 +228,8 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	        titleIndicator.setOnPageChangeListener(new OnPageChangeListener() {
 				public void onPageSelected(int arg0) {
 					if (channels != null) {
-						Channel ch = channels.get(arg0);
+						if (arg0 == 0) arg0 = 1; // TODO megahack 
+						Channel ch = channels.get(arg0 - 1); // TODO hack
 						if (ch != null) {
 							channelToView = ch.getName();
 						}

@@ -85,7 +85,7 @@ public class IrcMessage {
 	}
 
 	public boolean isPrivate() {
-		return channel.equals(PRIVATE);
+		return PRIVATE.equals(channel);
 	}
 
 	public String getLogicalChannel() {

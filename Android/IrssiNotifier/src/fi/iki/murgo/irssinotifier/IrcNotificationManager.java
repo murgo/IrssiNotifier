@@ -134,7 +134,7 @@ public class IrcNotificationManager {
 
         NotificationManager notificationManager = (NotificationManager)context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        Notification notification = new Notification(R.drawable.icon, tickerText, when);
+        Notification notification = new Notification(R.drawable.notification_icon, tickerText, when);
 		notification.flags |= Notification.FLAG_AUTO_CANCEL;
 		
 		if ((!prefs.isSpamFilterEnabled() || new Date().getTime() > lastSoundDate + 60000L)) {
