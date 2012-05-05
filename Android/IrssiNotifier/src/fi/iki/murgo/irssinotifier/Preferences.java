@@ -36,6 +36,7 @@ public class Preferences {
 	private static final String NOTIFICATION_SOUND = "NotificationSound";
 	private static final String LIGHTS_ENABLED = "LightsEnabled";
 	private static final String VIBRATION_ENABLED = "VibrationEnabled";
+	private static final String FEED_VIEW_DEFAULT = "FeedViewDefault";
 
 	private SharedPreferences sharedPreferences;
 	
@@ -145,5 +146,15 @@ public class Preferences {
 
 	public boolean isLightsEnabled() {
 		return sharedPreferences.getBoolean(LIGHTS_ENABLED, true);
+	}
+	
+	public boolean isFeedViewDefault() {
+		return sharedPreferences.getBoolean(FEED_VIEW_DEFAULT, true);
+	}
+	
+	public boolean setFeedViewDefault(boolean b) {
+		SharedPreferences.Editor editor = sharedPreferences.edit();
+		editor.putBoolean(FEED_VIEW_DEFAULT, b);
+		return editor.commit();
 	}
 }

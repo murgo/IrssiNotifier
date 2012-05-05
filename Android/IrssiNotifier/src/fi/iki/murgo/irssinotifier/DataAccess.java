@@ -13,7 +13,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DataAccess extends SQLiteOpenHelper {
 
 	private static final String DATABASE_NAME = "IrssiNotifier";
-	private static final int DATABASE_VERSION = 3;
+	private static final int DATABASE_VERSION = 4;
 
 	public DataAccess(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -23,7 +23,7 @@ public class DataAccess extends SQLiteOpenHelper {
 	public void onCreate(SQLiteDatabase db) {
 		try {
 			db.execSQL("CREATE TABLE Channel (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, orderIndex INTEGER)");
-			db.execSQL("CREATE TABLE IrcMessage (id INTEGER PRIMARY KEY AUTOINCREMENT, channelId INTEGER, message TEXT, nick TEXT, serverTimestamp INTEGER, externalId TEXT, shown INTEGER, FOREIGN KEY(channelId) REFERENCES Channel(Id))");
+			db.execSQL("CREATE TABLE IrcMessage (id INTEGER PRIMARY KEY AUTOINCREMENT, channelId INTEGER, message TEXT, nick TEXT, serverTimestamp INTEGER, externalId TEXT, shown INTEGER, FOREIGN KEY(channelId) REFERENCES Channel(Id), clearedFromFeed INTEGER)");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -31,10 +31,12 @@ public class DataAccess extends SQLiteOpenHelper {
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		if (oldVersion < 666) {
+		if (oldVersion < 2) {
 			db.execSQL("DROP TABLE IF EXISTS Channel");
 			db.execSQL("DROP TABLE IF EXISTS IrcMessage");
 			onCreate(db);
+		} else if (oldVersion < 4) {
+			db.execSQL("ALTER TABLE IrcMessage ADD COLUMN clearedFromFeed INTEGER");
 		}
 	}
 	
@@ -141,7 +143,7 @@ public class DataAccess extends SQLiteOpenHelper {
 	}
 
 	private List<IrcMessage> getMessagesForChannel(SQLiteDatabase database, Channel channel) {
-		Cursor cursor = database.query("IrcMessage", new String[] {"message", "nick", "serverTimestamp", "shown", "externalId" }, "channelId = ?", new String[] { Long.toString(channel.getId()) }, null, null, "serverTimestamp DESC", "100");
+		Cursor cursor = database.query("IrcMessage", new String[] {"message", "nick", "serverTimestamp", "shown", "externalId", "clearedFromFeed", "id"}, "channelId = ?", new String[] { Long.toString(channel.getId()) }, null, null, "serverTimestamp DESC", "100");
 		cursor.moveToFirst();
 		List<IrcMessage> list = new ArrayList<IrcMessage>();
 
@@ -150,7 +152,9 @@ public class DataAccess extends SQLiteOpenHelper {
 		int colServerTimestamp = cursor.getColumnIndex("serverTimestamp");
 		int colExternalId = cursor.getColumnIndex("externalId");
 		int colShown = cursor.getColumnIndex("shown");
-
+		int colClearedFromFeed = cursor.getColumnIndex("clearedFromFeed");
+		int colId = cursor.getColumnIndex("id");
+		
 		while (!cursor.isAfterLast()) {
 			IrcMessage message = new IrcMessage();
 			message.setMessage(cursor.getString(colMessage));
@@ -159,6 +163,8 @@ public class DataAccess extends SQLiteOpenHelper {
 			message.setExternalId(cursor.getString(colExternalId));
 			message.setChannel(channel.getName());
 			message.setShown(cursor.getInt(colShown) == 0 ? false : true);
+			message.setClearedFromFeed(cursor.getInt(colClearedFromFeed) == 0 ? false : true);
+			message.setId(cursor.getLong(colId));
 			
 			list.add(message);
 			cursor.moveToNext();
@@ -177,7 +183,14 @@ public class DataAccess extends SQLiteOpenHelper {
 		database.close();
 	}
 
-	public void handleChannelSettings(List<String> names) {
+	public void clearMessagesFromFeed(List<Long> messageIds) {
+		SQLiteDatabase database = getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put("clearedFromFeed", true);
+		for (Long id : messageIds) {
+			database.update("IrcMessage", values, "id = ?", new String[] { id.toString() });
+		}
+		database.close();
 	}
 
 	public void removeChannel(Channel channel) {
@@ -197,6 +210,14 @@ public class DataAccess extends SQLiteOpenHelper {
 		values.put("orderIndex", channel.getOrder());
 		
 		database.update("Channel", values, "id = ?", new String[] { Long.toString(channel.getId()) });
+		database.close();
+	}
+
+	public void clearAllMessagesFromFeed() {
+		SQLiteDatabase database = getWritableDatabase();
+		ContentValues values = new ContentValues();
+		values.put("clearedFromFeed", true);
+		database.update("IrcMessage", values, null, null);
 		database.close();
 	}
 }

@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-        <PreferenceCategory android:title="Encryption settings">
-            <EditTextPreference android:title="Encryption password" android:summary="This must be the same as the one in the Irssi script" android:defaultValue="password" android:key="EncryptionPassword" />
-        </PreferenceCategory>
+	<PreferenceCategory android:title="Encryption settings">
+	    <EditTextPreference android:title="Encryption password" android:summary="This must be the same as the one in the Irssi script" android:defaultValue="password" android:key="EncryptionPassword" />
+	</PreferenceCategory>
     
     <PreferenceCategory android:title="Notification settings">
-                <CheckBoxPreference android:title="Enable notifications" android:key="NotificationsEnabled" android:defaultValue="true" />
-                <ListPreference android:title="Notification mode" android:summary="How many notifications you want" android:key="notificationModeString" android:defaultValue="Single" android:entryValues="@array/notification_modes" android:entries="@array/notification_modes" />
-                <CheckBoxPreference android:title="Enable sound" android:key="SoundEnabled" android:defaultValue="true" />
-                <RingtonePreference android:title="Select notification sound" android:summary="Select the sound to play when notifying" android:ringtoneType="notification" android:key="NotificationSound" android:showDefault="true" android:showSilent="false" android:defaultValue="content://settings/system/notification_sound" />
-                <CheckBoxPreference android:title="Enable vibration" android:key="VibrationEnabled" android:defaultValue="true" />
-                <CheckBoxPreference android:title="Enable flashing lights" android:summary="Flashes LEDs when notifying (where applicable)" android:key="LightsEnabled" android:defaultValue="true" />
-                <CheckBoxPreference android:title="Enable spam filtering" android:summary="Only plays one notification sound per minute" android:key="SpamFilterEnabled" android:defaultValue="true" />
-        </PreferenceCategory>
-        
-        <PreferenceCategory android:title="Misc">
-            <Preference android:title="Channel settings" android:summary="Reorder and remove channels" android:key="channels" />
-            <Preference android:title="About IrssiNotifier" android:key="about" />
-        </PreferenceCategory>
+	    <CheckBoxPreference android:title="Enable notifications" android:key="NotificationsEnabled" android:defaultValue="true" />
+	    <ListPreference android:title="Notification mode" android:summary="How many notifications you want" android:key="notificationModeString" android:defaultValue="Single" android:entryValues="@array/notification_modes" android:entries="@array/notification_modes" />
+	    <CheckBoxPreference android:title="Enable sound" android:key="SoundEnabled" android:defaultValue="true" />
+	    <RingtonePreference android:title="Select notification sound" android:summary="Select the sound to play when notifying" android:ringtoneType="notification" android:key="NotificationSound" android:showDefault="true" android:showSilent="false" android:defaultValue="content://settings/system/notification_sound" />
+	    <CheckBoxPreference android:title="Enable vibration" android:key="VibrationEnabled" android:defaultValue="true" />
+	    <CheckBoxPreference android:title="Enable flashing lights" android:summary="Flashes LEDs when notifying (where applicable)" android:key="LightsEnabled" android:defaultValue="true" />
+	    <CheckBoxPreference android:title="Enable spam filtering" android:summary="Only plays one notification sound per minute" android:key="SpamFilterEnabled" android:defaultValue="true" />
+	    <CheckBoxPreference android:title="Feed view as default tab" android:summary="If turned off, channel with activity will be the tab to open" android:key="FeedViewDefault" android:defaultValue="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Misc">
+        <Preference android:title="Channel settings" android:summary="Reorder and remove channels" android:key="channels" />
+        <Preference android:title="About IrssiNotifier" android:key="about" />
+    </PreferenceCategory>
 </PreferenceScreen>

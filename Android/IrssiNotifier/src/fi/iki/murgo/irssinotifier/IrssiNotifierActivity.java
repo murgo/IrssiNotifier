@@ -33,6 +33,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	private String channelToView;
 	private List<Channel> channels;
 	private Object channelsLock = new Object();
+	private static final String FEED = "------------------------FEED";
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,7 +63,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
     	Intent i = getIntent();
     	if (i != null) {
     		String intentChannelToView = i.getStringExtra("Channel");
-    		if (intentChannelToView != null)
+    		if (intentChannelToView != null && !preferences.isFeedViewDefault())
     			channelToView = intentChannelToView;
     	}
         
@@ -79,7 +80,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	@Override
 	protected void onNewIntent(Intent intent) {
 		String intentChannelToView = intent.getStringExtra("Channel");
-		if (intentChannelToView != null)
+		if (intentChannelToView != null && !preferences.isFeedViewDefault())
 			channelToView = intentChannelToView;
 		
         IrcNotificationManager.getInstance().mainActivityOpened(this);
@@ -137,9 +138,8 @@ public class IrssiNotifierActivity extends SherlockActivity {
 		return instance;
 	}
 	
-	private void startMainApp(boolean uptodate) {
+	private void startMainApp(final boolean uptodate) {
     	Log.d(TAG, "Main startup");
-        refreshUi();
         
         if (preferences.settingsNeedSending()) {
         	Log.d(TAG, "Settings are not saved, odd");
@@ -148,17 +148,8 @@ public class IrssiNotifierActivity extends SherlockActivity {
         
         final Activity ctx = this;
         
-        final Callback<List<Channel>> dataAccessCallback = new Callback<List<Channel>>() {
-			public void doStuff(List<Channel> param) {
-				synchronized (channelsLock) {
-					channels = param;
-				}
-				refreshUi();
-			}
-		};
-        
 		final long now = new Date().getTime();
-		DataFetcherTask task = new DataFetcherTask(preferences.getAuthToken(), preferences.getEncryptionPassword(), preferences.getLastFetchTime(), new Callback<DataFetchResult>() {
+		final DataFetcherTask dataFetcherTask = new DataFetcherTask(preferences.getAuthToken(), preferences.getEncryptionPassword(), preferences.getLastFetchTime(), new Callback<DataFetchResult>() {
 			// TODO: Move this into its own activity, so orientation changes work correctly
 			public void doStuff(DataFetchResult param) {
 		        setIndeterminateProgressBarVisibility(false);
@@ -191,17 +182,33 @@ public class IrssiNotifierActivity extends SherlockActivity {
 					return;
 				}
 				
-				DataAccessTask task = new DataAccessTask(ctx, dataAccessCallback);
+				DataAccessTask task = new DataAccessTask(ctx, new Callback<List<Channel>>() {
+					public void doStuff(List<Channel> param) {
+						synchronized (channelsLock) {
+							channels = param;
+							refreshUi();
+						}
+					}
+				});
 				task.execute(param.getMessages().toArray(new IrcMessage[0]));
 			}
 		});
 
-		if (!uptodate) {
-	        setIndeterminateProgressBarVisibility(true);
-	
-	        task.execute();
-		}
-        
+        final Callback<List<Channel>> dataAccessCallback = new Callback<List<Channel>>() {
+			public void doStuff(List<Channel> param) {
+				synchronized (channelsLock) {
+					channels = param;
+					refreshUi();
+				}
+
+				if (!uptodate) {
+			        setIndeterminateProgressBarVisibility(true);
+			
+			        dataFetcherTask.execute();
+				}
+			}
+		};
+
 		DataAccessTask datask = new DataAccessTask(ctx, dataAccessCallback);
 		datask.execute();
 	}
@@ -210,7 +217,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 		synchronized (channelsLock) {
 	        setContentView(R.layout.main);
 	        
-	        setIndeterminateProgressBarVisibility(!progressBarVisibility); // häx häx
+	        setIndeterminateProgressBarVisibility(!progressBarVisibility); // hack
 	        setIndeterminateProgressBarVisibility(!progressBarVisibility);
 	        
 			pager = (ViewPager) findViewById(R.id.pager);
@@ -228,10 +235,14 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	        titleIndicator.setOnPageChangeListener(new OnPageChangeListener() {
 				public void onPageSelected(int arg0) {
 					if (channels != null) {
-						if (arg0 == 0) arg0 = 1; // TODO megahack 
-						Channel ch = channels.get(arg0 - 1); // TODO hack
-						if (ch != null) {
-							channelToView = ch.getName();
+						if (arg0 == 0) {
+							// feed
+							channelToView = FEED;
+						} else {
+							Channel ch = channels.get(arg0 - 1);
+							if (ch != null) {
+								channelToView = ch.getName();
+							}
 						}
 					}
 				}
@@ -240,14 +251,22 @@ public class IrssiNotifierActivity extends SherlockActivity {
 				public void onPageScrollStateChanged(int arg0) { }
 			});
 	
-	        if (channelToView != null && channels != null && channels.size() > 1) {
-	        	for (int i = 0; i < channels.size(); i++) {
-	    			if (channels.get(i).getName().equals(channelToView)) {
-	    	    		pager.setCurrentItem(i);
-	    	    		break;
-	    			}
+	        if (channelToView != null && channels != null) {
+	        	if (channelToView.equals(FEED)) {
+	        		pager.setCurrentItem(0);
+	        	} else {
+		        	for (int i = 0; i < channels.size(); i++) {
+		    			if (channels.get(i).getName().equals(channelToView)) {
+		    	    		pager.setCurrentItem(i + 1);
+		    	    		break;
+		    			}
+		        	}
 	        	}
 	    	}
+	        
+	        if (channelToView == null) {
+	        	channelToView = FEED;
+	        }
 		}
 	}
 	
@@ -279,6 +298,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
 		getSupportMenuInflater().inflate(R.menu.mainmenu, menu);
+		
         if (!IntentSniffer.isIntentAvailable(this, IrssiConnectbotLauncher.INTENT_IRSSICONNECTBOT)) {
             menu.findItem(R.id.menu_irssi_connectbot).setVisible(false);
             menu.findItem(R.id.menu_irssi_connectbot).setEnabled(false);
@@ -298,6 +318,15 @@ public class IrssiNotifierActivity extends SherlockActivity {
 			DataAccess da = new DataAccess(this);
 			List<Channel> channels = da.getChannels();
 			Channel channelToClear = null;
+			
+			if (channelToView == null) return true;
+			
+			if (channelToView.equals(FEED)) {
+				da.clearAllMessagesFromFeed();
+				startMainApp(true);
+				return true;
+			}
+			
 			for (Channel ch : channels) {
 				if (ch.getName().equals(channelToView)) {
 					channelToClear = ch;

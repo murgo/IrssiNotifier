@@ -6,7 +6,6 @@
         android:icon="@drawable/irssi_connectbot"
         android:showAsAction="ifRoom|withText"
         android:title="Launch Irssi ConnectBot"
-        android:actionProviderClass="fi.iki.murgo.irssinotifier.IrssiConnectbotActionProvider"
         />
     
     <item
@@ -14,7 +13,6 @@
         android:icon="@drawable/ic_menu_preferences"
         android:showAsAction="ifRoom|withText"
         android:title="Settings"
-        android:actionProviderClass="fi.iki.murgo.irssinotifier.SettingsActionProvider"
         />
 
     <item
@@ -22,7 +20,6 @@
         android:icon="@drawable/ic_menu_close_clear_cancel"
         android:showAsAction="never|withText"
         android:title="Clear channel messages"
-        android:actionProviderClass="fi.iki.murgo.irssinotifier.ClearChannelActionProvider"
         />
 
     <item
@@ -30,7 +27,6 @@
         android:icon="@drawable/ic_menu_close_clear_cancel"
         android:showAsAction="never|withText"
         android:title="Remove all channels"
-        android:actionProviderClass="fi.iki.murgo.irssinotifier.RemoveAllChannelsActionProvider"
         />
     
 </menu>

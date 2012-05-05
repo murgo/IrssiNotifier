@@ -92,14 +92,18 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
 	private View createFeed() {
 		List<IrcMessage> messages = new ArrayList<IrcMessage>();
 		for (Channel ch : channels) {
-			messages.addAll(ch.getMessages());
+			for (IrcMessage message : ch.getMessages()) {
+				if (!message.getClearedFromFeed()) {
+					messages.add(message);
+				}
+			}
 		}
 		
 		Collections.sort(messages, new Comparator<IrcMessage>(){
 			public int compare(IrcMessage lhs, IrcMessage rhs) {
 				return lhs.getServerTimestamp().compareTo(rhs.getServerTimestamp());
 			}});
-
+		
     	View channelView = layoutInflater.inflate(R.layout.channel, null);
 		TextView name = (TextView) channelView.findViewById(R.id.channel_name);
 		name.setText("Feed");

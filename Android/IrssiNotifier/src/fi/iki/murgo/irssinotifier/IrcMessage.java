@@ -16,6 +16,8 @@ public class IrcMessage {
 	private Date serverTimestamp;
 	private String externalId;
 	private boolean shown;
+	private boolean clearedFromFeed;
+	private long id;
 	
 	public void Deserialize(String payload) throws JSONException {
 		Deserialize(new JSONObject(payload));
@@ -106,6 +108,22 @@ public class IrcMessage {
 	
 	public boolean isShown() {
 		return shown;
+	}
+
+	public void setClearedFromFeed(boolean b) {
+		this.clearedFromFeed = b;
+	}
+	
+	public boolean getClearedFromFeed() {
+		return clearedFromFeed;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
+	
+	public long getId() {
+		return id;
 	}
 
 }
