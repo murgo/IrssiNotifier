@@ -26,6 +26,10 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
 	private List<Channel> channels;
 	private final LayoutInflater layoutInflater;
 	private ChannelMode channelMode;
+	
+	private static final int FeedColor = 0xffffffff;
+	private static final int PrivateColor = 0xFFAF0040; 
+	private static final int ChannelColor = 0xFF0072B9; 
     
 	public MessagePagerAdapter(Context ctx, LayoutInflater layoutInflater) {
 		super();
@@ -107,7 +111,7 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
     	View channelView = layoutInflater.inflate(R.layout.channel, null);
 		TextView name = (TextView) channelView.findViewById(R.id.channel_name);
 		name.setText("Feed");
-		name.setTextColor(0xFF60FF60);
+		name.setTextColor(FeedColor);
 
 		LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
 		String lastChannel = "";
@@ -131,9 +135,9 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
 				tv.setTextSize(tv.getTextSize() * 1.05f);
 				if (lastChannel.startsWith("#")) {
 					// some channels might not start with #, but they're really rare
-					tv.setTextColor(0xFF6060FF);
+					tv.setTextColor(ChannelColor);
 				} else {
-					tv.setTextColor(0xFFFF6060);
+					tv.setTextColor(PrivateColor);
 				}				
 				messageContainer.addView(tv);
 			}
@@ -170,9 +174,9 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
 		name.setText(channel.getName());
 		if (channel.getName().startsWith("#")) {
 			// some channels might not start with #, but they're really rare
-			name.setTextColor(0xFF6060FF);
+			name.setTextColor(ChannelColor);
 		} else {
-			name.setTextColor(0xFFFF6060);
+			name.setTextColor(PrivateColor);
 		}
 	
 		LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
