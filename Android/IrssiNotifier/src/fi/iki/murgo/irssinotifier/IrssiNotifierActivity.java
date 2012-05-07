@@ -346,7 +346,11 @@ public class IrssiNotifierActivity extends SherlockActivity {
 	}
 
 	public void newMessage(IrcMessage msg) {
-		channelToView = msg.getLogicalChannel();
+		if (preferences.isFeedViewDefault()) {
+			channelToView = FEED;
+		} else {
+			channelToView = msg.getLogicalChannel();
+		}
         startMainApp(false);
 	}
 
