@@ -14,6 +14,8 @@ public class C2DMReceiver extends BroadcastReceiver {
 
     private static final String C2DM_DATA_ACTION = "action";
     private static final String C2DM_DATA_MESSAGE = "message";
+    
+    public static final String NOTIFICATION_CLEARED_INTENT = "fi.iki.murgo.irssinotifier.NOTIFICATION_CLEARED";
 
     public static final String EMAIL_OF_SENDER = "irssinotifier@gmail.com";
 	public static Callback<String[]> callback;
@@ -38,6 +40,9 @@ public class C2DMReceiver extends BroadcastReceiver {
             handleRegistration(context, intent);
         } else if (intent.getAction().equals("com.google.android.c2dm.intent.RECEIVE")) {
             handleMessage(context, intent);
+        } else if (intent.getAction().equals(NOTIFICATION_CLEARED_INTENT)) {
+        	IrcNotificationManager manager = IrcNotificationManager.getInstance();
+            manager.notificationCleared(context, intent);
         } else {
             Log.w(TAG, "Unexpected intent: " + intent);
         }

@@ -158,8 +158,14 @@ public class IrcNotificationManager {
         toLaunch.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         toLaunch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, toLaunch, PendingIntent.FLAG_UPDATE_CURRENT);
-
         notification.setLatestEventInfo(context, titleText, notificationMessage, contentIntent);
+        
+        Intent deleteIntent = new Intent(C2DMReceiver.NOTIFICATION_CLEARED_INTENT);
+        deleteIntent.putExtra("notificationMode", mode.toString());
+        deleteIntent.putExtra("channel", msg.getLogicalChannel());
+        PendingIntent pendingDeleteIntent = PendingIntent.getBroadcast(context, 0, deleteIntent, 0);
+        notification.deleteIntent = pendingDeleteIntent;
+        
         notificationManager.notify(notificationId, notification);
         System.out.println("LOGICALCHANNEL: " + msg.getLogicalChannel());
 	}
@@ -236,4 +242,14 @@ public class IrcNotificationManager {
 		return new Object[] {text, title, id};
 	}
 
+	public void notificationCleared(Context context, Intent intent) {
+		NotificationMode mode = NotificationMode.valueOf(intent.getStringExtra("notificationMode"));
+		
+		if (mode == NotificationMode.Single) {
+			 unreadCounts.clear();
+		} else if (mode == NotificationMode.PerChannel) {
+			String channel = intent.getStringExtra("channel");
+			unreadCounts.put(channel, 0);
+		}
+	}
 }
