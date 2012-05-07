@@ -8,11 +8,12 @@ Android deployment steps:
 2) Commit, test, yada yada
 3) Sign APK and zipalign using wizard: Eclipse -> IrssiNotifier -> Android -> Export signed -> next next next
 4) Test signed APK
-5) Go to https://play.google.com/apps/publish
-6) Upload new APK
-7) Deactivate old APK
-8) Activate new APK
-9) Write recent changes information
-10) Hit save
-11) ???
-12) Profit (still waiting for this part)
+5) Create tag: git tag -a v1.2 -m "Version 1.2" ; git push --tags
+6) Go to https://play.google.com/apps/publish
+7) Upload new APK
+8) Deactivate old APK
+9) Activate new APK
+10) Write recent changes information
+11) Hit save
+12) ???
+13) Profit (still waiting for this part)
