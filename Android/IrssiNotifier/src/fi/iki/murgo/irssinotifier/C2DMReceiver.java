@@ -1,7 +1,5 @@
 package fi.iki.murgo.irssinotifier;
 
-import org.acra.ErrorReporter;
-
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -63,7 +61,6 @@ public class C2DMReceiver extends BroadcastReceiver {
     	
         if (error != null || unregistered != null) {
         	preferences.setRegistrationId(null);
-        	ErrorReporter.getInstance().handleSilentException(new Exception("Error while registering to c2dm. Error: " + error + " Unregistered: " + unregistered));
         } else {
         	preferences.setRegistrationId(registrationId);
         }
