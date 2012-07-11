@@ -1,4 +1,4 @@
-#use strict;
+use strict;
 #use warnings;
 
 use Irssi;
@@ -157,8 +157,8 @@ sub event_key_pressed {
 
 Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_encryption_password', 'password');
 Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_api_token', '');
-Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_away_only', false);
-Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_ignore_active_window', false);
+Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_away_only', 0);
+Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_ignore_active_window', 0);
 Irssi::settings_add_int('IrssiNotifier', 'irssinotifier_require_idle_seconds', 0);
 
 Irssi::signal_add('message irc action', 'public');
