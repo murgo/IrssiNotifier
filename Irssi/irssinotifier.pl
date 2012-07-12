@@ -122,7 +122,7 @@ sub encrypt {
     my $pid = open2 my $out, my $in, qw(
         openssl enc -aes-128-cbc -salt -base64 -A -pass env:PASS
     );
-    print $in $text;
+    print $in "$text ";
     close $in;
     undef $/;  # read full output at once
     my $result = readline $out;
