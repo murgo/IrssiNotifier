@@ -1,11 +1,12 @@
-#use strict;
+use strict;
 #use warnings;
 
 use Irssi;
+use IPC::Open2 qw(open2);
 use POSIX;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "6";
+$VERSION = "7";
 %IRSSI = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -13,7 +14,7 @@ $VERSION = "6";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "http://irssinotifier.appspot.com",
-    changed     => "2012-04-10"
+    changed     => "2012-07-12"
 );
 
 my $lastMsg;
@@ -115,32 +116,19 @@ sub hilite {
     }
 }
 
-sub sanitize {
-    my $str = @_ ? shift : $_;
-    $str =~ s/((?:^|[^\\])(?:\\\\)*)'/$1\\'/g;
-    $str =~ s/\\'/´/g; # stupid perl
-    $str =~ s/'/´/g; # stupid perl
-    return "'$str'";
-}
-
 sub encrypt {
-    my $text = $_[0];
-    $text = sanitize $text;
-    my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
-    my $result = `/usr/bin/env echo $text| /usr/bin/env openssl enc -aes-128-cbc -salt -base64 -A -k "$encryption_password" | tr -d '\n'`;
+    my ($text) = @_;
+    local $ENV{PASS} = Irssi::settings_get_str('irssinotifier_encryption_password');
+    my $pid = open2 my $out, my $in, qw(
+        openssl enc -aes-128-cbc -salt -base64 -A -pass env:PASS
+    );
+    print $in $text;
+    close $in;
+    undef $/;  # read full output at once
+    my $result = readline $out;
+    waitpid $pid, 0;
+    $result =~ tr[+/][-_];
     $result =~ s/=//g;
-    $result =~ s/\+/-/g;
-    $result =~ s/\//_/g;
-    chomp($result);
-    return $result;
-}
-
-sub decrypt {
-    my $text = $_[0];
-    $text = sanitize $text;
-    my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
-    my $result = `/usr/bin/env echo $text| /usr/bin/env openssl enc -aes-128-cbc -d -salt -base64 -A -k "$encryption_password"`;
-    chomp($result);
     return $result;
 }
 
@@ -157,8 +145,8 @@ sub event_key_pressed {
 
 Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_encryption_password', 'password');
 Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_api_token', '');
-Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_away_only', false);
-Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_ignore_active_window', false);
+Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_away_only', 0);
+Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_ignore_active_window', 0);
 Irssi::settings_add_int('IrssiNotifier', 'irssinotifier_require_idle_seconds', 0);
 
 Irssi::signal_add('message irc action', 'public');
