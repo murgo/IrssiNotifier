@@ -31,8 +31,14 @@ $ua->timeout(3);
 
 sub private {
     my ( $server, $msg, $nick, $address ) = @_;
+    $lastServer = $server;
+    if (   Irssi::settings_get_str("irssinotifier_ignore_server")
+        && Irssi::settings_get_str("irssinotifier_ignore_server") eq
+        $lastServer->{tag} )
+    {
+        return;
+    }
     $lastMsg     = $msg;
-    $lastServer  = $server;
     $lastNick    = $nick;
     $lastAddress = $address;
     $lastTarget  = "!PRIVATE";
@@ -40,8 +46,14 @@ sub private {
 
 sub public {
     my ( $server, $msg, $nick, $address, $target ) = @_;
+    $lastServer = $server;
+    if (   Irssi::settings_get_str("irssinotifier_ignore_server")
+        && Irssi::settings_get_str("irssinotifier_ignore_server") eq
+        $lastServer->{tag} )
+    {
+        return;
+    }
     $lastMsg     = $msg;
-    $lastServer  = $server;
     $lastNick    = $nick;
     $lastAddress = $address;
     $lastTarget  = $target;
@@ -60,6 +72,9 @@ sub print_text {
             || (
                 $dest->{window}->{refnum} != ( Irssi::active_win()->{refnum} ) )
         )
+        && (   Irssi::settings_get_str("irssinotifier_ignore_server")
+            && Irssi::settings_get_str("irssinotifier_ignore_server") ne
+            $lastServer->{tag} )
         && activity_allows_hilight()
       )
     {
@@ -181,7 +196,8 @@ sub event_key_pressed {
 
 Irssi::settings_add_str( 'IrssiNotifier', 'irssinotifier_encryption_password',
     'password' );
-Irssi::settings_add_str( 'IrssiNotifier', 'irssinotifier_api_token', '' );
+Irssi::settings_add_str( 'IrssiNotifier', 'irssinotifier_api_token',     '' );
+Irssi::settings_add_str( 'IrssiNotifier', 'irssinotifier_ignore_server', '' );
 Irssi::settings_add_bool( 'IrssiNotifier', 'irssinotifier_away_only', 0 );
 Irssi::settings_add_bool( 'IrssiNotifier', 'irssinotifier_ignore_active_window',
     0 );
