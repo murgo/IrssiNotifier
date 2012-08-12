@@ -96,7 +96,7 @@ sub hilite {
             Irssi::print("IrssiNotifier: Encryption password cannot contain backticks, double quotes or backslashes");
             return;
         }
-        $lastMsg = encrypt($lastMsg);
+        $lastMsg = encrypt(Irssi::strip_codes($lastMsg));
         $lastNick = encrypt($lastNick);
         $lastTarget = encrypt($lastTarget);
     } else {
