@@ -62,7 +62,7 @@ sub should_send_notification {
         return 0; # invalid settings
     }
 
-    if (Irssi::settings_get_bool("irssinotifier_away_only") && $lastServer->{usermode_away}) {
+    if (Irssi::settings_get_bool("irssinotifier_away_only") && !$lastServer->{usermode_away}) {
         return 0; # away only
     }
 
