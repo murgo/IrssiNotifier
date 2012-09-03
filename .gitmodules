@@ -1,0 +1,3 @@
+[submodule "Android/Lib/drag-sort-listview"]
+	path = Android/Lib/drag-sort-listview
+	url = https://github.com/bauerca/drag-sort-listview.git
