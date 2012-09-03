@@ -62,7 +62,7 @@ sub should_send_notification {
         return 0; # invalid settings
     }
 
-    if (Irssi::settings_get_bool("irssinotifier_away_only") && $lastServer->{usermode_away}) {
+    if (Irssi::settings_get_bool("irssinotifier_away_only") && !$lastServer->{usermode_away}) {
         return 0; # away only
     }
 
@@ -70,8 +70,28 @@ sub should_send_notification {
         return 0; # ignore active window
     }
 
-    if (Irssi::settings_get_str("irssinotifier_ignore_server") && Irssi::settings_get_str("irssinotifier_ignore_server") eq $lastServer->{tag}) {
-        return 0; # ignored server
+    my $ignore_server_string = Irssi::settings_get_str("irssinotifier_ignore_server");
+    if ($ignore_server_string) {
+        my @ignored_servers = split(/ /, $ignore_server_string);
+        my $server;
+
+        foreach $server (@ignored_servers) {
+            if (lc($server) eq lc($lastServer->{tag})) {
+                return 0; # ignored server
+            }
+        }
+    }
+
+    my $ignore_channel_string = Irssi::settings_get_str("irssinotifier_ignore_channel");
+    if ($ignore_channel_string) {
+        my @ignored_channels = split(/ /, $ignore_channel_string);
+        my $channel;
+
+        foreach $channel (@ignored_channels) {
+            if (lc($channel) eq lc($lastTarget)) {
+                return 0; # ignored channel
+            }
+        }
     }
 
     if (Irssi::settings_get_str("irssinotifier_ignore_channel") && Irssi::settings_get_str("irssinotifier_ignore_channel") eq $lastTarget) {
@@ -177,16 +197,17 @@ sub event_key_pressed {
     $lastKeyboardActivity = time;
 }
 
-Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_encryption_password', 'password');
-Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_api_token', '');
-Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_ignore_server', '');
-Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_ignore_channel', '');
-Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_away_only', 0);
-Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_ignore_active_window', 0);
-Irssi::settings_add_int('IrssiNotifier', 'irssinotifier_require_idle_seconds', 0);
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_encryption_password', 'password');
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_api_token', '');
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignore_server', '');
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignore_channel', '');
+Irssi::settings_add_bool('irssinotifier', 'irssinotifier_away_only', 0);
+Irssi::settings_add_bool('irssinotifier', 'irssinotifier_ignore_active_window', 0);
+Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0);
 
 Irssi::signal_add( 'message irc action', 'public');
 Irssi::signal_add( 'message public',     'public');
 Irssi::signal_add( 'message private',    'private');
 Irssi::signal_add( 'print text',         'print_text');
 Irssi::signal_add( 'setup changed',      'are_settings_valid');
+
