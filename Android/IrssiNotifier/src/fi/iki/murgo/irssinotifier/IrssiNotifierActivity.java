@@ -228,10 +228,12 @@ public class IrssiNotifierActivity extends SherlockActivity {
 			if (channels != null) {
 				adapter.setChannels(channels);
 			}
+			
 	        pager.setAdapter(adapter);
 	        
 	        TitlePageIndicator titleIndicator = (TitlePageIndicator)findViewById(R.id.titles);
 	        titleIndicator.setViewPager(pager);
+	        
 	        titleIndicator.setOnPageChangeListener(new OnPageChangeListener() {
 				public void onPageSelected(int arg0) {
 					if (channels != null) {

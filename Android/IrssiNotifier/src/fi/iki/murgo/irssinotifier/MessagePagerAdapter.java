@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import com.viewpagerindicator.TitleProvider;
-
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Parcelable;
@@ -21,7 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
+public class MessagePagerAdapter extends PagerAdapter {
 	private Context ctx;
 	private List<Channel> channels;
 	private final LayoutInflater layoutInflater;
@@ -262,8 +260,10 @@ public class MessagePagerAdapter extends PagerAdapter implements TitleProvider {
 	public void setChannels(List<Channel> ircMessages) {
 		this.channels = ircMessages;
 	}
-
-	public String getTitle(int position) {
+	
+	
+	@Override
+	public CharSequence getPageTitle(int position) {
 		if (channels.size() == 0) return "";
 		if (channelMode == ChannelMode.Channels) return channels.get(position).getName();
 		if (position == 0) return "Feed";
