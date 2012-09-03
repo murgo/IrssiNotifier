@@ -12,6 +12,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.app.NotificationCompat;
 
 public class IrcNotificationManager {
 
@@ -74,6 +75,7 @@ public class IrcNotificationManager {
         int notificationId;
         long when = new Date().getTime();
         IrcMessage msg = new IrcMessage();
+        int currentUnreadCount = 1;
 
         try {
             msg.Deserialize(message);
@@ -88,6 +90,7 @@ public class IrcNotificationManager {
             titleText = (String) values[1];
             notificationId = (Integer) values[2];
             when = msg.getServerTimestamp().getTime();
+            currentUnreadCount = (Integer) values[3];
 
             /*
              * if (getUnreadCount() <= 1) { tickerText = "New IRC message"; }
@@ -127,23 +130,26 @@ public class IrcNotificationManager {
             return;
         }
 
-        NotificationManager notificationManager = (NotificationManager) context
-                .getSystemService(Context.NOTIFICATION_SERVICE);
-
-        Notification notification = new Notification(R.drawable.notification_icon, tickerText, when);
-        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+        builder.setSmallIcon(R.drawable.notification_icon);
+        builder.setTicker(tickerText);
+        builder.setWhen(when);
+        builder.setAutoCancel(true);
+        builder.setContentText(notificationMessage);
+        builder.setContentTitle(titleText);
+        builder.setNumber(currentUnreadCount);
 
         if ((!prefs.isSpamFilterEnabled() || new Date().getTime() > lastSoundDate + 60000L)) {
             if (prefs.isSoundEnabled()) {
-                notification.sound = prefs.getNotificationSound();
+                builder.setSound(prefs.getNotificationSound());
             }
 
             if (prefs.isVibrationEnabled()) {
-                notification.defaults |= Notification.DEFAULT_VIBRATE;
+                builder.setVibrate(new long[] { 0, 100, 200, 100, 400, 200, 200, 100, 200, 100 });
             }
 
             if (prefs.isLightsEnabled()) {
-                notification.defaults |= Notification.DEFAULT_LIGHTS;
+                builder.setDefaults(Notification.DEFAULT_LIGHTS);
             }
 
             lastSoundDate = new Date().getTime();
@@ -155,16 +161,17 @@ public class IrcNotificationManager {
         toLaunch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent contentIntent = PendingIntent.getActivity(context, 0, toLaunch,
                 PendingIntent.FLAG_UPDATE_CURRENT);
-        notification.setLatestEventInfo(context, titleText, notificationMessage, contentIntent);
+        builder.setContentIntent(contentIntent);
 
         Intent deleteIntent = new Intent(C2DMReceiver.NOTIFICATION_CLEARED_INTENT);
         deleteIntent.putExtra("notificationMode", mode.toString());
         deleteIntent.putExtra("channel", msg.getLogicalChannel());
         PendingIntent pendingDeleteIntent = PendingIntent.getBroadcast(context, 0, deleteIntent, 0);
-        notification.deleteIntent = pendingDeleteIntent;
-
+        builder.setDeleteIntent(pendingDeleteIntent);
+        
+        Notification notification = builder.getNotification();
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(notificationId, notification);
-        System.out.println("LOGICALCHANNEL: " + msg.getLogicalChannel());
     }
 
     public void mainActivityOpened(Context context) {
@@ -178,13 +185,14 @@ public class IrcNotificationManager {
         String text = null;
         String title = null;
         int id = 0;
+        int count = 0;
 
-        int unreadCount = getUnreadCount() + 1; // this is called before adding
-                                                // latest
+        int unreadCount = getUnreadCount() + 1; // this is called before adding latest
 
         switch (mode) {
             case Single:
                 id = 1;
+                count = unreadCount;
                 if (msg.isPrivate()) {
                     if (unreadCount <= 1) {
                         title = "Private message from " + msg.getNick();
@@ -208,6 +216,7 @@ public class IrcNotificationManager {
 
             case PerMessage:
                 id = perMessageNotificationId++;
+                count = 1;
                 if (msg.isPrivate()) {
                     title = "Private message from " + msg.getNick();
                     text = msg.getMessage();
@@ -220,6 +229,7 @@ public class IrcNotificationManager {
             case PerChannel:
                 int channelUnreadCount = getUnreadCountForChannel(msg.getLogicalChannel()) + 1;
                 id = msg.getLogicalChannel().hashCode();
+                count = channelUnreadCount;
                 if (msg.isPrivate()) {
                     if (channelUnreadCount <= 1) {
                         title = "Private message from " + msg.getNick();
@@ -241,7 +251,7 @@ public class IrcNotificationManager {
         }
 
         return new Object[] {
-                text, title, id
+                text, title, id, count
         };
     }
 
