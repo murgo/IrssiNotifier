@@ -3,25 +3,28 @@ package fi.iki.murgo.irssinotifier;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.app.ListActivity;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
+import com.mobeta.android.dslv.DragSortListView;
 
-import com.commonsware.cwac.tlv.TouchListView;
+import android.app.AlertDialog;
+import android.app.ListActivity;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.ArrayAdapter;
 
 public class ChannelSettingsActivity extends ListActivity {
 
-	private IconicAdapter adapter = null;
 	private List<Channel> channels;
+    private ArrayAdapter<String> adapter;
+    private Context ctx;
 	
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
-		setContentView(R.layout.channel_settings);
+        ctx = this;
 		
 		DataAccess da = new DataAccess(this);
 		channels = da.getChannels();
@@ -29,15 +32,17 @@ public class ChannelSettingsActivity extends ListActivity {
 		for (Channel ch : channels)
 			channelNames.add(ch.getName());
 
+		setContentView(R.layout.channel_settings);
+        final DragSortListView lv = (DragSortListView) getListView(); 
+
+        lv.setDropListener(onDrop);
+		lv.setRemoveListener(onRemove);
+        lv.setOnItemLongClickListener(getOnItemLongClickListener());
 		
-		TouchListView tlv=(TouchListView)getListView();
-		adapter = new IconicAdapter(channelNames);
+        adapter = new ArrayAdapter<String>(this, R.layout.channel_settings_row, R.id.label, channelNames);
 		setListAdapter(adapter);
-		
-		tlv.setDropListener(onDrop);
-		tlv.setRemoveListener(onRemove);
-		
-		MessageBox.Show(this, null, "Drag channels from the grabber to reorder them, swipe grabber right to remove channel", null);
+
+		MessageBox.Show(this, null, "Drag channels from the grabber to reorder them, long press channel to remove it.", null);
 	}
 	
 	@Override
@@ -72,42 +77,47 @@ public class ChannelSettingsActivity extends ListActivity {
 		IrssiNotifierActivity.needsRefresh();
 	}
 	
-	private TouchListView.DropListener onDrop=new TouchListView.DropListener() {
+	private DragSortListView.DropListener onDrop = new DragSortListView.DropListener() {
+		@Override
 		public void drop(int from, int to) {
-				String item = adapter.getItem(from);
-				
-				adapter.remove(item);
-				adapter.insert(item, to);
+			String item = adapter.getItem(from);
+
+			adapter.remove(item);
+			adapter.insert(item, to);
 		}
 	};
-	
-	private TouchListView.RemoveListener onRemove=new TouchListView.RemoveListener() {
+
+	private DragSortListView.RemoveListener onRemove = new DragSortListView.RemoveListener() {
+		@Override
 		public void remove(int which) {
-				adapter.remove(adapter.getItem(which));
+			adapter.remove(adapter.getItem(which));
 		}
 	};
 	
-	class IconicAdapter extends ArrayAdapter<String> {
-		private List<String> data;
-		
-		IconicAdapter(List<String> data) {
-			super(ChannelSettingsActivity.this, R.layout.channel_settings_row, data);
-			this.data = data;
-		}
-		
-		public View getView(int position, View convertView, ViewGroup parent) {
-			View row = convertView;
-			
-			if (row == null) {
-				LayoutInflater inflater=getLayoutInflater();
-				row = inflater.inflate(R.layout.channel_settings_row, parent, false);
+	private OnItemLongClickListener getOnItemLongClickListener() {
+		return new OnItemLongClickListener() {
+			@Override
+			public boolean onItemLongClick(AdapterView<?> arg0, final View arg1, final int arg2, long arg3) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+				final int index = arg2;
+				builder.setMessage("Are you sure you want to remove channel " + channels.get(index).getName() )
+				       .setCancelable(false)
+				       .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+				           public void onClick(DialogInterface dialog, int id) {
+				        	   String item = adapter.getItem(index);
+				        	   adapter.remove(item);
+				           }
+				       })
+				       .setNegativeButton("No", new DialogInterface.OnClickListener() {
+				           public void onClick(DialogInterface dialog, int id) {
+				                dialog.cancel();
+				           }
+				       });
+				AlertDialog alert = builder.create();
+				alert.show();
+				
+				return true;
 			}
-			
-			TextView label = (TextView)row.findViewById(R.id.label);
-			
-			label.setText("" + (position + 1) + ": " + data.get(position));
-			
-			return row;
-		}
+		};
 	}
 }

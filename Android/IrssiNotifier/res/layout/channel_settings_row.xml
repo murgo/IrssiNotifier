@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="64dip"
@@ -6,7 +7,7 @@
     android:background="#333333"
     >
 
-    <ImageView android:id="@+id/grabber_icon"
+    <ImageView android:id="@id/drag"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentBottom="true"
@@ -22,7 +23,7 @@
         android:paddingLeft="9dip"
         android:layout_height="wrap_content"
         android:layout_alignWithParentIfMissing="true"
-        android:layout_toRightOf="@id/grabber_icon"
+        android:layout_toRightOf="@id/drag"
         android:layout_centerVertical="true"
         android:ellipsize="marquee"
         android:singleLine="true"
