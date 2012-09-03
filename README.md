@@ -16,7 +16,7 @@ Web page: https://irssinotifier.appspot.com/
 
 - [ActionBarSherlock](https://github.com/JakeWharton/ActionBarSherlock). Thanks, [Jake Wharton](https://github.com/JakeWharton).
 - [ViewPagerIndicator](https://github.com/JakeWharton/Android-ViewPagerIndicator/). Thanks, [Jake Wharton](https://github.com/JakeWharton).
-- [drag-sort-listview](https://github.com/bauerca/drag-sort-listview). Thanks, [Carl Bauer](https://github.com/bauerca).
+- [DragSortListView](https://github.com/bauerca/drag-sort-listview). Thanks, [Carl Bauer](https://github.com/bauerca).
 
 ##License
 
