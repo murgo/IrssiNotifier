@@ -138,21 +138,23 @@ public class IrcNotificationManager {
         builder.setContentText(notificationMessage);
         builder.setContentTitle(titleText);
         builder.setNumber(currentUnreadCount);
-
+        
         if ((!prefs.isSpamFilterEnabled() || new Date().getTime() > lastSoundDate + 60000L)) {
+            int defaults = 0;
             if (prefs.isSoundEnabled()) {
                 builder.setSound(prefs.getNotificationSound());
             }
 
             if (prefs.isVibrationEnabled()) {
-                builder.setVibrate(new long[] { 0, 100, 200, 100, 400, 200, 200, 100, 200, 100 });
+                defaults |= Notification.DEFAULT_VIBRATE;
             }
 
             if (prefs.isLightsEnabled()) {
-                builder.setDefaults(Notification.DEFAULT_LIGHTS);
+                defaults |=  Notification.DEFAULT_LIGHTS;
             }
 
             lastSoundDate = new Date().getTime();
+            builder.setDefaults(defaults);
         }
 
         Intent toLaunch = new Intent(context, IrssiNotifierActivity.class);
@@ -169,7 +171,7 @@ public class IrcNotificationManager {
         PendingIntent pendingDeleteIntent = PendingIntent.getBroadcast(context, 0, deleteIntent, 0);
         builder.setDeleteIntent(pendingDeleteIntent);
         
-        Notification notification = builder.getNotification();
+        Notification notification = builder.build();
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(notificationId, notification);
     }
