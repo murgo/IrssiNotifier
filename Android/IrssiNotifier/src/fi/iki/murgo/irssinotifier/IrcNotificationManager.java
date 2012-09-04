@@ -1,8 +1,12 @@
 
 package fi.iki.murgo.irssinotifier;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONException;
@@ -28,33 +32,38 @@ public class IrcNotificationManager {
     private IrcNotificationManager() {
     }
 
-    private Map<String, Integer> unreadCounts = new HashMap<String, Integer>();
+    private Map<String, List<IrcMessage>> unread = new HashMap<String, List<IrcMessage>>();
     private int perMessageNotificationId = 2;
     private long lastSoundDate = 0;
     private DataAccess da;
 
     private int getUnreadCount() {
         int total = 0;
-        for (int i : unreadCounts.values()) {
-            total += i;
+        for (List<IrcMessage> msgs : unread.values()) {
+            total += msgs.size();
         }
         return total;
     }
 
     public int getUnreadCountForChannel(String channel) {
-        if (!unreadCounts.containsKey(channel))
+        if (!unread.containsKey(channel))
             return 0;
 
-        return unreadCounts.get(channel);
+        return unread.get(channel).size();
     }
 
     private void addUnread(IrcMessage msg) {
-        String key = msg.isPrivate() ? msg.getNick() : msg.getChannel();
+        String key = msg.getLogicalChannel();
 
-        if (unreadCounts.containsKey(key))
-            unreadCounts.put(key, unreadCounts.get(key) + 1);
-        else
-            unreadCounts.put(key, 1);
+        List<IrcMessage> msgs;
+        if (unread.containsKey(key))
+            msgs = unread.get(key);
+        else {
+            msgs = new ArrayList<IrcMessage>();
+            unread.put(key, msgs);
+        }
+        
+        msgs.add(msg);
     }
 
     public void handle(Context context, String message) {
@@ -76,6 +85,7 @@ public class IrcNotificationManager {
         long when = new Date().getTime();
         IrcMessage msg = new IrcMessage();
         int currentUnreadCount = 1;
+        List<String> messageLines = null;
 
         try {
             msg.Deserialize(message);
@@ -84,22 +94,17 @@ public class IrcNotificationManager {
             if (da == null)
                 da = new DataAccess(context);
             da.handleMessage(msg);
-
-            Object[] values = getValues(msg, mode);
-            notificationMessage = (String) values[0];
-            titleText = (String) values[1];
-            notificationId = (Integer) values[2];
-            when = msg.getServerTimestamp().getTime();
-            currentUnreadCount = (Integer) values[3];
-
-            /*
-             * if (getUnreadCount() <= 1) { tickerText = "New IRC message"; }
-             * else { tickerText = "" + getUnreadCount() + " new IRC messages";
-             * }
-             */
-            tickerText = titleText;
-
             addUnread(msg);
+
+            ValueList values = getValues(msg, mode);
+            notificationMessage = values.text;
+            titleText = values.title; 
+            notificationId = values.id;
+            when = msg.getServerTimestamp().getTime();
+            currentUnreadCount = values.count;
+            messageLines = values.messageLines;
+
+            tickerText = titleText;
         } catch (CryptoException e) {
             titleText = "IrssiNotifier error";
             notificationMessage = "Unable to decrypt data. Perhaps encryption key is wrong?";
@@ -112,17 +117,10 @@ public class IrcNotificationManager {
             notificationId = 1;
         }
 
-        /*
-         * // Stupid piece of shit always returns true boolean foreground =
-         * false; try { // foreground = new
-         * ForegroundCheckTask().execute(context).get(); } catch (Exception e) {
-         * e.printStackTrace(); }
-         */
-
         IrssiNotifierActivity foregroundInstance = IrssiNotifierActivity.getForegroundInstance();
         if (foregroundInstance != null) {
             foregroundInstance.newMessage(msg);
-            unreadCounts = new HashMap<String, Integer>();
+            unread.clear();
             return;
         }
 
@@ -137,7 +135,10 @@ public class IrcNotificationManager {
         builder.setAutoCancel(true);
         builder.setContentText(notificationMessage);
         builder.setContentTitle(titleText);
-        builder.setNumber(currentUnreadCount);
+        
+        if (currentUnreadCount > 1) {
+            builder.setNumber(currentUnreadCount);
+        }
         
         if ((!prefs.isSpamFilterEnabled() || new Date().getTime() > lastSoundDate + 60000L)) {
             int defaults = 0;
@@ -171,47 +172,73 @@ public class IrcNotificationManager {
         PendingIntent pendingDeleteIntent = PendingIntent.getBroadcast(context, 0, deleteIntent, 0);
         builder.setDeleteIntent(pendingDeleteIntent);
         
+        if (messageLines != null && messageLines.size() > 1) {
+            NotificationCompat.InboxStyle inboxStyle = new NotificationCompat.InboxStyle();
+            
+            for (String line : messageLines)
+                inboxStyle.addLine(line);
+            
+            builder.setStyle(inboxStyle);
+        }
+        
         Notification notification = builder.build();
+        
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(notificationId, notification);
     }
 
     public void mainActivityOpened(Context context) {
-        unreadCounts = new HashMap<String, Integer>();
-        NotificationManager notificationManager = (NotificationManager) context
-                .getSystemService(Context.NOTIFICATION_SERVICE);
+        unread.clear();
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
     }
 
-    private Object[] getValues(IrcMessage msg, NotificationMode mode) {
+    private ValueList getValues(IrcMessage msg, NotificationMode mode) {
         String text = null;
         String title = null;
         int id = 0;
         int count = 0;
-
-        int unreadCount = getUnreadCount() + 1; // this is called before adding latest
+        ArrayList<String> messageLines = new ArrayList<String>();
 
         switch (mode) {
             case Single:
                 id = 1;
+                int unreadCount = getUnreadCount();
                 count = unreadCount;
-                if (msg.isPrivate()) {
-                    if (unreadCount <= 1) {
+                
+                if (unreadCount <= 1) {
+                    if (msg.isPrivate()) {
                         title = "Private message from " + msg.getNick();
                         text = msg.getMessage();
                     } else {
-                        title = "" + unreadCount + " new hilights";
-                        text = "Last: " + msg.getLogicalChannel() + " (" + msg.getNick() + ") "
-                                + msg.getMessage();
-                    }
-                } else {
-                    if (unreadCount <= 1) {
                         title = "Hilight at " + msg.getChannel();
                         text = "(" + msg.getNick() + ") " + msg.getMessage();
+                    }
+                } else {
+                    if (msg.isPrivate()) {
+                        title = "" + unreadCount + " new hilights";
+                        text = "Last: (" + msg.getNick() + ") " + msg.getMessage();
                     } else {
                         title = "" + unreadCount + " new hilights";
-                        text = "Last: " + msg.getLogicalChannel() + " (" + msg.getNick() + ") "
-                                + msg.getMessage();
+                        text = "Last: " + msg.getLogicalChannel() + " (" + msg.getNick() + ") " + msg.getMessage();
+                    }
+
+                    List<IrcMessage> allMessages = new ArrayList<IrcMessage>();
+                    for (List<IrcMessage> list : unread.values()) {
+                        allMessages.addAll(list);
+                    }
+                    Collections.sort(allMessages, new Comparator<IrcMessage>() {
+                        public int compare(IrcMessage lhs, IrcMessage rhs) {
+                            return lhs.getServerTimestamp().compareTo(rhs.getServerTimestamp());
+                        }
+                    });
+
+                    for (IrcMessage message : allMessages) {
+                        if (message.isPrivate()) {
+                            messageLines.add("(" + message.getNick() + ") " + message.getMessage());
+                        } else {
+                            messageLines.add(message.getLogicalChannel() + " (" + message.getNick() + ") " + message.getMessage());
+                        }
                     }
                 }
                 break;
@@ -229,7 +256,7 @@ public class IrcNotificationManager {
                 break;
 
             case PerChannel:
-                int channelUnreadCount = getUnreadCountForChannel(msg.getLogicalChannel()) + 1;
+                int channelUnreadCount = getUnreadCountForChannel(msg.getLogicalChannel());
                 id = msg.getLogicalChannel().hashCode();
                 count = channelUnreadCount;
                 if (msg.isPrivate()) {
@@ -245,26 +272,45 @@ public class IrcNotificationManager {
                         title = "Hilight at " + msg.getChannel();
                         text = "(" + msg.getNick() + ") " + msg.getMessage();
                     } else {
-                        title = "" + unreadCount + " new hilights at " + msg.getChannel();
+                        title = "" + channelUnreadCount + " new hilights at " + msg.getChannel();
                         text = "Last: (" + msg.getNick() + ") " + msg.getMessage();
                     }
                 }
+                
+                List<IrcMessage> messages = unread.get(msg.getLogicalChannel());
+                for (IrcMessage message : messages) {
+                    messageLines.add("(" + message.getNick() + ") " + message.getMessage());
+                }
+                
                 break;
         }
-
-        return new Object[] {
-                text, title, id, count
-        };
+        
+        ValueList values = new ValueList();
+        values.text = text;
+        values.title = title;
+        values.id = id;
+        values.count = count;
+        values.messageLines = messageLines;
+        
+        return values;
     }
 
     public void notificationCleared(Context context, Intent intent) {
         NotificationMode mode = NotificationMode.valueOf(intent.getStringExtra("notificationMode"));
 
         if (mode == NotificationMode.Single) {
-            unreadCounts.clear();
+            unread.clear();
         } else if (mode == NotificationMode.PerChannel) {
             String channel = intent.getStringExtra("channel");
-            unreadCounts.put(channel, 0);
+            unread.get(channel).clear();
         }
+    }
+    
+    private class ValueList {
+        public String text;
+        public String title;
+        public int id;
+        public int count;
+        public List<String> messageLines;
     }
 }
