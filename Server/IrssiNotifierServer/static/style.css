@@ -97,6 +97,21 @@ img.center {
 	background-color: #1068ce;
 }
 
+.navibutton a:link{
+	color: #fafafa;
+	text-decoration: none;
+}
+
+.navibutton a:visited{
+	color: #fafafa;
+	text-decoration: none;
+}
+
+.navibutton a:hover{
+	color: #fafafa;
+	text-decoration: none;
+}
+
 .hidden {
 	display: none;
 }

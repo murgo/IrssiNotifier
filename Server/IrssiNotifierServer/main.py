@@ -83,32 +83,33 @@ class WebController(BaseController):
     def get(self):
         logging.debug("WebController.get()")
         user = Login().getIrssiUser(self.request.params)
-
-        if not user:
-            template = jinja_environment.get_template('html/login.html')
-            template_values = { 'login_url': users.create_login_url(self.request.uri).replace("&", "&amp;"), }
-            self.response.out.write(template.render(template_values))
-            return
         
-        tokens = C2dmToken.all()
-        tokens.ancestor(user.key())
-        tokensList = tokens.fetch(10)
+        tokensList = []
+        count = 0
 
-        messages = Message.all()
-        messages.ancestor(user.key())
-        count = messages.count(1)
+        if user is not None:
+            tokens = C2dmToken.all()
+            tokens.ancestor(user.key())
+            tokensList = tokens.fetch(10)
+
+            messages = Message.all()
+            messages.ancestor(user.key())
+            count = messages.count(1)
 
         template_values = {
              'user': user,
              'tokens': tokensList,
+             'loggedin': user is not None,
+             'login_url': users.create_login_url(self.request.uri).replace("&", "&amp;"),
              'logout_url': users.create_logout_url(self.request.uri).replace("&", "&amp;"),
              'irssiworking': count != 0,
              'c2dmtokencount': len(tokensList),
         }
+
         logging.debug(template_values)
         logging.debug(tokensList)
 
-        template = jinja_environment.get_template('html/index.html')
+        template = jinja_environment.get_template('html/login.html')
         self.response.out.write(template.render(template_values))
 
 

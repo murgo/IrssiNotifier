@@ -25,29 +25,58 @@
 	
 	<!-- Google Analytics -->
 	<script type="text/javascript">
-		var currentView = "#content-main";
+		var currentView = "";
 	
-		function switchView(that, view) {
+		function switchView(button, view) {
 			$(".navi-selected").removeClass('navi-selected');
-			$(that).addClass('navi-selected');
+			$(button).addClass('navi-selected');
 
 			if (view == currentView) return;
+			
+			if (currentView == "") {
+				$(view).fadeIn();
+			} else {
+				$(currentView).fadeOut(function() { $(view).fadeIn(); });
+			}
 
-			$(currentView).fadeOut(function() { $(view).fadeIn(); });
-			// $(currentView).slideLeft(function() { $(view).fadeIn(); });
 			currentView = view;
 		}
 		
+		function hashChanged() {
+			var hash = window.location.hash.substring(1);
+			
+			if (hash == "new") switchView(".navi-new", "#content-new");
+			else if (hash == "help") switchView(".navi-help", "#content-help");
+			else if (hash == "profile") switchView(".navi-profile", "#content-profile");
+			else switchView(".navi-main", "#content-main");
+		}
+		
 		$(function() {
-			$(".navi-main").click(function() 	{ switchView(this, "#content-main"); });
-			$(".navi-new").click(function() 	{ switchView(this, "#content-new"); });
-			$(".navi-help").click(function() 	{ switchView(this, "#content-help"); });
-			$(".navi-profile").click(function() { switchView(this, "#content-profile"); });
-			
+			$(".navi-main").click(function() 	{ parent.location.hash = "main"; });
+			$(".navi-new").click(function() 	{ parent.location.hash = "new"; });
+			$(".navi-help").click(function() 	{ parent.location.hash = "help"; });
+			$(".navi-profile").click(function() { parent.location.hash = "profile"; });
 			$(".banner").click(function() { $(".navi-main").click(); });
-			
-			$(".navi-main").click();
+
+			$(window).bind('hashchange', hashChanged);
+			hashChanged();
 		});
+		
+        function wipe() {
+            var answer = confirm("Wipe all user data?");
+            if (answer) {
+                $.post("/API/Wipe", { }, function(data) {
+                    window.location.replace('{{ logout_url }}');
+                });
+            }
+        }
+
+        function update(checkbox, name, token) {
+            var enabled = checkbox.checked ? 1 : 0;
+            $.post("/API/Settings", { "Name": name, "RegistrationId": token, "Enabled": enabled }, function(data) {
+                alert("Device " + name + (checkbox.checked ? " enabled." : " disabled."));
+            });
+        }
 	</script>
 	
 </head>
@@ -59,13 +88,13 @@
 	<img class="center banner" src="static/banner.png" alt="IrssiNotifier" />
 
 	<div id="navi" class="center">
-		<div class="navibutton navi-main">Main</div>
-		<div class="navibutton navi-new">What's new</div>
-		<div class="navibutton navi-help">Help</div>
-		<div class="navibutton navi-profile">My devices</div>
+		<div class="navibutton navi-main"><a href="#main">Main</a></div>
+		<div class="navibutton navi-new"><a href="#new">What's new</a></div>
+		<div class="navibutton navi-help"><a href="#help">Help</a></div>
+		<div class="navibutton navi-profile"><a href="#profile">My devices</a></div>
 	</div>
 	
-	<div id="content-main" class="content">
+	<div id="content-main" class="hidden content">
 
 		<h1>IrssiNotifier</h1>
 
@@ -95,22 +124,24 @@
 		<p class="answer">All data is end-to-end encrypted with the encryption password of your choice. Password is never sent to the server. You'll have to login with your Google account, but no password or other sensitive data is collected. In the event of unexpected error, anonymous debug information is sent to server.</p>
 
 		<p class="question">Who?</p>
-		<p class="answer">This service was made by Lauri Härsilä, murgo @ IRCnet. If you have any questions, drop me a line by <a href="mailto:murgo@iki.fi"/>email</a> or join #IrssiNotifier at IRCnet. Huge thanks to everybody who have donated money or contributed source! </p>
+		<p class="answer">This service was made by Lauri Härsilä, murgo @ IRCnet. If you have any questions, drop me a line by <a href="mailto:murgo@iki.fi">email</a> or join #IrssiNotifier at IRCnet. Huge thanks to everybody who have donated money or contributed source! </p>
 
 		<p class="question">How can I help?</p>
-		<p class="answer"> IrssiNotifier was created entirely on my free time. If you have found IrssiNotifier useful and want to help keep project alive, please consider donating through PayPal or straight to my bank account (IBAN: FI0810455000756308). PayPal takes 0,35€ per transaction. Flattr donations are now also available. 
-		<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-		<input type="hidden" name="cmd" value="_s-xclick">
-		<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----MIIHLwYJKoZIhvcNAQcEoIIHIDCCBxwCAQExggEwMIIBLAIBADCBlDCBjjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtQYXlQYWwgSW5jLjETMBEGA1UECxQKbGl2ZV9jZXJ0czERMA8GA1UEAxQIbGl2ZV9hcGkxHDAaBgkqhkiG9w0BCQEWDXJlQHBheXBhbC5jb20CAQAwDQYJKoZIhvcNAQEBBQAEgYBfZTQp/7MC5zqHtYv4QXSuKoL0W2F2XmoJCB5mb8SnqZZXYQQppoxBJRKjnBP6XPlX8VMHQCgCFFftIY2fdoFfpr2ZBhf9sQct9M4SQLZPnQKdKsZuUAiQujks+VESSX+qCxMBIxD/Bwi+N6O3Pno6f+bJZqf4cHfYUGORQdGt3zELMAkGBSsOAwIaBQAwgawGCSqGSIb3DQEHATAUBggqhkiG9w0DBwQIb/wPbS23b6eAgYhwsVWGID9q5QvVULDqqJwy35GxjJaBiKWUo4XBi+L68hhjjdUS4g3w667RoWYOve9BiiIqS9LY9Zifw8g+3u3h07n3PHfoR3lXHJyrsBOdgLVImhy1nqogS6SN5+gEYdqNF+8Vto1KKOm8Lyx8qjX0mkfqeMVqQI3T9LZRUtjxh4s1E1t9FstNoIIDhzCCA4MwggLsoAMCAQICAQAwDQYJKoZIhvcNAQEFBQAwgY4xCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEUMBIGA1UEChMLUGF5UGFsIEluYy4xEzARBgNVBAsUCmxpdmVfY2VydHMxETAPBgNVBAMUCGxpdmVfYXBpMRwwGgYJKoZIhvcNAQkBFg1yZUBwYXlwYWwuY29tMB4XDTA0MDIxMzEwMTMxNVoXDTM1MDIxMzEwMTMxNVowgY4xCzAJBgNVBAYTAlVTMQswCQYDVQQIEwJDQTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEUMBIGA1UEChMLUGF5UGFsIEluYy4xEzARBgNVBAsUCmxpdmVfY2VydHMxETAPBgNVBAMUCGxpdmVfYXBpMRwwGgYJKoZIhvcNAQkBFg1yZUBwYXlwYWwuY29tMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDBR07d/ETMS1ycjtkpkvjXZe9k+6CieLuLsPumsJ7QC1odNz3sJiCbs2wC0nLE0uLGaEtXynIgRqIddYCHx88pb5HTXv4SZeuv0Rqq4+axW9PLAAATU8w04qqjaSXgbGLP3NmohqM6bV9kZZwZLR/klDaQGo1u9uDb9lr4Yn+rBQIDAQABo4HuMIHrMB0GA1UdDgQWBBSWn3y7xm8XvVk/UtcKG+wQ1mSUazCBuwYDVR0jBIGzMIGwgBSWn3y7xm8XvVk/UtcKG+wQ1mSUa6GBlKSBkTCBjjELMAkGA1UEBhMCVVMxCzAJBgNVBAgTAkNBMRYwFAYDVQQHEw1Nb3VudGFpbiBWaWV3MRQwEgYDVQQKEwtQYXlQYWwgSW5jLjETMBEGA1UECxQKbGl2ZV9jZXJ0czERMA8GA1UEAxQIbGl2ZV9hcGkxHDAaBgkqhkiG9w0BCQEWDXJlQHBheXBhbC5jb22CAQAwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOBgQCBXzpWmoBa5e9fo6ujionW1hUhPkOBakTr3YCDjbYfvJEiv/2P+IobhOGJr85+XHhN0v4gUkEDI8r2/rNk1m0GA8HKddvTjyGw/XqXa+LSTlDYkqI8OwR8GEYj4efEtcRpRYBxV8KxAW93YDWzFGvruKnnLbDAF6VR5w/cCMn5hzGCAZowggGWAgEBMIGUMIGOMQswCQYDVQQGEwJVUzELMAkGA1UECBMCQ0ExFjAUBgNVBAcTDU1vdW50YWluIFZpZXcxFDASBgNVBAoTC1BheVBhbCBJbmMuMRMwEQYDVQQLFApsaXZlX2NlcnRzMREwDwYDVQQDFAhsaXZlX2FwaTEcMBoGCSqGSIb3DQEJARYNcmVAcGF5cGFsLmNvbQIBADAJBgUrDgMCGgUAoF0wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0BCQUxDxcNMTIwMzE5MTgyODE0WjAjBgkqhkiG9w0BCQQxFgQUV/6QbGgh84g47qvrcq8yAl31UhwwDQYJKoZIhvcNAQEBBQAEgYAkKg8df7hiREToT8563ZSbKztgAgmGk9jqVpGyUh5Td0OFXlelsuIencKGyKKZDDqDUYMT+1bIhM99o1FcfwtKm2Ev78cwC5GYFy3HjmAbavos+lGWsZEPGLpglgjfhKwY4NpclXaF5jf7DTtnY2g6R4lQrxjaGXnlS+T2ixtELA==-----END PKCS7-----">
-		<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-		<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-		</form>
-
-		<a href="http://flattr.com/thing/628213/IrssiNotifier" target="_blank">
-		<img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" border="0" style="margin-top: 10px;"/></a>
+		<p class="answer"> IrssiNotifier was created entirely on my free time. If you have found IrssiNotifier useful and want to help keep project alive, please consider donating through PayPal or straight to my bank account (IBAN: FI0810455000756308). PayPal takes 0,35€ per transaction. Flattr donations are now also available.</p>
 		
-		</p>
+			<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+				<input type="hidden" name="cmd" value="_s-xclick">
+				<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----">
+				<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" name="submit" alt="PayPal - The safer, easier way to pay online!">
+				<img alt="" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+			</form>
+
+			<a href="http://flattr.com/thing/628213/IrssiNotifier" target="_blank">
+				<img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" style="margin-top: 10px;"/>
+			</a>
+
 		</div>
+
 	</div>
 
 	<div class="hidden content" id="content-new">
@@ -133,15 +164,19 @@
 		
 		<ol>
 		<li>Get and run android app</li>
-        <li>Download irssi script by copying and pasting the following command to your shell (don't mind any "File exists" -errors):</li>
+        <li>Download irssi script by copying and pasting the following command to your shell (don't mind any "File exists" -errors):
         <div class="code-block">mkdir -p ~/.irssi/scripts/autorun; wget https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
-        <li>Load irssi script by typing the following command to irssi</li>
+		</li>
+        <li>Load irssi script by typing the following command to irssi
         <div class="code-block">/script load irssinotifier</div>
-        <li>Set api token in irssi</li>
-        <div class="code-block">/set irssinotifier_api_token TODO { { user.api_token } }</div>
-        <li>Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too. Password can be anything you like (forbidden characters: ", \, `). Do not use your Google account password (or any other existing password) for security reasons.</li>
+		</li>
+        <li>Set api token in irssi
+        <div class="code-block">{% if loggedin %}/set irssinotifier_api_token {{ user.api_token }}{% else %}<a href="{{ login_url }}">Log in to see instructions</a>{% endif %}</div>
+		</li>
+        <li>Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too. Password can be anything you like (forbidden characters: ", \, `). Do not use your Google account password (or any other existing password) for security reasons.
         <div class="code-block">/set irssinotifier_encryption_password password</div>
-        <li>Query yourself to see if it works. TODO</li>
+		</li>
+        <li>Query yourself and check <a href="#profile">profile-page</a> to see if it works.</li>
 		</ol>
 
 		</div>
@@ -174,7 +209,44 @@
 	</div>
 
 	<div class="hidden content" id="content-profile">
+	
+	{% if not loggedin %}
+	
 		<p class="center">Please <a href="{{ login_url }}">log in</a> using your Google account.</p>
+
+	{% else %}
+		
+		<h2>Logged in as {{ user.email }}</h2>
+		
+	    <h2>Android client status</h2>
+
+		{% if c2dmtokencount != 0 %}
+
+			<p>Android device(s) <span class="working">confirmed as working.</span> Registered device count: {{ c2dmtokencount }}</p>
+		
+			<div id="devices">
+			<h3>Registered devices:</h3>
+			<ul>
+		{% for token in tokens %}
+				<li><input type="checkbox" {% if token.enabled %}checked="checked"{% endif %} onclick="update(this, '{{ token.name }}', '{{ token.c2dm_token }}');" />{{ token.name }}</li>
+		{% endfor %}
+			</ul>
+			</div>
+			
+		{% else %}
+			<p>Android device <span class="broken">not confirmed as working.</span></p>
+		{% endif %}
+			<h2>Irssi script status</h2>
+			
+		{% if irssiworking %}
+			<p>Irssi script <span class="working">confirmed as working.</span></p>
+		{% else %}
+			<p>Irssi script <span class="broken">not confirmed as working.</span></p>
+		{% endif %}
+		
+	{% endif %}	
+	
+	
 	</div>
 	
 	<div class="googleplus">
