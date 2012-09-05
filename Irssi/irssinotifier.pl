@@ -5,7 +5,7 @@ use IPC::Open2 qw(open2);
 use POSIX;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "8";
+$VERSION = "9";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -13,7 +13,7 @@ $VERSION = "8";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "http://irssinotifier.appspot.com",
-    changed     => "2012-08-24"
+    changed     => "2012-09-06"
 );
 
 my $lastMsg;
@@ -21,24 +21,27 @@ my $lastServer;
 my $lastNick;
 my $lastAddress;
 my $lastTarget;
+my $lastWindow;
 my $lastKeyboardActivity = time;
 
 sub private {
     my ( $server, $msg, $nick, $address ) = @_;
-    $lastServer = $server;
+    $lastServer  = $server;
     $lastMsg     = $msg;
     $lastNick    = $nick;
     $lastAddress = $address;
     $lastTarget  = "!PRIVATE";
+	$lastWindow  = $nick;
 }
 
 sub public {
     my ( $server, $msg, $nick, $address, $target ) = @_;
-    $lastServer = $server;
+    $lastServer  = $server;
     $lastMsg     = $msg;
     $lastNick    = $nick;
     $lastAddress = $address;
     $lastTarget  = $target;
+	$lastWindow  = $target;
 }
 
 sub print_text {
@@ -46,7 +49,7 @@ sub print_text {
     
     if (should_send_notification($dest))
     {
-        hilite();
+        send_notification();
     }
 }
 
@@ -70,9 +73,9 @@ sub should_send_notification {
         return 0; # ignore active window
     }
 
-    my $ignore_server_string = Irssi::settings_get_str("irssinotifier_ignore_server");
-    if ($ignore_server_string) {
-        my @ignored_servers = split(/ /, $ignore_server_string);
+    my $ignored_servers_string = Irssi::settings_get_str("irssinotifier_ignored_servers");
+    if ($ignored_servers_string) {
+        my @ignored_servers = split(/ /, $ignored_servers_string);
         my $server;
 
         foreach $server (@ignored_servers) {
@@ -82,20 +85,16 @@ sub should_send_notification {
         }
     }
 
-    my $ignore_channel_string = Irssi::settings_get_str("irssinotifier_ignore_channel");
-    if ($ignore_channel_string) {
-        my @ignored_channels = split(/ /, $ignore_channel_string);
+    my $ignored_channels_string = Irssi::settings_get_str("irssinotifier_ignored_channels");
+    if ($ignored_channels_string) {
+        my @ignored_channels = split(/ /, $ignored_channels_string);
         my $channel;
 
         foreach $channel (@ignored_channels) {
-            if (lc($channel) eq lc($lastTarget)) {
+            if (lc($channel) eq lc($lastWindow)) {
                 return 0; # ignored channel
             }
         }
-    }
-
-    if (Irssi::settings_get_str("irssinotifier_ignore_channel") && Irssi::settings_get_str("irssinotifier_ignore_channel") eq $lastTarget) {
-        return 0; # ignored channel
     }
 
     my $timeout = Irssi::settings_get_int('irssinotifier_require_idle_seconds');
@@ -111,7 +110,7 @@ sub is_dangerous_string {
     return $s =~ m/"/ || $s =~ m/`/ || $s =~ m/\\/;
 }
 
-sub hilite {
+sub send_notification {
     my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
     
     my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
@@ -199,15 +198,18 @@ sub event_key_pressed {
 
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_encryption_password', 'password');
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_api_token', '');
-Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignore_server', '');
-Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignore_channel', '');
-Irssi::settings_add_bool('irssinotifier', 'irssinotifier_away_only', 0);
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignored_servers', '');
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignored_channels', '');
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_ignore_active_window', 0);
+Irssi::settings_add_bool('irssinotifier', 'irssinotifier_away_only', 0);
 Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0);
+
+# these commands are renamed
+Irssi::settings_remove('irssinotifier_ignore_server');
+Irssi::settings_remove('irssinotifier_ignore_channel');
 
 Irssi::signal_add( 'message irc action', 'public');
 Irssi::signal_add( 'message public',     'public');
 Irssi::signal_add( 'message private',    'private');
 Irssi::signal_add( 'print text',         'print_text');
 Irssi::signal_add( 'setup changed',      'are_settings_valid');
-
