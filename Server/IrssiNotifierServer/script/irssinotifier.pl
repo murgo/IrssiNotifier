@@ -1,19 +1,19 @@
-#use strict;
-#use warnings;
+use strict;
 
 use Irssi;
+use IPC::Open2 qw(open2);
 use POSIX;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "6";
-%IRSSI = (
+$VERSION = "9";
+%IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
     name        => "IrssiNotifier",
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "http://irssinotifier.appspot.com",
-    changed     => "2012-04-10"
+    changed     => "2012-09-06"
 );
 
 my $lastMsg;
@@ -21,86 +21,102 @@ my $lastServer;
 my $lastNick;
 my $lastAddress;
 my $lastTarget;
+my $lastWindow;
 my $lastKeyboardActivity = time;
 
 sub private {
-    my ($server, $msg, $nick, $address) = @_;
-    $lastMsg = $msg;
-    $lastServer = $server;
-    $lastNick = $nick;
+    my ( $server, $msg, $nick, $address ) = @_;
+    $lastServer  = $server;
+    $lastMsg     = $msg;
+    $lastNick    = $nick;
     $lastAddress = $address;
-    $lastTarget = "!PRIVATE";
+    $lastTarget  = "!PRIVATE";
+	$lastWindow  = $nick;
 }
 
 sub public {
-    my ($server, $msg, $nick, $address, $target) = @_;
-    $lastMsg = $msg;
-    $lastServer = $server;
-    $lastNick = $nick;
+    my ( $server, $msg, $nick, $address, $target ) = @_;
+    $lastServer  = $server;
+    $lastMsg     = $msg;
+    $lastNick    = $nick;
     $lastAddress = $address;
-    $lastTarget = $target;
+    $lastTarget  = $target;
+	$lastWindow  = $target;
 }
 
 sub print_text {
     my ($dest, $text, $stripped) = @_;
-
-    my $opt = MSGLEVEL_HILIGHT|MSGLEVEL_MSGS;
-    if (
-        ($dest->{level} & ($opt)) && (($dest->{level} & MSGLEVEL_NOHILIGHT) == 0) &&
-        (!Irssi::settings_get_bool("irssinotifier_away_only") || $lastServer->{usermode_away}) &&
-        (!Irssi::settings_get_bool("irssinotifier_ignore_active_window") || ($dest->{window}->{refnum} != (Irssi::active_win()->{refnum}))) &&
-        activity_allows_hilight()
-    ) {
-        hilite();
+    
+    if (should_send_notification($dest))
+    {
+        send_notification();
     }
 }
 
-sub activity_allows_hilight {
+sub should_send_notification {
+    my $dest = @_ ? shift : $_;
+
+    my $opt = MSGLEVEL_HILIGHT | MSGLEVEL_MSGS;
+    if (!($dest->{level} & $opt) || ($dest->{level} & MSGLEVEL_NOHILIGHT)) {
+        return 0; # not a hilight
+    }
+
+    if (!are_settings_valid()) {
+        return 0; # invalid settings
+    }
+
+    if (Irssi::settings_get_bool("irssinotifier_away_only") && !$lastServer->{usermode_away}) {
+        return 0; # away only
+    }
+
+    if (Irssi::settings_get_bool("irssinotifier_ignore_active_window") && $dest->{window}->{refnum} == Irssi::active_win()->{refnum}) {
+        return 0; # ignore active window
+    }
+
+    my $ignored_servers_string = Irssi::settings_get_str("irssinotifier_ignored_servers");
+    if ($ignored_servers_string) {
+        my @ignored_servers = split(/ /, $ignored_servers_string);
+        my $server;
+
+        foreach $server (@ignored_servers) {
+            if (lc($server) eq lc($lastServer->{tag})) {
+                return 0; # ignored server
+            }
+        }
+    }
+
+    my $ignored_channels_string = Irssi::settings_get_str("irssinotifier_ignored_channels");
+    if ($ignored_channels_string) {
+        my @ignored_channels = split(/ /, $ignored_channels_string);
+        my $channel;
+
+        foreach $channel (@ignored_channels) {
+            if (lc($channel) eq lc($lastWindow)) {
+                return 0; # ignored channel
+            }
+        }
+    }
+
     my $timeout = Irssi::settings_get_int('irssinotifier_require_idle_seconds');
-    return ($timeout <= 0 || (time - $lastKeyboardActivity) > $timeout);
-}
-
-sub dangerous_string {
-  my $s = @_ ? shift : $_;
-  return $s =~ m/"/ || $s =~ m/`/ || $s =~ m/\\/;
-}
-
-sub hilite {
-    if (!Irssi::settings_get_str('irssinotifier_api_token')) {
-        Irssi::print("IrssiNotifier: Set API token to send notifications: /set irssinotifier_api_token [token]");
-        return;
-    }
-
-    `/usr/bin/env openssl version`;
-    if ($? != 0) {
-        Irssi::print("IrssiNotifier: You'll need to install OpenSSL to use IrssiNotifier");
-        return;
-    }
-
-    `/usr/bin/env wget --version`;
-    if ($? != 0) {
-        Irssi::print("IrssiNotifier: You'll need to install Wget to use IrssiNotifier");
-        return;
+    if ($timeout > 0 && (time - $lastKeyboardActivity) <= $timeout) {
+        return 0; # not enough idle seconds
     }
     
-    my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
-    if (dangerous_string $api_token) {
-        Irssi::print("IrssiNotifier: Api token cannot contain backticks, double quotes or backslashes");
-        return;
-    }
+    return 1;
+}
 
+sub is_dangerous_string {
+    my $s = @_ ? shift : $_;
+    return $s =~ m/"/ || $s =~ m/`/ || $s =~ m/\\/;
+}
+
+sub send_notification {
+    my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
+    
     my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
-    if ($encryption_password) {
-        if (dangerous_string $encryption_password) {
-            Irssi::print("IrssiNotifier: Encryption password cannot contain backticks, double quotes or backslashes");
-            return;
-        }
-        $lastMsg = encrypt($lastMsg);
-        $lastNick = encrypt($lastNick);
-        $lastTarget = encrypt($lastTarget);
-    } else {
-        Irssi::print("IrssiNotifier: Set encryption password to send notifications (must be same as in the Android device): /set irssinotifier_encryption_password [password]");
-    }
+    $lastMsg    = encrypt(Irssi::strip_codes($lastMsg));
+    $lastNick   = encrypt($lastNick);
+    $lastTarget = encrypt($lastTarget);
 
     my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
     my $result = `/usr/bin/env wget --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
@@ -115,56 +131,85 @@ sub hilite {
     }
 }
 
-sub sanitize {
-    my $str = @_ ? shift : $_;
-    $str =~ s/((?:^|[^\\])(?:\\\\)*)'/$1\\'/g;
-    $str =~ s/\\'/´/g; # stupid perl
-    $str =~ s/'/´/g; # stupid perl
-    return "'$str'";
-}
-
 sub encrypt {
-    my $text = $_[0];
-    $text = sanitize $text;
-    my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
-    my $result = `/usr/bin/env echo $text| /usr/bin/env openssl enc -aes-128-cbc -salt -base64 -A -k "$encryption_password" | tr -d '\n'`;
+    my ($text) = @_ ? shift : $_;
+    
+    local $ENV{PASS} = Irssi::settings_get_str('irssinotifier_encryption_password');
+    my $pid = open2 my $out, my $in, qw(
+        openssl enc -aes-128-cbc -salt -base64 -A -pass env:PASS
+    );
+
+    print $in "$text ";
+    close $in;
+    undef $/;    # read full output at once
+    my $result = readline $out;
+    waitpid $pid, 0;
+
+    $result =~ tr[+/][-_];
     $result =~ s/=//g;
-    $result =~ s/\+/-/g;
-    $result =~ s/\//_/g;
-    chomp($result);
     return $result;
 }
 
-sub decrypt {
-    my $text = $_[0];
-    $text = sanitize $text;
-    my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
-    my $result = `/usr/bin/env echo $text| /usr/bin/env openssl enc -aes-128-cbc -d -salt -base64 -A -k "$encryption_password"`;
-    chomp($result);
-    return $result;
-}
-
-sub setup_keypress_handler {
-    Irssi::signal_remove('gui key pressed', 'event_key_pressed');
+sub are_settings_valid {
+    Irssi::signal_remove( 'gui key pressed', 'event_key_pressed' );
     if (Irssi::settings_get_int('irssinotifier_require_idle_seconds') > 0) {
-        Irssi::signal_add('gui key pressed', 'event_key_pressed');
+        Irssi::signal_add( 'gui key pressed', 'event_key_pressed' );
     }
+
+    if (!Irssi::settings_get_str('irssinotifier_api_token')) {
+        Irssi::print("IrssiNotifier: Set API token to send notifications: /set irssinotifier_api_token [token]");
+        return 0;
+    }
+
+    unless (-x "/usr/bin/openssl") {
+        Irssi::print("IrssiNotifier: /usr/bin/openssl not found.");
+        return 0;
+    }
+
+    unless (-x "/usr/bin/wget") {
+        Irssi::print("IrssiNotifier: /usr/bin/wget not found.");
+        return 0;
+    }
+
+    my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
+    if (!$api_token) {
+        Irssi::print("IrssiNotifier: Set API token to send notifications (check your token at https://irssinotifier.appspot.com): /set irssinotifier_api_token [token]");
+        return 0;
+    } elsif (is_dangerous_string($api_token)) {
+        Irssi::print("IrssiNotifier: API token cannot contain backticks, double quotes or backslashes");
+        return 0;
+    }
+
+    my $encryption_password  = Irssi::settings_get_str('irssinotifier_encryption_password');
+    if (!$encryption_password) {
+        Irssi::print("IrssiNotifier: Set encryption password to send notifications (must be same as in the Android device): /set irssinotifier_encryption_password [password]");
+        return 0;
+    } elsif (is_dangerous_string $encryption_password ) {
+        Irssi::print("IrssiNotifier: Encryption password cannot contain backticks, double quotes or backslashes");
+        return 0;
+    }
+
+    return 1;
 }
 
 sub event_key_pressed {
     $lastKeyboardActivity = time;
 }
 
-Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_encryption_password', 'password');
-Irssi::settings_add_str('IrssiNotifier', 'irssinotifier_api_token', '');
-Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_away_only', false);
-Irssi::settings_add_bool('IrssiNotifier', 'irssinotifier_ignore_active_window', false);
-Irssi::settings_add_int('IrssiNotifier', 'irssinotifier_require_idle_seconds', 0);
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_encryption_password', 'password');
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_api_token', '');
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignored_servers', '');
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignored_channels', '');
+Irssi::settings_add_bool('irssinotifier', 'irssinotifier_ignore_active_window', 0);
+Irssi::settings_add_bool('irssinotifier', 'irssinotifier_away_only', 0);
+Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0);
 
-Irssi::signal_add('message irc action', 'public');
-Irssi::signal_add('message public', 'public');
-Irssi::signal_add('message private', 'private');
-Irssi::signal_add('print text', 'print_text');
-Irssi::signal_add('setup changed', 'setup_keypress_handler');
+# these commands are renamed
+Irssi::settings_remove('irssinotifier_ignore_server');
+Irssi::settings_remove('irssinotifier_ignore_channel');
 
-setup_keypress_handler();
+Irssi::signal_add( 'message irc action', 'public');
+Irssi::signal_add( 'message public',     'public');
+Irssi::signal_add( 'message private',    'private');
+Irssi::signal_add( 'print text',         'print_text');
+Irssi::signal_add( 'setup changed',      'are_settings_valid');

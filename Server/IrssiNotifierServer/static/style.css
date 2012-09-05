@@ -83,7 +83,6 @@ img.center {
 	width: 150px;
 	padding: 10px 1px;
 	margin: 15px 5px;
-	/* border: solid; */
 	background-color: #1153a0;
 	cursor: pointer;
 	font-size: 20px;
@@ -117,7 +116,7 @@ img.center {
 }
 
 .banner {
-/*	width: 800px; */
+	cursor: pointer;
 }
 
 .box {
@@ -136,4 +135,12 @@ img.center {
 
 .googleplus {
 	margin-top: 25px;
+}
+
+.news {
+	margin-top: 65px;
+}
+
+.news-content {
+	margin-top: 10px;
 }
