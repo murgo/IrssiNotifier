@@ -100,8 +100,8 @@ class WebController(BaseController):
              'user': user,
              'tokens': tokensList,
              'loggedin': user is not None,
-             'login_url': users.create_login_url(self.request.uri).replace("&", "&amp;"),
-             'logout_url': users.create_logout_url(self.request.uri).replace("&", "&amp;"),
+             'login_url': users.create_login_url("#profile").replace("&", "&amp;"),
+             'logout_url': users.create_logout_url("").replace("&", "&amp;"),
              'irssiworking': count != 0,
              'c2dmtokencount': len(tokensList),
         }
