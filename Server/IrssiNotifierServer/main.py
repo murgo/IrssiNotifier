@@ -109,7 +109,7 @@ class WebController(BaseController):
         logging.debug(template_values)
         logging.debug(tokensList)
 
-        template = jinja_environment.get_template('html/login.html')
+        template = jinja_environment.get_template('html/index.html')
         self.response.out.write(template.render(template_values))
 
 
