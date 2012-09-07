@@ -180,7 +180,7 @@
 		<ol>
 		<li>Get and run android app</li>
         <li>Download irssi script by copying and pasting the following command to your shell (don't mind any "File exists" -errors):
-        <div class="code-block">mkdir --no-check-certificate -p ~/.irssi/scripts/autorun; wget https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
+        <div class="code-block">mkdir -p ~/.irssi/scripts/autorun; wget --no-check-certificate https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
 		</li>
         <li>Load irssi script by typing the following command to irssi
         <div class="code-block">/script load irssinotifier</div>
