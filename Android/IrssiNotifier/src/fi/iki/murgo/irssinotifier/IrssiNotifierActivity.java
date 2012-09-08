@@ -42,8 +42,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
         super.onCreate(savedInstanceState);
 
         try {
-            MessageToServer
-                    .setVersion(getPackageManager().getPackageInfo(getPackageName(), 0).versionCode);
+            MessageToServer.setVersion(getPackageManager().getPackageInfo(getPackageName(), 0).versionCode);
         } catch (NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -113,6 +112,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
         instance = this;
 
         if (needsRefresh) {
+            Log.v(TAG, "onResume needs refreshing");
             needsRefresh = false;
             restart();
         }
@@ -127,6 +127,12 @@ public class IrssiNotifierActivity extends SherlockActivity {
         overridePendingTransition(0, 0);
         startActivity(intent);
     }
+
+    public static void refreshIsNeeded() {
+        Log.v(TAG, "Refreshing would be refreshing");
+        needsRefresh = true;
+    }
+
 
     @Override
     protected void onUserLeaveHint() {
@@ -160,24 +166,20 @@ public class IrssiNotifierActivity extends SherlockActivity {
                         setIndeterminateProgressBarVisibility(false);
                         if (param.getException() != null) {
                             if (param.getException() instanceof AuthenticationException) {
-                                MessageBox.Show(ctx, "Authentication error",
-                                        "Unable to authenticate to server.", null);
-                                preferences.setAuthToken(null);
-                                restart();
+                                MessageBox.Show(ctx, "Authentication error", "Unable to authenticate to server, please re-register your application.", 
+                                    new Callback<Void>() {
+                                        public void doStuff(Void param) {
+                                            preferences.setAuthToken(null);
+                                            restart();
+                                        }
+                                    });
                             } else if (param.getException() instanceof ServerException) {
-                                MessageBox.Show(ctx, "Server error",
-                                        "Mystical server error, check if updates are available",
-                                        null);
+                                MessageBox.Show(ctx, "Server error", "Mystical server error, check if updates are available", null);
                             } else if (param.getException() instanceof CryptoException) {
-                                MessageBox
-                                        .Show(ctx,
-                                                "Decryption error",
-                                                "Unable to decrypt message, is your decryption password correct?",
-                                                null);
+                                MessageBox.Show(ctx, "Decryption error", "Unable to decrypt message, is your decryption password correct?", null);
                                 preferences.setLastFetchTime(now);
                             } else if (param.getException() instanceof IOException) {
-                                MessageBox.Show(ctx, "Network error",
-                                        "Is your internet connection available?", null);
+                                MessageBox.Show(ctx, "Network error", "Is your internet connection available?", null);
                                 preferences.setLastFetchTime(now);
                             } else {
                                 MessageBox.Show(ctx, "Error", "What happen", null);
@@ -297,21 +299,21 @@ public class IrssiNotifierActivity extends SherlockActivity {
     }
 
     private void sendSettings() {
-        SettingsSendingTask task = new SettingsSendingTask(this, "",
-                "Generating authentication token...");
+        SettingsSendingTask task = new SettingsSendingTask(this, "", "Sending settings to server...");
 
         final Context ctx = this;
         task.setCallback(new Callback<ServerResponse>() {
             public void doStuff(ServerResponse result) {
-                if (result == null || !result.wasSuccesful()) {
-                    MessageBox.Show(ctx, null,
-                            "Unable to register to C2DM! Please try again later!",
-                            new Callback<Void>() {
-                                public void doStuff(Void param) {
-                                    finish();
-                                }
-                            });
+                if (result != null && result.wasSuccesful()) {
+                    return;
                 }
+
+                MessageBox.Show(ctx, null,"Unable to register to C2DM! Please try again later!",
+                    new Callback<Void>() {
+                        public void doStuff(Void param) {
+                            finish();
+                        }
+                    });
             }
         });
 
@@ -379,12 +381,9 @@ public class IrssiNotifierActivity extends SherlockActivity {
         startMainApp(false);
     }
 
-    public static void needsRefresh() {
-        needsRefresh = true;
-    }
-
     /*
-     * Stored here if need arises public boolean isNetworkAvailable() {
+     * Stored here if need arises
+     * public boolean isNetworkAvailable() {
      * ConnectivityManager cm = (ConnectivityManager)
      * getSystemService(Context.CONNECTIVITY_SERVICE); NetworkInfo networkInfo =
      * cm.getActiveNetworkInfo(); // if no network is available networkInfo will

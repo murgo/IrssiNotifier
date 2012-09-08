@@ -39,8 +39,7 @@ public class DataFetcherTask extends AsyncTask<Void, Void, DataFetchResult> {
 
             HashMap<String, String> map = new HashMap<String, String>();
             map.put("timestamp", Long.toString(lastFetchTime / 1000));
-            MessageServerResponse response = (MessageServerResponse) server.get(
-                    new MessageToServer(map), ServerTarget.Message);
+            MessageServerResponse response = (MessageServerResponse) server.get(new MessageToServer(map), ServerTarget.Message);
             result.setResponse(response);
             if (!response.wasSuccesful()) {
                 throw new ServerException();
@@ -60,6 +59,7 @@ public class DataFetcherTask extends AsyncTask<Void, Void, DataFetchResult> {
                 result.getMessages().add(message);
             }
         } catch (Exception e) {
+            Log.e(TAG, "Error fetching data from server!", e);
             e.printStackTrace();
             result.setException(e);
         }

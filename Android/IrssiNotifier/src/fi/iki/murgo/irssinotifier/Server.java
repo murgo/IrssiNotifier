@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.params.ClientPNames;
@@ -20,10 +21,14 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
+import android.util.Log;
+
 public class Server {
+    private static final String TAG = Server.class.getSimpleName();
+
     // private static final String TAG =
     // InitialSettingsActivity.class.getSimpleName();
-
+    
     public enum ServerTarget {
         SaveSettings,
         Test,
@@ -38,6 +43,8 @@ public class Server {
 
     private DefaultHttpClient http_client = new DefaultHttpClient();
 
+    private static final int maxRetryCount = 3;
+
     public Server() {
         serverUrls.put(ServerTarget.SaveSettings, SERVER_BASE_URL + "Settings");
         serverUrls.put(ServerTarget.Message, SERVER_BASE_URL + "Message");
@@ -46,11 +53,32 @@ public class Server {
     }
 
     public boolean authenticate(String token) throws IOException {
-        for (Cookie c : http_client.getCookieStore().getCookies())
-            if (c.getName().equals("SACSID"))
-                return true;
+        return authenticate(token, 0);
+    }
+    
+    private boolean authenticate(String token, int retryCount) throws IOException {
+        if (retryCount >= maxRetryCount) {
+            return false;
+        }
+
+        boolean success = doAuthenticate(token);
+        if (success) {
+            Log.v(TAG, "Succesfully logged in.");
+            return true;
+        }
+        
+        Log.w(TAG, "Login failed, retrying... Retry count " + (retryCount + 1));
+        http_client = new DefaultHttpClient();
+
+        return authenticate(token, retryCount + 1);
+    }
+    
+    private boolean doAuthenticate(String token) throws IOException {
+        if (checkCookie()) return true;
 
         try {
+            Log.v(TAG, "Authenticating...");
+
             // Don't follow redirects
             http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
 
@@ -58,19 +86,31 @@ public class Server {
             HttpResponse response;
             response = http_client.execute(http_get);
 
-            EntityUtils.toString(response.getEntity()); // read response to
-                                                        // prevent warning
-            if (response.getStatusLine().getStatusCode() != 302)
+            EntityUtils.toString(response.getEntity()); // read response to prevent warning
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 302) {
+                Log.w(TAG, "No redirect, login failed. Status code: " + statusCode);
                 return false;
-
-            for (Cookie cookie : http_client.getCookieStore().getCookies()) {
-                if (cookie.getName().equals("SACSID"))
-                    return true;
+            } else {
+                Log.v(TAG, "Redirected, OK. Status code: " + statusCode);
             }
+            
+            return checkCookie();
         } finally {
             if (http_client != null)
                 http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
         }
+    }
+
+    private boolean checkCookie() {
+        for (Cookie c : http_client.getCookieStore().getCookies()) {
+            if (c.getName().equals("SACSID")) {
+                Log.v(TAG, "Found SACSID cookie");
+                return true;
+            }
+        }
+        
+        Log.w(TAG, "SACSID cookie not found");
         return false;
     }
 

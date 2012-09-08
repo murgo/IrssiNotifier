@@ -6,7 +6,7 @@ import android.util.Log;
 
 public class SettingsSendingTask extends BackgroundAsyncTask<Void, Void, ServerResponse> {
 
-    private static final String TAG = InitialSettingsActivity.class.getSimpleName();
+    private static final String TAG = SettingsSendingTask.class.getSimpleName();
 
     public SettingsSendingTask(Activity activity, String titleText, String text) {
         super(activity, titleText, text);

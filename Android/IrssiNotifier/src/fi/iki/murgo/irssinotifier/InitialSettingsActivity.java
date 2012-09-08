@@ -89,13 +89,13 @@ public class InitialSettingsActivity extends Activity {
         task.setCallback(new Callback<ServerResponse>() {
             public void doStuff(ServerResponse result) {
                 if (result == null || !result.wasSuccesful()) {
-                    MessageBox.Show(ctx, null,
-                            "Unable to send settings to the server! Please try again later!",
-                            new Callback<Void>() { // TODO i18n
-                                public void doStuff(Void param) {
-                                    whatNext(-1, null);
-                                }
-                            });
+                    MessageBox.Show(ctx, null, "Unable to send settings to the server! Please try again later!",
+                        new Callback<Void>() { // TODO i18n
+                            public void doStuff(Void param) {
+                                whatNext(-1, null);
+                            }
+                        });
+
                     return;
                 }
                 whatNext(3, null);
@@ -118,17 +118,13 @@ public class InitialSettingsActivity extends Activity {
                             whatNext(-1, null);
                         }
                     };
+                    
                     if (result.getException() instanceof IOException) {
-                        MessageBox.Show(ctx, "Network error",
-                                "Ensure your internet connection works and try again.", callback); // TODO
-                                                                                                   // i18n
+                        MessageBox.Show(ctx, "Network error", "Ensure your internet connection works and try again.", callback); // TODO i18n
                     } else {
-                        MessageBox
-                                .Show(ctx,
-                                        null,
-                                        "Unable to generate authentication token for account! Please try again later!",
-                                        callback); // TODO i18n
+                        MessageBox.Show(ctx, null, "Unable to generate authentication token for account! Please try again later!", callback); // TODO i18n
                     }
+                    
                     return;
                 }
 
@@ -152,13 +148,13 @@ public class InitialSettingsActivity extends Activity {
                 String unregistered = result[2];
 
                 if ((error != null || unregistered != null)) {
-                    MessageBox.Show(ctx, null,
-                            "Unable to register to C2DM! Please try again later!",
-                            new Callback<Void>() { // TODO i18n
-                                public void doStuff(Void param) {
-                                    whatNext(-1, null);
-                                }
-                            });
+                    MessageBox.Show(ctx, null, "Unable to register to C2DM! Please try again later!", // TODO i18n
+                        new Callback<Void>() {
+                            public void doStuff(Void param) {
+                                whatNext(-1, null);
+                            }
+                        });
+
                     return;
                 }
 

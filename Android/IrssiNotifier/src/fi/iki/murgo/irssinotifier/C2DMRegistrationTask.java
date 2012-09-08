@@ -5,7 +5,7 @@ import android.app.Activity;
 import android.util.Log;
 
 public class C2DMRegistrationTask extends BackgroundAsyncTask<Void, Void, String[]> {
-    private static final String TAG = InitialSettingsActivity.class.getSimpleName();
+    private static final String TAG = C2DMRegistrationTask.class.getSimpleName();
 
     public C2DMRegistrationTask(Activity activity, String titleText, String text) {
         super(activity, titleText, text);

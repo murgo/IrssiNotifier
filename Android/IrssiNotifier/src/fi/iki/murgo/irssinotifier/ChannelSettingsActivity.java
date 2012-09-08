@@ -44,9 +44,7 @@ public class ChannelSettingsActivity extends ListActivity {
                 channelNames);
         setListAdapter(adapter);
 
-        MessageBox.Show(this, null,
-                "Drag channels from the grabber to reorder them, long press channel to remove it.",
-                null);
+        MessageBox.Show(this, null, "Drag channels from the grabber to reorder them, long press channel to remove it.", null);
     }
 
     @Override
@@ -78,7 +76,7 @@ public class ChannelSettingsActivity extends ListActivity {
             }
         }
 
-        IrssiNotifierActivity.needsRefresh();
+        IrssiNotifierActivity.refreshIsNeeded();
     }
 
     private DragSortListView.DropListener onDrop = new DragSortListView.DropListener() {
