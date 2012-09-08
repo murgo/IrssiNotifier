@@ -14,6 +14,7 @@ import android.util.Log;
 public class SettingsActivity extends PreferenceActivity {
     private static final String TAG = SettingsActivity.class.getSimpleName();
 
+    @SuppressWarnings("deprecation") // fuck the police
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "Opened settings");
