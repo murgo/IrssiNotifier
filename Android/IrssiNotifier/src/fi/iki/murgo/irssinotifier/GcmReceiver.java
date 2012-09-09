@@ -11,15 +11,15 @@ import android.util.Log;
 public class GcmReceiver extends BroadcastReceiver {
     private static final String TAG = GcmReceiver.class.getSimpleName();
 
-    private static final String C2DM_DATA_ACTION = "action";
-    private static final String C2DM_DATA_MESSAGE = "message";
+    private static final String GCM_DATA_ACTION = "action";
+    private static final String GCM_DATA_MESSAGE = "message";
 
     public static final String NOTIFICATION_CLEARED_INTENT = "fi.iki.murgo.irssinotifier.NOTIFICATION_CLEARED";
 
     public static final String EMAIL_OF_SENDER = "irssinotifier@gmail.com";
     public static Callback<String[]> callback;
 
-    public static void registerToC2DM(Context context) {
+    public static void registerToGcm(Context context) {
         Intent registrationIntent = new Intent("com.google.android.c2dm.intent.REGISTER");
         registrationIntent.putExtra("app", PendingIntent.getBroadcast(context, 0, new Intent(), 0));
         registrationIntent.putExtra("sender", EMAIL_OF_SENDER);
@@ -28,7 +28,7 @@ public class GcmReceiver extends BroadcastReceiver {
             throw new RuntimeException("Service failed to start");
     }
 
-    public static void unregisterFromC2DM(Context context) {
+    public static void unregisterFromGcm(Context context) {
         Intent unregistrationIntent = new Intent("com.google.android.c2dm.intent.UNREGISTER");
         unregistrationIntent.putExtra("app",
                 PendingIntent.getBroadcast(context, 0, new Intent(), 0));
@@ -77,9 +77,9 @@ public class GcmReceiver extends BroadcastReceiver {
     }
 
     private void handleMessage(Context context, Intent intent) {
-        Log.d(TAG, "Handling C2DM notification");
-        String action = intent.getStringExtra(C2DM_DATA_ACTION);
-        String message = intent.getStringExtra(C2DM_DATA_MESSAGE);
+        Log.d(TAG, "Handling GCM notification");
+        String action = intent.getStringExtra(GCM_DATA_ACTION);
+        String message = intent.getStringExtra(GCM_DATA_MESSAGE);
         Log.d(TAG, "Action: " + action + " Message: " + message);
 
         IrcNotificationManager manager = IrcNotificationManager.getInstance();

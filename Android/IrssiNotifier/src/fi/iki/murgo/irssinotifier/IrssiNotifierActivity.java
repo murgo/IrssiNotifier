@@ -296,7 +296,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
                     return;
                 }
 
-                MessageBox.Show(ctx, null,"Unable to register to C2DM! Please try again later!",
+                MessageBox.Show(ctx, null,"Unable to register to GCM! Please try again later!",
                     new Callback<Void>() {
                         public void doStuff(Void param) {
                             finish();

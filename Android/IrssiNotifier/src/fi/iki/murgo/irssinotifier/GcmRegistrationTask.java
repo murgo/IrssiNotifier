@@ -13,10 +13,10 @@ public class GcmRegistrationTask extends BackgroundAsyncTask<Void, Void, String[
 
     @Override
     protected String[] doInBackground(Void... params) {
-        Log.d(TAG, "Registering to C2DM");
+        Log.d(TAG, "Registering to GCM");
 
         GcmReceiver.setRegistrationCallback(getCallback());
-        GcmReceiver.registerToC2DM(activity);
+        GcmReceiver.registerToGcm(activity);
         return null;
     }
 

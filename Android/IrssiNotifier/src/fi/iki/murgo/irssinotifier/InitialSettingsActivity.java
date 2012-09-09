@@ -55,7 +55,7 @@ public class InitialSettingsActivity extends Activity {
                 generateToken((Account) state);
                 break;
             case 1:
-                registerToC2DM((String) state);
+                registerToGcm((String) state);
                 break;
             case 2:
                 sendSettings();
@@ -135,7 +135,7 @@ public class InitialSettingsActivity extends Activity {
         task.execute(account);
     }
 
-    private void registerToC2DM(String token) {
+    private void registerToGcm(String token) {
         final GcmRegistrationTask task = new GcmRegistrationTask(this, "",
                 "Registering to C2DM..."); // TODO i18n
 
