@@ -97,11 +97,6 @@ public class IrssiNotifierActivity extends SherlockActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
     protected void onPause() {
         super.onPause();
         instance = null;
@@ -132,15 +127,6 @@ public class IrssiNotifierActivity extends SherlockActivity {
     public static void refreshIsNeeded() {
         Log.v(TAG, "Refreshing would be refreshing");
         needsRefresh = true;
-    }
-
-
-    @Override
-    protected void onUserLeaveHint() {
-        super.onUserLeaveHint();
-
-        DataAccess da = new DataAccess(this);
-        da.setAllMessagesAsShown();
     }
 
     public static IrssiNotifierActivity getForegroundInstance() {

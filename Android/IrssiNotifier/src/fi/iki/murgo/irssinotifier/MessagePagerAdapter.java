@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
@@ -24,9 +23,6 @@ public class MessagePagerAdapter extends PagerAdapter {
     private List<Channel> channels;
     private final LayoutInflater layoutInflater;
     private ChannelMode channelMode;
-
-    private static final int PrivateColor = 0xFFAF0040;
-    private static final int ChannelColor = 0xFF0072B9;
 
     public MessagePagerAdapter(LayoutInflater layoutInflater) {
         super();
@@ -108,19 +104,8 @@ public class MessagePagerAdapter extends PagerAdapter {
 
         LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
         String lastChannel = "";
-        boolean lastShown = false;
         LinearLayout feedChannel = (LinearLayout)layoutInflater.inflate(R.layout.feed_channel, null);
         for (IrcMessage message : messages) {
-            /*
-            if (!message.isShown()) {
-                if (!lastShown) {
-                    lastShown = true;
-                    TextView tvEmpty = (TextView) layoutInflater.inflate(R.layout.message, null);
-                    tvEmpty.setText("--");
-                    messageContainer.addView(tvEmpty);
-                }
-            }
-            */
 
             if (!message.getLogicalChannel().equals(lastChannel)) {
                 feedChannel = (LinearLayout)layoutInflater.inflate(R.layout.feed_channel, null);
@@ -171,17 +156,7 @@ public class MessagePagerAdapter extends PagerAdapter {
         View channelView = layoutInflater.inflate(R.layout.channel, null);
 
         LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
-        boolean lastShown = false;
         for (IrcMessage message : messages) {
-            if (!message.isShown()) {
-                if (!lastShown) {
-                    lastShown = true;
-                    TextView tvEmpty = (TextView) layoutInflater.inflate(R.layout.message, null);
-                    tvEmpty.setText("--");
-                    messageContainer.addView(tvEmpty);
-                }
-            }
-
             TextView tv = (TextView) layoutInflater.inflate(R.layout.message, null);
             String s = message.getServerTimestampAsString() + " (" + message.getNick() + ") "
                     + message.getMessage();
