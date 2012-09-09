@@ -123,6 +123,12 @@ public class Server {
 
         ServerResponse serverResponse;
         serverResponse = new ServerResponse(statusCode == 200, responseString);
+        
+        if (serverResponse.success) {
+            Log.i(TAG, "Settings sent to server");
+        } else {
+            Log.e(TAG, "Unable to send settings! Response status code: " + statusCode + ", response string: " + responseString);
+        }
 
         return serverResponse;
     }
@@ -141,6 +147,13 @@ public class Server {
             serverResponse = new MessageServerResponse(statusCode == 200, responseString);
         else
             serverResponse = new ServerResponse(statusCode == 200, responseString);
+        
+        if (serverResponse.success) {
+            Log.i(TAG, "Data fetched from server, target type " + target);
+        } else {
+            Log.e(TAG, "Unable to fetch data from server! Response status code: " + statusCode + ", response string: " + responseString);
+        }
+        
         return serverResponse;
     }
 

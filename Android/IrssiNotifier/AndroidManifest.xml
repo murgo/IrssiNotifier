@@ -3,7 +3,7 @@
     package="fi.iki.murgo.irssinotifier"
     android:versionCode="7"
     android:versionName="1.2" >
-
+    
     <!-- Only this application can receive the messages and registration result -->
     <permission
         android:name="fi.iki.murgo.irssinotifier.permission.C2D_MESSAGE"
@@ -17,6 +17,9 @@
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Keeps the processor from sleeping when a message is received. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <uses-sdk
         android:minSdkVersion="8"
@@ -60,8 +63,7 @@
             >
         </activity>
 
-        <receiver android:name=".GcmReceiver" >
-
+        <receiver android:name=".NotificationClearedReceiver" android:exported="false">
             <!-- Receive the actual message -->
             <intent-filter>
                 <action android:name="fi.iki.murgo.irssinotifier.NOTIFICATION_CLEARED" />
@@ -72,22 +74,19 @@
 
         <!-- Only C2DM servers can send messages for the app. If permission is not set - any other app can generate it -->
         <receiver
-            android:name=".C2DMReceiver"
+            android:name="com.google.android.gcm.GCMBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
 
             <!-- Receive the actual message -->
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-
-                <category android:name="fi.iki.murgo.irssinotifier" />
-            </intent-filter>
-            <!-- Receive the registration id -->
-            <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-
+                
                 <category android:name="fi.iki.murgo.irssinotifier" />
             </intent-filter>
         </receiver>
+
+        <service android:name=".GCMIntentService" />
     </application>
 
 </manifest>

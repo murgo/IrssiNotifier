@@ -23,7 +23,7 @@ public class Preferences {
     public static final int PREFERENCES_MODE = Context.MODE_PRIVATE;
 
     private static final String AUTH_TOKEN_KEY = "AuthToken";
-    private static final String REGISTRATION_ID_KEY = "RegistrationId";
+    private static final String GCM_REGISTRATION_ID_KEY = "GcmRegistrationId";
     private static final String SETTINGS_SENT_KEY = "SettingsSent";
     private static final String ENCRYPTION_PASSWORD = "EncryptionPassword";
     private static final String NOTIFICATION_MODE = "NotificationMode";
@@ -50,13 +50,13 @@ public class Preferences {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
-    public String getRegistrationId() {
-        return sharedPreferences.getString(REGISTRATION_ID_KEY, null);
+    public String getGcmRegistrationId() {
+        return sharedPreferences.getString(GCM_REGISTRATION_ID_KEY, null);
     }
 
-    public boolean setRegistrationId(String registrationId) {
+    public boolean setGcmRegistrationId(String registrationId) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(REGISTRATION_ID_KEY, registrationId);
+        editor.putString(GCM_REGISTRATION_ID_KEY, registrationId);
         editor.putBoolean(SETTINGS_SENT_KEY, false);
         return editor.commit();
     }
@@ -82,7 +82,7 @@ public class Preferences {
 
     public ServerResponse sendSettings() throws IOException, AuthenticationException {
         HashMap<String, String> map = new HashMap<String, String>();
-        map.put(REGISTRATION_ID_KEY, getRegistrationId());
+        map.put(GCM_REGISTRATION_ID_KEY, getGcmRegistrationId());
         map.put(DEVICE_NAME_KEY, android.os.Build.MODEL);
         map.put(ENABLED_KEY, "1");
         MessageToServer msg = new MessageToServer(map);

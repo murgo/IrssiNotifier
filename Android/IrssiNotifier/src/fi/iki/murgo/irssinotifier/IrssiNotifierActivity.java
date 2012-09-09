@@ -51,7 +51,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
         preferences = new Preferences(this);
 
         // do initial settings
-        if (preferences.getAuthToken() == null || preferences.getRegistrationId() == null) {
+        if (preferences.getAuthToken() == null || preferences.getGcmRegistrationId() == null) {
             Log.d(TAG, "Asking for initial settings");
             Intent i = new Intent(this, InitialSettingsActivity.class);
             startActivity(i);

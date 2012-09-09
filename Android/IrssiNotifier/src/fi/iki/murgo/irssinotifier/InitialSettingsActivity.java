@@ -136,19 +136,16 @@ public class InitialSettingsActivity extends Activity {
     }
 
     private void registerToGcm(String token) {
-        final GcmRegistrationTask task = new GcmRegistrationTask(this, "",
-                "Registering to C2DM..."); // TODO i18n
+        final GCMRegistrationTask task = new GCMRegistrationTask(this, "", "Registering to GCM..."); // TODO i18n
 
         final Context ctx = this;
-        task.setCallback(new Callback<String[]>() {
-            public void doStuff(String[] result) {
+        task.setCallback(new Callback<Boolean>() {
+            public void doStuff(Boolean result) {
                 task.getDialog().dismiss();
-                // registrationId = result[0];
-                String error = result[1];
-                String unregistered = result[2];
+                boolean success = result;
 
-                if ((error != null || unregistered != null)) {
-                    MessageBox.Show(ctx, null, "Unable to register to C2DM! Please try again later!", // TODO i18n
+                if (!success) {
+                    MessageBox.Show(ctx, null, "Unable to register to GCM! Please try again later!", // TODO i18n
                         new Callback<Void>() {
                             public void doStuff(Void param) {
                                 whatNext(-1, null);
