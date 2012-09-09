@@ -104,7 +104,7 @@ public class ChannelSettingsActivity extends ListActivity {
                 AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
                 final int index = arg2;
                 builder.setMessage(
-                        "Are you sure you want to remove channel " + channels.get(index).getName())
+                        "Are you sure you want to remove channel " + adapter.getItem(index))
                         .setCancelable(false)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
