@@ -60,7 +60,7 @@
             >
         </activity>
 
-        <receiver android:name=".C2DMReceiver" >
+        <receiver android:name=".GcmReceiver" >
 
             <!-- Receive the actual message -->
             <intent-filter>

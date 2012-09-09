@@ -136,7 +136,7 @@ public class InitialSettingsActivity extends Activity {
     }
 
     private void registerToC2DM(String token) {
-        final C2DMRegistrationTask task = new C2DMRegistrationTask(this, "",
+        final GcmRegistrationTask task = new GcmRegistrationTask(this, "",
                 "Registering to C2DM..."); // TODO i18n
 
         final Context ctx = this;

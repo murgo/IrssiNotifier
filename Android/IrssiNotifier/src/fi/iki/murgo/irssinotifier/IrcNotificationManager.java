@@ -166,7 +166,7 @@ public class IrcNotificationManager {
                 PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(contentIntent);
 
-        Intent deleteIntent = new Intent(C2DMReceiver.NOTIFICATION_CLEARED_INTENT);
+        Intent deleteIntent = new Intent(GcmReceiver.NOTIFICATION_CLEARED_INTENT);
         deleteIntent.putExtra("notificationMode", mode.toString());
         deleteIntent.putExtra("channel", msg.getLogicalChannel());
         PendingIntent pendingDeleteIntent = PendingIntent.getBroadcast(context, 0, deleteIntent, 0);
