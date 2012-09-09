@@ -8,7 +8,7 @@ Web page: https://irssinotifier.appspot.com/
 
 ##Goals:
 
-- Low battery usage (users C2dm)
+- Low battery usage (users [GCM](http://developer.android.com/guide/google/gcm/index.html))
 - Easy to set up (hosted server)
 - Good privacy (end-to-end -encryption)
 
