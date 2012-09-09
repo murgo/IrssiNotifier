@@ -17,6 +17,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
@@ -241,7 +242,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
             pager = (ViewPager) findViewById(R.id.pager);
 
             if (adapter == null) {
-                adapter = new MessagePagerAdapter(this, getLayoutInflater());
+                adapter = new MessagePagerAdapter(getLayoutInflater());
             }
             if (channels != null) {
                 adapter.setChannels(channels);
@@ -251,6 +252,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 
             TitlePageIndicator titleIndicator = (TitlePageIndicator) findViewById(R.id.titles);
             titleIndicator.setViewPager(pager);
+            titleIndicator.setTypeface(Typeface.MONOSPACE);
 
             titleIndicator.setOnPageChangeListener(new OnPageChangeListener() {
                 public void onPageSelected(int arg0) {

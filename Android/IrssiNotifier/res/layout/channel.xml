@@ -3,33 +3,28 @@
     android:id="@+id/channel_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
-
-    <TextView
-        android:id="@+id/channel_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="3sp"
-        android:ellipsize="none"
-        android:singleLine="true"
-        android:text=""
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textSize="32sp"
-        android:typeface="monospace" />
+    android:orientation="vertical"
+    android:background="#072F5E"
+     >
 
     <ScrollView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical" >
+        android:orientation="vertical"
+        android:background="@drawable/rounded_box"
+        android:layout_margin="10dp"
+        android:padding="10dp"
+         >
 
         <LinearLayout
             xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/message_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="vertical" 
+            >
         </LinearLayout>
     </ScrollView>
 

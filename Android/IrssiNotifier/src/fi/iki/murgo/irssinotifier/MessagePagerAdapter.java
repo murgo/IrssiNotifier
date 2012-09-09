@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
@@ -21,18 +20,15 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 public class MessagePagerAdapter extends PagerAdapter {
-    private Context ctx;
     private List<Channel> channels;
     private final LayoutInflater layoutInflater;
     private ChannelMode channelMode;
 
-    private static final int FeedColor = 0xffffffff;
     private static final int PrivateColor = 0xFFAF0040;
     private static final int ChannelColor = 0xFF0072B9;
 
-    public MessagePagerAdapter(Context ctx, LayoutInflater layoutInflater) {
+    public MessagePagerAdapter(LayoutInflater layoutInflater) {
         super();
-        this.ctx = ctx;
         this.layoutInflater = layoutInflater;
     }
 
@@ -78,17 +74,13 @@ public class MessagePagerAdapter extends PagerAdapter {
         ((ViewPager) collection).addView(view);
         return view;
     }
-
+    
     private View createEmptyChannel() {
         View channelView = layoutInflater.inflate(R.layout.channel, null);
-        TextView name = (TextView) channelView.findViewById(R.id.channel_name);
-        name.setText("Empty");
 
-        LinearLayout messageContainer = (LinearLayout) channelView
-                .findViewById(R.id.message_container);
-        TextView tv = new TextView(ctx);
+        LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
+        TextView tv = (TextView) layoutInflater.inflate(R.layout.message, null);
         tv.setText("No IRC hilights yet!");
-        tv.setTypeface(Typeface.MONOSPACE);
 
         messageContainer.addView(tv);
 
@@ -112,34 +104,27 @@ public class MessagePagerAdapter extends PagerAdapter {
         });
 
         View channelView = layoutInflater.inflate(R.layout.channel, null);
-        TextView name = (TextView) channelView.findViewById(R.id.channel_name);
-        name.setText("Feed");
-        name.setTextColor(FeedColor);
 
-        LinearLayout messageContainer = (LinearLayout) channelView
-                .findViewById(R.id.message_container);
+        LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
         String lastChannel = "";
         boolean lastShown = false;
         for (IrcMessage message : messages) {
             if (!message.isShown()) {
                 if (!lastShown) {
                     lastShown = true;
-                    TextView tvEmpty = new TextView(ctx);
+                    TextView tvEmpty = (TextView) layoutInflater.inflate(R.layout.message, null);
                     tvEmpty.setText("--");
                     messageContainer.addView(tvEmpty);
                 }
             }
 
             if (!message.getLogicalChannel().equals(lastChannel)) {
-                TextView tv = new TextView(ctx);
+                TextView tv = (TextView) layoutInflater.inflate(R.layout.channel_header, null);
                 lastChannel = message.getLogicalChannel();
-
                 tv.setText(lastChannel);
-                tv.setTypeface(Typeface.MONOSPACE);
-                tv.setTextSize(tv.getTextSize() * 1.05f);
+
                 if (lastChannel.startsWith("#")) {
-                    // some channels might not start with #, but they're really
-                    // rare
+                    // some channels might not start with #, but they're really rare
                     tv.setTextColor(ChannelColor);
                 } else {
                     tv.setTextColor(PrivateColor);
@@ -147,13 +132,12 @@ public class MessagePagerAdapter extends PagerAdapter {
                 messageContainer.addView(tv);
             }
 
-            TextView tv = new TextView(ctx);
+            TextView tv = (TextView) layoutInflater.inflate(R.layout.message, null);
             String s = message.getServerTimestampAsString() + " (" + message.getNick() + ") "
                     + message.getMessage();
             final SpannableString ss = new SpannableString(s);
             Linkify.addLinks(ss, Linkify.ALL);
             tv.setText(ss);
-            tv.setTypeface(Typeface.MONOSPACE);
             tv.setAutoLinkMask(Linkify.ALL);
             tv.setLinksClickable(true);
             tv.setMovementMethod(LinkMovementMethod.getInstance());
@@ -176,29 +160,20 @@ public class MessagePagerAdapter extends PagerAdapter {
         List<IrcMessage> messages = channel.getMessages();
 
         View channelView = layoutInflater.inflate(R.layout.channel, null);
-        TextView name = (TextView) channelView.findViewById(R.id.channel_name);
-        name.setText(channel.getName());
-        if (channel.getName().startsWith("#")) {
-            // some channels might not start with #, but they're really rare
-            name.setTextColor(ChannelColor);
-        } else {
-            name.setTextColor(PrivateColor);
-        }
 
-        LinearLayout messageContainer = (LinearLayout) channelView
-                .findViewById(R.id.message_container);
+        LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
         boolean lastShown = false;
         for (IrcMessage message : messages) {
             if (!message.isShown()) {
                 if (!lastShown) {
                     lastShown = true;
-                    TextView tvEmpty = new TextView(ctx);
+                    TextView tvEmpty = (TextView) layoutInflater.inflate(R.layout.message, null);
                     tvEmpty.setText("--");
                     messageContainer.addView(tvEmpty);
                 }
             }
 
-            TextView tv = new TextView(ctx);
+            TextView tv = (TextView) layoutInflater.inflate(R.layout.message, null);
             String s = message.getServerTimestampAsString() + " (" + message.getNick() + ") "
                     + message.getMessage();
             final SpannableString ss = new SpannableString(s);

@@ -30,7 +30,7 @@
             android:name=".IrssiNotifierActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.Sherlock" >
+            android:theme="@style/Theme.IrssiTheme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

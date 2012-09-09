@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+    <style name="Theme.IrssiTheme" parent="Theme.Sherlock">
+    <item name="actionBarStyle">@style/Widget.IrssiTheme.ActionBar</item>
+    <item name="android:actionBarStyle">@style/Widget.IrssiTheme.ActionBar</item>
+</style>
+
+<style name="Widget.IrssiTheme.ActionBar" parent="Widget.Sherlock.ActionBar.Solid">
+    <!-- 
+
+    <item name="backgroundSplit">@drawable/bg_striped_split</item>
+    <item name="android:backgroundSplit">@drawable/bg_striped_split</item>
+     -->
+     
+    <item name="background">#181818</item>
+    <item name="android:background">#181818</item>
+    
+    <item name="android:typeface">monospace</item>
+</style>
+</resources>
