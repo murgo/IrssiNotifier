@@ -38,6 +38,9 @@ public class Preferences {
     private static final String LIGHTS_ENABLED = "LightsEnabled";
     private static final String VIBRATION_ENABLED = "VibrationEnabled";
     private static final String FEED_VIEW_DEFAULT = "FeedViewDefault";
+    private static final String ICB_HOST_INTENT_URI = "IcbHostIntentUri";
+    private static final String ICB_HOST_NAME = "IcbHostName";
+    private static final String ICB_ENABLED = "IcbEnabled";
 
     private SharedPreferences sharedPreferences;
 
@@ -160,5 +163,30 @@ public class Preferences {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(FEED_VIEW_DEFAULT, b);
         return editor.commit();
+    }
+
+    public boolean setIcbHost(String hostName, String hostUri) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(ICB_HOST_NAME, hostName);
+        editor.putString(ICB_HOST_INTENT_URI, hostUri);
+        return editor.commit();
+    }
+    
+    public boolean setIcbEnabled(boolean b) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(ICB_ENABLED, b);
+        return editor.commit();
+    }
+
+    public String getIcbHostName() {
+        return sharedPreferences.getString(ICB_HOST_NAME, null);
+    }
+
+    public boolean getIcbEnabled() {
+        return sharedPreferences.getBoolean(ICB_ENABLED, true);
+    }
+
+    public String getIcbHostIntentUri() {
+        return sharedPreferences.getString(ICB_HOST_INTENT_URI, null);
     }
 }

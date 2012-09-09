@@ -26,12 +26,12 @@
         android:name="IrssiNotifierApplication"
         android:icon="@drawable/icon"
         android:label="@string/app_name"
-        android:theme="@style/Theme.IrssiTheme"
          >
         <activity
             android:name=".IrssiNotifierActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask"
+            android:theme="@style/Theme.IrssiTheme"
              >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -41,11 +41,15 @@
         </activity>
         <activity
             android:name=".AboutActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@style/Theme.IrssiTheme"
+            >
         </activity>
         <activity
             android:name=".InitialSettingsActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@style/Theme.IrssiTheme"
+            >
         </activity>
         <activity
             android:name=".SettingsActivity"
@@ -53,7 +57,9 @@
         </activity>
         <activity
             android:name=".ChannelSettingsActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:theme="@style/Theme.IrssiTheme"
+            >
         </activity>
 
         <receiver android:name=".C2DMReceiver" >

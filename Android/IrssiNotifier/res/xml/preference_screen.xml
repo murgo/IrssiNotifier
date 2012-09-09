@@ -56,6 +56,25 @@
             android:summary="If turned off, channel with activity will be the tab to open"
             android:title="Feed view as default tab" />
     </PreferenceCategory>
+    
+    <PreferenceCategory android:title="Irssi ConnectBot integration" android:key="IcbCategory" >
+
+        <CheckBoxPreference
+            android:key="IcbEnabled"
+            android:defaultValue="true"
+            android:title="Show ICB icon"
+            android:summary="Show Irssi ConnectBot icon in the action bar"
+             />
+
+        <Preference
+            android:key="IcbHost"
+            android:title="Select ICB host"
+            android:summary=""
+            android:dependency="IcbEnabled"
+             />
+        
+    </PreferenceCategory>
+    
     <PreferenceCategory android:title="Misc" >
         <Preference
             android:key="channels"
