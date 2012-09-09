@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
@@ -108,7 +109,9 @@ public class MessagePagerAdapter extends PagerAdapter {
         LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
         String lastChannel = "";
         boolean lastShown = false;
+        LinearLayout feedChannel = (LinearLayout)layoutInflater.inflate(R.layout.feed_channel, null);
         for (IrcMessage message : messages) {
+            /*
             if (!message.isShown()) {
                 if (!lastShown) {
                     lastShown = true;
@@ -117,19 +120,25 @@ public class MessagePagerAdapter extends PagerAdapter {
                     messageContainer.addView(tvEmpty);
                 }
             }
+            */
 
             if (!message.getLogicalChannel().equals(lastChannel)) {
+                feedChannel = (LinearLayout)layoutInflater.inflate(R.layout.feed_channel, null);
+                messageContainer.addView(feedChannel);
+
                 TextView tv = (TextView) layoutInflater.inflate(R.layout.channel_header, null);
                 lastChannel = message.getLogicalChannel();
                 tv.setText(lastChannel);
-
+                
+                /*
                 if (lastChannel.startsWith("#")) {
                     // some channels might not start with #, but they're really rare
                     tv.setTextColor(ChannelColor);
                 } else {
                     tv.setTextColor(PrivateColor);
                 }
-                messageContainer.addView(tv);
+                */
+                feedChannel.addView(tv);
             }
 
             TextView tv = (TextView) layoutInflater.inflate(R.layout.message, null);
@@ -142,7 +151,7 @@ public class MessagePagerAdapter extends PagerAdapter {
             tv.setLinksClickable(true);
             tv.setMovementMethod(LinkMovementMethod.getInstance());
 
-            messageContainer.addView(tv);
+            feedChannel.addView(tv);
         }
 
         final ScrollView sv = (ScrollView) channelView.findViewById(R.id.scroll_view);

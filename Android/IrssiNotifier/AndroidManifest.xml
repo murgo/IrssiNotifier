@@ -25,12 +25,14 @@
     <application
         android:name="IrssiNotifierApplication"
         android:icon="@drawable/icon"
-        android:label="@string/app_name" >
+        android:label="@string/app_name"
+        android:theme="@style/Theme.IrssiTheme"
+         >
         <activity
             android:name=".IrssiNotifierActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.IrssiTheme" >
+             >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -3,6 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:textAppearance="?android:attr/textAppearanceLarge"
-    android:typeface="monospace" >
+    android:typeface="monospace"
+    android:textColor="#bebebe"
+    android:textStyle="bold"
+     >
 
 </TextView>

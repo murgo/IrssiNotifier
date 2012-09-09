@@ -8,12 +8,13 @@
         android:id="@+id/titles"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" 
-        android:background="#072F5E"
+        android:background="#0276bd"
         
         app:footerLineHeight="0dp"
         app:selectedBold="true"
-        app:footerColor="#1068ce"
-        app:footerIndicatorHeight="2dp"
+        app:footerColor="#072F5E"
+        app:footerIndicatorHeight="6dp"
+        app:footerIndicatorStyle="triangle"
         />
 
     <android.support.v4.view.ViewPager
