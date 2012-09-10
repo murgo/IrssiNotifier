@@ -83,6 +83,11 @@
         <Preference
             android:key="about"
             android:title="About IrssiNotifier" />
+        <Preference
+            android:key="redoInitialSettings"
+            android:title="Redo initial settings"
+            android:summary="Clears your authentication data and allows you to pick your Google Account again"
+             />
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -63,7 +63,20 @@ public class SettingsActivity extends PreferenceActivity {
                 return true;
             }
         });
-        
+
+        Preference initialSettingsPref = (Preference) findPreference("redoInitialSettings");
+        initialSettingsPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                Preferences prefs = new Preferences(ctx);
+                prefs.setAuthToken(null);
+                prefs.setGcmRegistrationId(null);
+
+                IrssiNotifierActivity.refreshIsNeeded();
+                finish();
+                return true;
+            }
+        });
+
         handleIcb();
     }
     
