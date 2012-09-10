@@ -1,0 +1,26 @@
+from gcm import GCM
+from google.appengine.ext import deferred
+from datamodels import GcmToken
+import logging
+
+def sendGcmToUserDeferred(irssiuser, message):
+    logging.info("queuing deferred task for sending message to user %s" % irssiuser.email)
+    key = irssiuser.key()
+    deferred.defer(_sendGcmToUser, key, message, _queue='gcmqueue')
+
+def _sendGcmToUser(irssiuser_key, message):
+    logging.info("executing deferred task: _sendGcmToUser, %s, %s" % (irssiuser_key, message))
+    gcm = GCM()
+    gcm.sendGcmToUser(irssiuser_key, message)
+
+def sendGcmToTokenDeferred(token, message):
+    logging.info("queuing deferred task for sending message to token %s" % token.gcm_token)
+    key = token.key()
+    deferred.defer(_sendGcmToToken, key, message, _queue='gcmqueue')
+
+def _sendGcmToToken(token_key, message):
+    logging.info("executing deferred task: _sendGcmToToken, %s, %s" % (token_key, message))
+    gcm = GCM()
+    
+    token = GcmToken.get(token_key)
+    gcm.sendGcm([token], message)

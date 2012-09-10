@@ -3,6 +3,7 @@ import logging
 from datamodels import GcmToken, AuthKey
 from urllib2 import HTTPError
 import json
+import gcmhelper
 
 
 def isset(key, arr):
@@ -13,14 +14,15 @@ class GCM(object):
     authkey = None
 
     def __init__(self):
-        self.authkey = self.loadAuthKey()
-        if self.authkey is None:
-            logging.error("No auth key for GCM!")
-            
-            # hack for updating auth key
-            # key = AuthKey(key_name = "GCM_AUTHKEY")
-            # key.gcm_authkey = 'secrets'
-            # key.put()
+        if GCM.authkey is None:
+            GCM.authkey = self.loadAuthKey()
+            if GCM.authkey is None:
+                logging.error("No auth key for GCM!")
+                
+                # hack for updating auth key
+                # key = AuthKey(key_name = "GCM_AUTHKEY")
+                # key.gcm_authkey = 'secrets'
+                # key.put()
 
 
     def loadAuthKey(self):
@@ -31,24 +33,36 @@ class GCM(object):
 
         return key.gcm_authkey 
 
-    def sendGcmToUser(self, irssiuser, message):
-        logging.debug("Sending gcm message to user %s" % irssiuser.user_name)
+
+    def sendGcmToUser(self, irssiuser_key, message):
+        logging.debug("Sending gcm message to user %s" % irssiuser_key)
+        if GCM.authkey is None:
+            logging.error("No auth key for GCM!")
+            return
+            
         tokens = GcmToken.all()
-        tokens.ancestor(irssiuser.key())
+        tokens.ancestor(irssiuser_key)
+        tokens.filter("enabled =", True)
         tokensList = tokens.fetch(10)
-        for token in tokensList:
-            if token.enabled:
-                self.sendGcm(token, message)
+        self.sendGcm(tokensList, message)
+
 
     def sendGcm(self, tokens, message):
-        logging.debug("Sending gcm message to %s tokens" % len(tokens))
+        logging.info("Sending gcm message to %s tokens" % len(tokens))
+        if GCM.authkey is None:
+            logging.error("No auth key for GCM!")
+            return
+        
+        if (len(tokens) == 0):
+            logging.info("No tokens, stop sending")
+            return
 
-        if self.authkey is None:
+        if GCM.authkey is None:
             logging.error("Unable to send GCM message because auth key is not set")
             return
 
         request = urllib2.Request("https://android.googleapis.com/gcm/send")
-        request.add_header('Authorization', 'key=%s' % self.authkey)
+        request.add_header('Authorization', 'key=%s' % GCM.authkey)
         request.add_header('Content-Type', 'application/json')
         
         jsonRequest = {}
@@ -65,14 +79,13 @@ class GCM(object):
             responseJson = json.loads(text)
         except HTTPError as e:
             if (e.code == 503):
-                # TODO: retry
-                return
+                raise Exception("503, retrying whole task")
             else:
                 logging.error("Unable to send GCM message! Response code: %s, response text: %s " % (e.code, text))
-                return
+                return # do not retry
         except:
             logging.error("Unable to send GCM message!")
-            raise
+            return # do not retry
         
         logging.debug("GCM Message sent, response: %s" % text)
         
@@ -89,9 +102,13 @@ class GCM(object):
                     deleted = False
                     for i in xrange(len(tokens)):
                         if tokens[i].gcm_token == newid and i != index:
+                            logging.info("Canonical token already exists, removing this one")
                             tokens[index].delete();
                             deleted = True
+                            break
+                        
                     if not deleted:
+                        logging.info("Updating token with canonical")
                         token = tokens[index]
                         token.gcm_token = result["registration_id"]
                         token.put()
@@ -99,9 +116,10 @@ class GCM(object):
                 if isset("error", result):
                     logging.warn("Error sending GCM message: " + result["error"])
                     if (result["error"] == "Unavailable"):
-                        # TODO: retry
-                        pass
+                        logging.warn("Token unavailable, retrying")
+                        gcmhelper.sendGcmToTokenDeferred(tokens[index], message)
                     elif (result["error"] == "NotRegistered"):
+                        logging.warn("Token not registered, deleting")
                         tokens[index].delete()
                     else:
                         logging.error("Unrecoverable error: " + result["error"])

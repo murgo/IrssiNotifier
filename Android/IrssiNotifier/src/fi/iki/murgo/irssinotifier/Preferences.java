@@ -11,7 +11,6 @@ import fi.iki.murgo.irssinotifier.Server.ServerTarget;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.Settings;

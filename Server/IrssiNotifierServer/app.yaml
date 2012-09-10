@@ -21,7 +21,13 @@ handlers:
 - url: /.*
   script: main.app
   secure: always
+- url: /tasks/gcm
+  script: gcmqueuehandler.app
+  login: admin
   
 libraries:
 - name: jinja2
   version: latest
+
+builtins:
+- deferred: on

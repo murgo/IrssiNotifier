@@ -23,7 +23,7 @@ class Message(db.Model):
         return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
     def ToGcmJson(self):
         m = json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
-        if len(m) < 1024:
+        if len(m) < 3072:
             return m
         return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'message': 'toolong', 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
 

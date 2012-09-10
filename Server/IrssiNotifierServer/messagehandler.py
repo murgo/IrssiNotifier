@@ -1,8 +1,8 @@
 import logging
 from datamodels import Message
 import traceback
-from gcm import GCM
 import time
+import gcmhelper
 
 class MessageHandler(object):
     def handle(self, irssiuser, array):
@@ -19,10 +19,10 @@ class MessageHandler(object):
             traceback.print_exception(e)
             return False
             
-        gcm = GCM()
-        gcm.sendGcmToUser(irssiuser, dbMessage.ToGcmJson())
-        
+        gcmhelper.sendGcmToUserDeferred(irssiuser, dbMessage.ToGcmJson())
         return True
+    
+    
     def getMessages(self, timestamp, user):
         logging.debug("Getting messages after: %s" % timestamp)
         messages = Message.all()
