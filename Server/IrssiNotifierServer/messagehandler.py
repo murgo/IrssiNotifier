@@ -1,7 +1,7 @@
 import logging
 from datamodels import Message
 import traceback
-from c2dm import C2DM
+from gcm import GCM
 import time
 
 class MessageHandler(object):
@@ -19,8 +19,8 @@ class MessageHandler(object):
             traceback.print_exception(e)
             return False
             
-        c2dm = C2DM()
-        c2dm.sendC2dmToUser(irssiuser, dbMessage.ToC2dmJson())
+        gcm = GCM()
+        gcm.sendGcmToUser(irssiuser, dbMessage.ToGcmJson())
         
         return True
     def getMessages(self, timestamp, user):
@@ -30,9 +30,6 @@ class MessageHandler(object):
         messages.filter("server_timestamp >", int(timestamp))
         messages.order("server_timestamp")
 
-        #c2dm = C2DM()
-        #c2dm.sendC2dmToUser(user, "read")
-        
         m = messages.fetch(50)
         logging.debug("Found %s messages" % len(m))
 

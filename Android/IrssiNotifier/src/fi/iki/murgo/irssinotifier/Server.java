@@ -38,7 +38,7 @@ public class Server {
 
     private Map<ServerTarget, String> serverUrls = new HashMap<ServerTarget, String>();
 
-    private static final String SERVER_BASE_URL = "https://irssinotifier.appspot.com/API/";
+    private static final String SERVER_BASE_URL = "https://3.irssinotifier.appspot.com/API/";
 
     private DefaultHttpClient http_client = new DefaultHttpClient();
 

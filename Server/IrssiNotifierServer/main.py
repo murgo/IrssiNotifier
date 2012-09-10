@@ -8,7 +8,7 @@ import os
 from settingshandler import SettingsHandler
 from messagehandler import MessageHandler
 from login import Login
-from datamodels import C2dmToken, Message
+from datamodels import GcmToken, Message
 import json
 from wipehandler import WipeHandler
 import emaillogginghandler
@@ -88,7 +88,7 @@ class WebController(BaseController):
         count = 0
 
         if user is not None:
-            tokens = C2dmToken.all()
+            tokens = GcmToken.all()
             tokens.ancestor(user.key())
             tokensList = tokens.fetch(10)
 
@@ -103,7 +103,7 @@ class WebController(BaseController):
              'login_url': users.create_login_url("#profile").replace("&", "&amp;"),
              'logout_url': users.create_logout_url("").replace("&", "&amp;"),
              'irssiworking': count != 0,
-             'c2dmtokencount': len(tokensList),
+             'gcmtokencount': len(tokensList),
         }
 
         logging.debug(template_values)
@@ -115,31 +115,44 @@ class WebController(BaseController):
 
 def getAndroidServerMessage(data):
     if "version" in data:
-        if int(data["version"]) < 5:
-            return (False, "Get latest version of IrssiNotifier from http://irssinotifier.appspot.com")
+        logging.debug("Validating version: " + data["version"])
+        try:
+            if int(data["version"]) < 8:
+                logging.warn('Client has too old version')
+                return (False, "Too old version! Get latest version of IrssiNotifier from https://irssinotifier.appspot.com")
+        except ValueError:
+            logging.warn('Client version is not integer')
+            return (False, "Too old version! Get latest version of IrssiNotifier from https://irssinotifier.appspot.com")
+    else:
+        logging.warn("Unable to validate version, no version in data")
     return (True, "")
 
 
 def getIrssiServerMessage(data):
     if "version" in data:
         if int(data["version"]) < 2:
-            return (False, "Update your IrssiNotifier script to latest version from http://irssinotifier.appspot.com")
+            return (False, "Update your IrssiNotifier script to latest version from https://irssinotifier.appspot.com")
     return (True, "")
 
 
 class SettingsController(BaseController):
     def post(self):
-        val = self.initController("SettingsController.post()", ["RegistrationId", "Name", "Enabled"])
+        val = self.initController("SettingsController.post()", ["Name", "Enabled", "RegistrationId", "version"])
         if not val:
             logging.debug("InitController returned false")
             return self.response
-        
+
+        self.response.headers['Content-Type'] = 'application/json'
+        (cont, serverMessage) = getAndroidServerMessage(self.data)
+        if not cont:
+            self.response.out.write(json.dumps({ 'servermessage': serverMessage }))
+            return self.response
+
         settingsHandler = SettingsHandler()
         settingsHandler.handle(self.irssiUser, self.data)
         
         responseJson = json.dumps({ 'response': 'ok' })
 
-        self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(responseJson)
 
 
@@ -164,14 +177,15 @@ class MessageController(BaseController):
         self.response.out.write(serverMessage)
 
     def get(self):
-        val = self.initController("MessageController.get()", [])
+        val = self.initController("MessageController.get()", ["version"])
         if not val:
             logging.debug("InitController returned false")
             return self.response
 
+        self.response.headers['Content-Type'] = 'application/json'
         (cont, serverMessage) = getAndroidServerMessage(self.data)
         if not cont:
-            self.response.out.write(json.dumps({ 'servermessage': serverMessage }))
+            self.response.out.write(json.dumps({ 'servermessage': serverMessage, "messages" : [] }))
             return self.response
 
         if "timestamp" not in self.data:
@@ -184,7 +198,6 @@ class MessageController(BaseController):
             messageJsons.append(message.ToJson())
         responseJson = json.dumps({"servermessage": serverMessage, "messages": messageJsons})
 
-        self.response.headers['Content-Type'] = 'application/json'
         self.response.out.write(responseJson)
 
 
@@ -223,4 +236,4 @@ app = webapp2.WSGIApplication([('/', WebController), ('/API/Settings', SettingsC
 app.error_handlers[404] = handle_404
 
 logging.debug("loaded main")
-emaillogginghandler.register_logger(["irssinotifier@gmail.com"])
+#emaillogginghandler.register_logger(["irssinotifier@gmail.com"])

@@ -8,8 +8,8 @@ class IrssiUser(db.Model):
     api_token = db.StringProperty()
 
 
-class C2dmToken(db.Model):
-    c2dm_token = db.StringProperty()
+class GcmToken(db.Model):
+    gcm_token = db.StringProperty()
     enabled = db.BooleanProperty()
     name = db.StringProperty()
 
@@ -21,7 +21,7 @@ class Message(db.Model):
     nick = db.StringProperty()
     def ToJson(self):
         return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
-    def ToC2dmJson(self):
+    def ToGcmJson(self):
         m = json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
         if len(m) < 1024:
             return m
@@ -29,6 +29,4 @@ class Message(db.Model):
 
 
 class AuthKey(db.Model):
-    sid = db.StringProperty()
-    lsid = db.StringProperty()
-    auth = db.StringProperty()
+    gcm_authkey = db.StringProperty()

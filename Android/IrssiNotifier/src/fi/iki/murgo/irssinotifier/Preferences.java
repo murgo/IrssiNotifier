@@ -82,7 +82,7 @@ public class Preferences {
 
     public ServerResponse sendSettings() throws IOException, AuthenticationException {
         HashMap<String, String> map = new HashMap<String, String>();
-        map.put(GCM_REGISTRATION_ID_KEY, getGcmRegistrationId());
+        map.put("RegistrationId", getGcmRegistrationId());
         map.put(DEVICE_NAME_KEY, android.os.Build.MODEL);
         map.put(ENABLED_KEY, "1");
         MessageToServer msg = new MessageToServer(map);

@@ -258,15 +258,15 @@
 		
 	    <h2>Android client status</h2>
 
-		{% if c2dmtokencount != 0 %}
+		{% if gcmtokencount != 0 %}
 
-			<p>Android device(s) <span class="working">confirmed as working.</span> Registered device count: {{ c2dmtokencount }}</p>
+			<p>Android device(s) <span class="working">confirmed as working.</span> Registered device count: {{ gcmtokencount }}</p>
 		
 			<div id="devices">
 			<h3>Registered devices:</h3>
 			<ul>
 		{% for token in tokens %}
-				<li><input type="checkbox" {% if token.enabled %}checked="checked"{% endif %} onclick="update(this, '{{ token.name }}', '{{ token.c2dm_token }}');" />{{ token.name }}</li>
+				<li><input type="checkbox" {% if token.enabled %}checked="checked"{% endif %} onclick="update(this, '{{ token.name }}', '{{ token.gcm_token }}');" />{{ token.name }}</li>
 		{% endfor %}
 			</ul>
 			</div>

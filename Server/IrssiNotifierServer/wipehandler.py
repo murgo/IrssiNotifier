@@ -1,12 +1,12 @@
 import logging
-from datamodels import C2dmToken, Message, AuthKey
+from datamodels import GcmToken, Message, AuthKey
 from google.appengine.ext import db
 
 class WipeHandler(object):
     def handle(self, user):
         logging.info("Wiping everything for user %s" % user.user_id)
         
-        query = C2dmToken.all()
+        query = GcmToken.all()
         query.ancestor(user)
         db.delete(query)
 
