@@ -42,16 +42,20 @@ public class IrssiNotifierActivity extends SherlockActivity {
         Log.i(TAG, "Startup");
         super.onCreate(savedInstanceState);
 
+        preferences = new Preferences(this);
+
+        int versionCode = 0;
         try {
-            MessageToServer.setVersion(getPackageManager().getPackageInfo(getPackageName(), 0).versionCode);
+            versionCode = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
         } catch (NameNotFoundException e) {
             e.printStackTrace();
         }
-
-        preferences = new Preferences(this);
+        
+        MessageToServer.setVersion(versionCode);
+        preferences.setVersion(versionCode);
 
         // do initial settings
-        if (preferences.getAuthToken() == null || preferences.getGcmRegistrationId() == null) {
+        if (preferences.getAuthToken() == null || preferences.getGcmRegistrationId() == null || preferences.getGcmRegistrationIdVersion() != versionCode) {
             Log.d(TAG, "Asking for initial settings");
             Intent i = new Intent(this, InitialSettingsActivity.class);
             startActivity(i);

@@ -11,6 +11,7 @@ import fi.iki.murgo.irssinotifier.Server.ServerTarget;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -24,6 +25,7 @@ public class Preferences {
 
     private static final String AUTH_TOKEN_KEY = "AuthToken";
     private static final String GCM_REGISTRATION_ID_KEY = "GcmRegistrationId";
+    private static final String GCM_REGISTRATION_ID_VERSION_KEY = "GcmRegistrationIdVersion";
     private static final String SETTINGS_SENT_KEY = "SettingsSent";
     private static final String ENCRYPTION_PASSWORD = "EncryptionPassword";
     private static final String NOTIFICATION_MODE = "NotificationMode";
@@ -43,11 +45,16 @@ public class Preferences {
     private static final String ICB_ENABLED = "IcbEnabled";
 
     private SharedPreferences sharedPreferences;
+    private int versionCode;
 
     public Preferences(Context context) {
         // sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME,
         // PREFERENCES_MODE);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    }
+
+    public void setVersion(int versionCode) {
+        this.versionCode = versionCode; 
     }
 
     public String getGcmRegistrationId() {
@@ -58,7 +65,13 @@ public class Preferences {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(GCM_REGISTRATION_ID_KEY, registrationId);
         editor.putBoolean(SETTINGS_SENT_KEY, false);
+        editor.putInt(GCM_REGISTRATION_ID_VERSION_KEY, versionCode);
+
         return editor.commit();
+    }
+    
+    public int getGcmRegistrationIdVersion() {
+        return sharedPreferences.getInt(GCM_REGISTRATION_ID_VERSION_KEY, 0);
     }
 
     public String getAuthToken() {
