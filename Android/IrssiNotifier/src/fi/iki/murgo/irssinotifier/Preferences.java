@@ -44,7 +44,7 @@ public class Preferences {
     private static final String ICB_ENABLED = "IcbEnabled";
 
     private SharedPreferences sharedPreferences;
-    private int versionCode;
+    private static int versionCode;
 
     public Preferences(Context context) {
         // sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME,
@@ -52,8 +52,8 @@ public class Preferences {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
-    public void setVersion(int versionCode) {
-        this.versionCode = versionCode; 
+    public static void setVersion(int versionCode) {
+        Preferences.versionCode = versionCode; 
     }
 
     public String getGcmRegistrationId() {
