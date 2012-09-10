@@ -93,7 +93,7 @@ class GCM(object):
             return #success
         
         results = responseJson["results"]
-        index = 0
+        index = -1
         for result in results:
             index += 1
             if isset("message_id", result):
@@ -102,15 +102,15 @@ class GCM(object):
                     deleted = False
                     for i in xrange(len(tokens)):
                         if tokens[i].gcm_token == newid and i != index:
-                            logging.info("Canonical token already exists, removing this one")
+                            logging.info("Canonical token already exists at index %s, removing this one at index %s" % (i, index))
                             tokens[index].delete();
                             deleted = True
                             break
                         
                     if not deleted:
-                        logging.info("Updating token with canonical")
+                        logging.info("Updating token at %s with canonical token: %s -> %s" % (index, tokens[index].gcm_token, newid))
                         token = tokens[index]
-                        token.gcm_token = result["registration_id"]
+                        token.gcm_token = newid
                         token.put()
             else:
                 if isset("error", result):
