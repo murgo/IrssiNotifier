@@ -40,8 +40,8 @@ class GCM(object):
             if token.enabled:
                 self.sendGcm(token, message)
 
-    def sendGcm(self, token, message):
-        logging.debug("Sending gcm message to token %s" % token.gcm_token)
+    def sendGcm(self, tokens, message):
+        logging.debug("Sending gcm message to %s tokens" % len(tokens))
 
         if self.authkey is None:
             logging.error("Unable to send GCM message because auth key is not set")
@@ -52,8 +52,10 @@ class GCM(object):
         request.add_header('Content-Type', 'application/json')
         
         jsonRequest = {}
-        jsonRequest['registration_ids'] = [token.gcm_token]
         jsonRequest['data'] = {'message' : message}
+        jsonRequest['registration_ids'] = []
+        for token in tokens:
+            jsonRequest['registration_ids'].append(token.gcm_token)
         
         request.add_data(json.dumps(jsonRequest))
 
@@ -78,11 +80,21 @@ class GCM(object):
             return #success
         
         results = responseJson["results"]
+        index = 0
         for result in results:
+            index += 1
             if isset("message_id", result):
                 if isset("registration_id", result):
-                    token.gcm_token = result["registration_id"]
-                    token.put()
+                    newid = result["registration_id"]
+                    deleted = False
+                    for i in xrange(len(tokens)):
+                        if tokens[i].gcm_token == newid and i != index:
+                            tokens[index].delete();
+                            deleted = True
+                    if not deleted:
+                        token = tokens[index]
+                        token.gcm_token = result["registration_id"]
+                        token.put()
             else:
                 if isset("error", result):
                     logging.warn("Error sending GCM message: " + result["error"])
@@ -90,7 +102,6 @@ class GCM(object):
                         # TODO: retry
                         pass
                     elif (result["error"] == "NotRegistered"):
-                        token.delete()
+                        tokens[index].delete()
                     else:
                         logging.error("Unrecoverable error: " + result["error"])
-                        pass
