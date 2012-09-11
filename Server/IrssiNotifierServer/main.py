@@ -121,7 +121,7 @@ class WebController(BaseController):
              'login_url': users.create_login_url("#profile").replace("&", "&amp;"),
              'logout_url': users.create_logout_url("").replace("&", "&amp;"),
              'irssi_working': last_notification_time != 'Never',
-             'irssi_latest': irssi_script_version >= 9,
+             'irssi_latest': irssi_script_version >= 10,
              'registration_date': registration_date,
              'last_notification_time': last_notification_time,
              'notification_count': notification_count
@@ -258,4 +258,4 @@ app = webapp2.WSGIApplication([('/', WebController), ('/API/Settings', SettingsC
 app.error_handlers[404] = handle_404
 
 logging.debug("loaded main")
-#emaillogginghandler.register_logger(["irssinotifier@gmail.com"])
+emaillogginghandler.register_logger(["irssinotifier@gmail.com"])
