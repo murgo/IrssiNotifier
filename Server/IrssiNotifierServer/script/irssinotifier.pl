@@ -5,7 +5,7 @@ use IPC::Open2 qw(open2);
 use POSIX;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "9";
+$VERSION = "10";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -13,7 +13,7 @@ $VERSION = "9";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "http://irssinotifier.appspot.com",
-    changed     => "2012-09-06"
+    changed     => "2012-09-11"
 );
 
 my $lastMsg;
@@ -119,7 +119,7 @@ sub send_notification {
     $lastTarget = encrypt($lastTarget);
 
     my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
-    my $result = `/usr/bin/env wget --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
+    my $result = `wget --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
     if ($? != 0) {
         # Something went wrong, might be network error or authorization issue. Probably no need to alert user, though.
         # Irssi::print("IrssiNotifier: Sending hilight to server failed, check http://irssinotifier.appspot.com for updates");
