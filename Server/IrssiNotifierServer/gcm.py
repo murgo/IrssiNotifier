@@ -79,13 +79,13 @@ class GCM(object):
             responseJson = json.loads(text)
         except HTTPError as e:
             if (e.code == 503):
-                raise Exception("503, retrying whole task")
+                raise Exception("503, retrying whole task") #retry
             else:
                 logging.error("Unable to send GCM message! Response code: %s, response text: %s " % (e.code, text))
                 return # do not retry
-        except:
-            logging.error("Unable to send GCM message!")
-            return # do not retry
+        except Exception as e:
+            logging.warn("Unable to send GCM message! %s" % e)
+            raise e #retry
         
         logging.debug("GCM Message sent, response: %s" % text)
         
