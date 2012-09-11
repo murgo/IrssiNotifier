@@ -67,14 +67,6 @@ public class IrcNotificationManager {
     }
 
     public void handle(Context context, String message) {
-        /*
-         * removed from the server side for now if (message.startsWith("read"))
-         * { NotificationManager notificationManager =
-         * (NotificationManager)context
-         * .getSystemService(Context.NOTIFICATION_SERVICE);
-         * notificationManager.cancelAll(); ircMessages.read(); return; }
-         */
-
         Preferences prefs = new Preferences(context);
         NotificationMode mode = prefs.getNotificationMode();
 
@@ -208,7 +200,7 @@ public class IrcNotificationManager {
                 
                 if (unreadCount <= 1) {
                     if (msg.isPrivate()) {
-                        title = "Private message from " + msg.getNick();
+                        title = "Query from " + msg.getNick();
                         text = msg.getMessage();
                     } else {
                         title = "Hilight at " + msg.getChannel();
@@ -247,7 +239,7 @@ public class IrcNotificationManager {
                 id = perMessageNotificationId++;
                 count = 1;
                 if (msg.isPrivate()) {
-                    title = "Private message from " + msg.getNick();
+                    title = "Query from " + msg.getNick();
                     text = msg.getMessage();
                 } else {
                     title = "Hilight at " + msg.getChannel();
@@ -261,10 +253,10 @@ public class IrcNotificationManager {
                 count = channelUnreadCount;
                 if (msg.isPrivate()) {
                     if (channelUnreadCount <= 1) {
-                        title = "Private message from " + msg.getNick();
+                        title = "Query from " + msg.getNick();
                         text = msg.getMessage();
                     } else {
-                        title = "" + channelUnreadCount + " private messages from " + msg.getNick();
+                        title = "" + channelUnreadCount + " queries from " + msg.getNick();
                         text = "Last: " + msg.getMessage();
                     }
                 } else {

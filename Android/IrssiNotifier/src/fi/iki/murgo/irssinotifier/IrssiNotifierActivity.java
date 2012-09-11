@@ -52,7 +52,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
         }
         
         MessageToServer.setVersion(versionCode);
-        preferences.setVersion(versionCode);
+        Preferences.setVersion(versionCode);
 
         // do initial settings
         if (preferences.getAuthToken() == null || preferences.getGcmRegistrationId() == null || preferences.getGcmRegistrationIdVersion() != versionCode) {
