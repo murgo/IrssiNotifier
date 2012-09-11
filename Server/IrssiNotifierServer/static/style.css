@@ -34,6 +34,9 @@ h2 {
 .broken {
 	color: #f03030;
 }
+.oldversion {
+	color: #f0f030;
+}
 
 .debug {
 	display:none;

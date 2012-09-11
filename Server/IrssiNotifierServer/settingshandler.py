@@ -1,5 +1,6 @@
 from datamodels import GcmToken
 import logging
+import time
 
 class SettingsHandler(object):
     def handle(self, user, array):
@@ -17,6 +18,7 @@ class SettingsHandler(object):
             tokenToAdd.gcm_token = newToken
             tokenToAdd.enabled = bool(int(array["Enabled"]))
             tokenToAdd.name = array["Name"]
+            tokenToAdd.registration_date = int(time.time())
             tokenToAdd.put()
         else:
             logging.debug("Updating token: " + newToken)

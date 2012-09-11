@@ -2,6 +2,7 @@ import uuid
 from google.appengine.api import users
 import logging
 from datamodels import IrssiUser
+import time
 
 class Login():
     def generateApiToken(self):
@@ -35,6 +36,8 @@ class Login():
             irssi_user.user_name = user.nickname()
             irssi_user.email = user.email()
             irssi_user.api_token = self.generateApiToken() 
+            irssi_user.registration_date = int(time.time())
+            irssi_user.notification_count = 0
             irssi_user.put()
         else:
             logging.debug("IrssiUser found")

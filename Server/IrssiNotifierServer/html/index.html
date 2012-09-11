@@ -58,6 +58,8 @@
 		}
 		
 		$(function() {
+			replaceDateTimes();
+
 			$(".navi-main").click(function() 	{ parent.location.hash = "main"; hashChanged(); });
 			$(".navi-new").click(function() 	{ parent.location.hash = "new"; hashChanged(); });
 			$(".navi-help").click(function() 	{ parent.location.hash = "help"; hashChanged(); });
@@ -68,21 +70,34 @@
 			hashChanged();
 		});
 		
-        function wipe() {
-            var answer = confirm("Wipe all user data?");
-            if (answer) {
-                $.post("/API/Wipe", { }, function(data) {
-                    window.location.replace('{{ logout_url }}');
-                });
-            }
-        }
+	function wipe() {
+		var answer = confirm("Wipe all user data?");
+		if (answer) {
+			$.post("/API/Wipe", { }, function(data) {
+				window.location.replace('{{ logout_url }}');
+			});
+		}
+	}
 
-        function update(checkbox, name, token) {
-            var enabled = checkbox.checked ? 1 : 0;
-            $.post("/API/Settings", { "Name": name, "RegistrationId": token, "Enabled": enabled }, function(data) {
-                alert("Device " + name + (checkbox.checked ? " enabled." : " disabled."));
-            });
-        }
+	function update(checkbox, name, token) {
+		var enabled = checkbox.checked ? 1 : 0;
+		$.post("/API/Settings", { "Name": name, "RegistrationId": token, "Enabled": enabled }, function(data) {
+			alert("Device " + name + (checkbox.checked ? " enabled." : " disabled."));
+		});
+	}
+	
+	function replaceDateTimes() {
+		$(".datetime").each(function(index, element) {
+			var text = $(element).html();
+			if (!isNaN(text)) {
+				var utcSeconds = text;
+				var epoch = new Date(0);
+				epoch.setUTCSeconds(utcSeconds);
+
+				$(element).html(epoch.toLocaleString());
+			}
+		});
+	}
 	</script>
 	
 </head>
@@ -189,7 +204,7 @@
         <div class="code-block">/script load irssinotifier</div>
 		</li>
         <li>Set api token in irssi
-        <div class="code-block">{% if loggedin %}/set irssinotifier_api_token {{ user.api_token }}{% else %}<a href="{{ login_url }}">Log in to see instructions</a>{% endif %}</div>
+        <div class="code-block">{% if logged_in %}/set irssinotifier_api_token {{ user.api_token }}{% else %}<a href="{{ login_url }}">Log in to see instructions</a>{% endif %}</div>
 		</li>
         <li>Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too. Password can be anything you like (forbidden characters: ", \, `). Do not use your Google account password (or any other existing password) for security reasons.
         <div class="code-block">/set irssinotifier_encryption_password password</div>
@@ -247,7 +262,7 @@
 
 	<div class="hidden content" id="content-profile">
 	
-	{% if not loggedin %}
+	{% if not logged_in %}
 	
 		<p class="center">Please <a href="{{ login_url }}">log in</a> using your Google account.</p>
 
@@ -256,17 +271,23 @@
 		<h2>Logged in as {{ user.email }}</h2>
 		<p><a href="{{ logout_url }}">Log out</a>.</p>
 		
-	    <h2>Android client status</h2>
+		<h2>Your details</h2>
+		<p>Registered since: <span class="datetime">{{ registration_date }}</span></p>
+		<p>API token: {{ user.api_token }}</p>
+		<p>Notification count (since 2012-09-11): {{ notification_count }}</p>
+		<p>Last notification time: <span class="datetime">{{ last_notification_time }}</span></p>
 
-		{% if gcmtokencount != 0 %}
+		<h2>Android client status</h2>
 
-			<p>Android device(s) <span class="working">confirmed as working.</span> Registered device count: {{ gcmtokencount }}</p>
+		{% if token_count != 0 %}
+
+			<p>Android device(s) <span class="working">confirmed as working.</span></p>
 		
 			<div id="devices">
 			<h3>Registered devices:</h3>
 			<ul>
 		{% for token in tokens %}
-				<li><input type="checkbox" {% if token.enabled %}checked="checked"{% endif %} onclick="update(this, '{{ token.name }}', '{{ token.gcm_token }}');" />{{ token.name }}</li>
+				<li><input type="checkbox" {% if token.enabled %}checked="checked"{% endif %} onclick="update(this, '{{ token.name }}', '{{ token.gcm_token }}');" />{{ token.name }} (Registered <span class="datetime">{{ token.registration_date_string }})</span></li>
 		{% endfor %}
 			</ul>
 			</div>
@@ -276,8 +297,14 @@
 		{% endif %}
 			<h2>Irssi script status</h2>
 			
-		{% if irssiworking %}
-			<p>Irssi script <span class="working">confirmed as working.</span></p>
+		{% if irssi_working %}
+			<p>Irssi script <span class="working">confirmed as working</span>
+			{% if irssi_latest %}
+			and is at <span class="working">latest version</span>.
+			{% else %}
+			but is at <span class="oldversion">old version</span>. Check <a href="#help">help page</a> for upgrade instructions.
+			{% endif %}
+			</p>
 		{% else %}
 			<p>Irssi script <span class="broken">not confirmed as working.</span> Check <a href="#help">help page</a> for installation instructions.</p>
 		{% endif %}

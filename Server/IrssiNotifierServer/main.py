@@ -8,7 +8,7 @@ import os
 from settingshandler import SettingsHandler
 from messagehandler import MessageHandler
 from login import Login
-from datamodels import GcmToken, Message
+from datamodels import GcmToken
 import json
 from wipehandler import WipeHandler
 import emaillogginghandler
@@ -84,30 +84,48 @@ class WebController(BaseController):
         logging.debug("WebController.get()")
         user = Login().getIrssiUser(self.request.params)
         
-        tokensList = []
-        count = 0
+        tokens = []
+        irssi_script_version = 0
+        registration_date = 'Aeons ago'
+        last_notification_time = 'Never'
+        notification_count = 0
 
         if user is not None:
             tokens = GcmToken.all()
             tokens.ancestor(user.key())
-            tokensList = tokens.fetch(10)
+            tokens = tokens.fetch(10)
+            for token in tokens:
+                if token.registration_date is not None:
+                    token.registration_date_string = token.registration_date
+                else:
+                    token.registration_date_string = 'Yesterday?'
 
-            messages = Message.all()
-            messages.ancestor(user.key())
-            count = messages.count(1)
+            irssi_script_version = user.irssi_script_version
+            if irssi_script_version == None:
+                irssi_script_version = 0
+                
+            if user.registration_date is not None:
+                registration_date = user.registration_date
+
+            if user.last_notification_time is not None:
+                last_notification_time = user.last_notification_time
+
+            if user.notification_count is not None:
+                notification_count = user.notification_count
 
         template_values = {
              'user': user,
-             'tokens': tokensList,
-             'loggedin': user is not None,
+             'tokens': tokens,
+             'token_count': len(tokens),
+             'logged_in': user is not None,
              'login_url': users.create_login_url("#profile").replace("&", "&amp;"),
              'logout_url': users.create_logout_url("").replace("&", "&amp;"),
-             'irssiworking': count != 0,
-             'gcmtokencount': len(tokensList),
+             'irssi_working': last_notification_time != 'Never',
+             'irssi_latest': irssi_script_version >= 9,
+             'registration_date': registration_date,
+             'last_notification_time': last_notification_time,
+             'notification_count': notification_count
         }
-
-        logging.debug(template_values)
-        logging.debug(tokensList)
 
         template = jinja_environment.get_template('html/index.html')
         self.response.out.write(template.render(template_values))
@@ -130,7 +148,11 @@ def getAndroidServerMessage(data):
 
 def getIrssiServerMessage(data):
     if "version" in data:
-        if int(data["version"]) < 2:
+        try:
+            if int(data["version"]) < 2:
+                return (False, "Update your IrssiNotifier script to latest version from https://irssinotifier.appspot.com")
+        except ValueError:
+            logging.warn('Irssi script version is not integer')
             return (False, "Update your IrssiNotifier script to latest version from https://irssinotifier.appspot.com")
     return (True, "")
 

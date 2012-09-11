@@ -18,7 +18,15 @@ class MessageHandler(object):
             logging.error("Error while creating new message, exception %s", e)
             traceback.print_exception(e)
             return False
-            
+        
+        if irssiuser.notification_count is None:
+            irssiuser.notification_count = 1
+        else:
+            irssiuser.notification_count += 1
+        irssiuser.last_notification_time = int(time.time())
+        irssiuser.irssi_script_version = int(array['version'])
+        irssiuser.put()
+        
         gcmhelper.sendGcmToUserDeferred(irssiuser, dbMessage.ToGcmJson())
         return True
     

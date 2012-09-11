@@ -6,12 +6,17 @@ class IrssiUser(db.Model):
     email = db.StringProperty()
     user_id = db.StringProperty()
     api_token = db.StringProperty()
+    registration_date = db.IntegerProperty()
+    notification_count = db.IntegerProperty()
+    last_notification_time = db.IntegerProperty()
+    irssi_script_version = db.IntegerProperty()
 
 
 class GcmToken(db.Model):
     gcm_token = db.StringProperty()
     enabled = db.BooleanProperty()
     name = db.StringProperty()
+    registration_date = db.IntegerProperty()
 
 
 class Message(db.Model):
