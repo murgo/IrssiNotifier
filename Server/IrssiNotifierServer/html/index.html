@@ -34,7 +34,10 @@
 		function switchView(button, view) {
 			if (lock) return;
 			$(".navi-selected").removeClass('navi-selected');
-			$(button).addClass('navi-selected');
+			
+			if (button != null) {
+				$(button).addClass('navi-selected');
+			}
 
 			if (view == currentView) return;
 			
@@ -54,6 +57,7 @@
 			if (hash == "new") switchView(".navi-new", "#content-new");
 			else if (hash == "help") switchView(".navi-help", "#content-help");
 			else if (hash == "profile") switchView(".navi-profile", "#content-profile");
+			else if (hash == "privacy") switchView(null, "#content-privacy");
 			else switchView(".navi-main", "#content-main");
 		}
 		
@@ -139,7 +143,7 @@
 		<p class="answer">You'll need Irssi running on Linux server or similar. You'll also need an Android device (phone or tablet, or both) with Android version 2.2 (froyo) or later.</p>
 
 		<p class="question">Privacy?</p>
-		<p class="answer">All data is end-to-end encrypted with the encryption password of your choice. Password is never sent to the server. You'll have to login with your Google account, but no password or other sensitive data is collected. In the event of unexpected error, anonymous debug information is sent to server.</p>
+		<p class="answer">All data is end-to-end encrypted with the encryption password of your choice. Password is never sent to the server. You'll have to login with your Google account, but no password or other sensitive data is collected. Check <a href="#privacy">privacy page</a> for details.</p>
 
 		<p class="question">Who?</p>
 		<p class="answer">This service was made by Lauri Härsilä, murgo @ IRCnet. If you have any questions, drop me a line by <a href="mailto:murgo@iki.fi">email</a> or join #IrssiNotifier at IRCnet. Huge thanks to everybody who have donated money or contributed source! </p>
@@ -313,8 +317,30 @@
 		<p><a onclick="wipe();" href="javascript:void(0)">Wipe your account and all data!</a></p>
 
 	{% endif %}	
+
+	</div>
 	
-	
+	<div class="hidden content" id="content-privacy">
+		
+		<h1>Privacy policy</h1>
+
+		<p>User details are saved in Google App Engine data store. No user passwords (Google password, encryption password etc.) are saved at any time. Following personal information is saved from every user:</p>
+
+		<ul>
+			<li>User name</li>
+			<li>Email address</li>
+			<li>Registration date</li>
+			<li>Total notification count</li>
+			<li>Last notification time</li>
+			<li>Irssi script version</li>
+		</ul>
+		
+		<p>Messages are stored in the server for seven days. Messages are encrypted by user's own encryption password (be sure to change yours).</p>
+		
+		<p>User can wipe out his/her account from the <a href="#profile">profile page</a>. This will remove all information regarding the user (including messages).</p>
+		
+		<p>Anonymous statistics (analytics) will be gathered from users visiting this web site. Anonymous and statistical usage is also collected from Android app users (how many users, from which countries are they from etc.).</p>
+		
 	</div>
 	
 	<div class="googleplus">
