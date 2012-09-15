@@ -5,7 +5,7 @@ use IPC::Open2 qw(open2);
 use POSIX;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "11";
+$VERSION = "12";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -13,7 +13,7 @@ $VERSION = "11";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "http://irssinotifier.appspot.com",
-    changed     => "2012-09-12"
+    changed     => "2012-09-13"
 );
 
 my $lastMsg;
@@ -119,7 +119,7 @@ sub send_notification {
     $lastTarget = encrypt($lastTarget);
 
     my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
-    my $result = `/usr/bin/wget --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
+    my $result = `wget --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
     if ($? != 0) {
         # Something went wrong, might be network error or authorization issue. Probably no need to alert user, though.
         # Irssi::print("IrssiNotifier: Sending hilight to server failed, check http://irssinotifier.appspot.com for updates");
@@ -164,13 +164,15 @@ sub are_settings_valid {
         return 0;
     }
 
-    unless (-x "/usr/bin/openssl") {
-        Irssi::print("IrssiNotifier: /usr/bin/openssl not found.");
+    `openssl version`;
+    if ($? != 0) {
+        Irssi::print("IrssiNotifier: openssl not found.");
         return 0;
     }
 
-    unless (-x "/usr/bin/wget") {
-        Irssi::print("IrssiNotifier: /usr/bin/wget not found.");
+    `wget --version`;
+    if ($? != 0) {
+        Irssi::print("IrssiNotifier: wget not found.");
         return 0;
     }
 
