@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import android.graphics.Typeface;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -163,7 +162,6 @@ public class MessagePagerAdapter extends PagerAdapter {
             final SpannableString ss = new SpannableString(s);
             Linkify.addLinks(ss, Linkify.ALL);
             tv.setText(ss);
-            tv.setTypeface(Typeface.MONOSPACE);
             tv.setAutoLinkMask(Linkify.ALL);
             tv.setLinksClickable(true);
             tv.setMovementMethod(LinkMovementMethod.getInstance());

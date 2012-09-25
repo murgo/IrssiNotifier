@@ -80,6 +80,10 @@
             android:key="channels"
             android:summary="Reorder and remove channels"
             android:title="Channel settings" />
+        <CheckBoxPreference
+            android:key="ThemeDisabled"
+            android:title="Disable UI theme"
+            android:summary="Disable custom theme and use dark holo" />
         <Preference
             android:key="about"
             android:title="About IrssiNotifier" />

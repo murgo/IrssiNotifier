@@ -77,6 +77,14 @@ public class SettingsActivity extends PreferenceActivity {
                 return true;
             }
         });
+        
+        Preference disableThemePref = (Preference) findPreference("ThemeDisabled");
+        disableThemePref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                IrssiNotifierActivity.refreshIsNeeded();
+                return true;
+            }
+        });
 
         handleIcb();
     }

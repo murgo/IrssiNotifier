@@ -42,6 +42,7 @@ public class Preferences {
     private static final String ICB_HOST_INTENT_URI = "IcbHostIntentUri";
     private static final String ICB_HOST_NAME = "IcbHostName";
     private static final String ICB_ENABLED = "IcbEnabled";
+    private static final String THEME_DISABLED = "ThemeDisabled";
 
     private SharedPreferences sharedPreferences;
     private static int versionCode;
@@ -200,5 +201,9 @@ public class Preferences {
 
     public String getIcbHostIntentUri() {
         return sharedPreferences.getString(ICB_HOST_INTENT_URI, null);
+    }
+
+    public boolean isThemeDisabled() {
+        return sharedPreferences.getBoolean(THEME_DISABLED, false);
     }
 }
