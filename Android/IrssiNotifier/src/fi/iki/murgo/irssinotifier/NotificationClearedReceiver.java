@@ -15,7 +15,10 @@ public class NotificationClearedReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(NOTIFICATION_CLEARED_INTENT)) {
             IrcNotificationManager manager = IrcNotificationManager.getInstance();
-            manager.notificationCleared(context, intent);
+
+            if (manager != null) {
+                manager.notificationCleared(context, intent);
+            }
         } else {
             Log.w(TAG, "Unexpected intent: " + intent);
         }

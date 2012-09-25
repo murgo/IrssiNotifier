@@ -180,7 +180,10 @@ public class IrcNotificationManager {
     }
 
     public void mainActivityOpened(Context context) {
-        unread.clear();
+        if (unread != null) {
+            unread.clear();
+        }
+        
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
     }
@@ -288,13 +291,18 @@ public class IrcNotificationManager {
     }
 
     public void notificationCleared(Context context, Intent intent) {
+        if (unread == null) {
+            return;
+        }
+        
         NotificationMode mode = NotificationMode.valueOf(intent.getStringExtra("notificationMode"));
-
         if (mode == NotificationMode.Single) {
             unread.clear();
         } else if (mode == NotificationMode.PerChannel) {
             String channel = intent.getStringExtra("channel");
-            unread.get(channel).clear();
+            if (channel != null) {
+                unread.get(channel).clear();
+            }
         }
     }
     
