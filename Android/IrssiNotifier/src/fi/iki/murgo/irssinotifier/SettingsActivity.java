@@ -17,6 +17,7 @@ import android.util.Log;
 @SuppressWarnings("deprecation") // fuck the police
 public class SettingsActivity extends PreferenceActivity {
     private static final String TAG = SettingsActivity.class.getSimpleName();
+    protected static final int ICB_HOST_REQUEST_CODE = 666;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,7 +113,7 @@ public class SettingsActivity extends PreferenceActivity {
                 public boolean onPreferenceClick(Preference preference) {
                     Intent i = new Intent("android.intent.action.PICK");
                     i.setClassName(IrssiConnectbotLauncher.INTENT_IRSSICONNECTBOT, IrssiConnectbotLauncher.INTENT_IRSSICONNECTBOT + ".HostListActivity");
-                    startActivityForResult(i, 666);
+                    startActivityForResult(i, ICB_HOST_REQUEST_CODE);
                     return true;
                 }
             });
@@ -122,6 +123,10 @@ public class SettingsActivity extends PreferenceActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        
+        if (requestCode != ICB_HOST_REQUEST_CODE) {
+            return;
+        }
 
         Preferences prefs = new Preferences(this);
 
