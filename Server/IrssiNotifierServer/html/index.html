@@ -235,24 +235,24 @@
 		Installation instructions
 		</div>
 		
-	    <div class="answer" id="instructions">
-        (to update the script, just follow steps 1-3): <br />
+		<div class="answer" id="instructions">
+		(to update the script, just follow steps 1-3): <br />
 		
 		<ol>
 		<li>Get and run android app</li>
-        <li>Download irssi script by copying and pasting the following command to your shell (don't mind any "File exists" -errors):
-        <div class="code-block">mkdir -p ~/.irssi/scripts/autorun; wget --no-check-certificate https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
+		<li>Download irssi script by copying and pasting the following command to your shell (don't mind any "File exists" -errors):
+		<div class="code-block">mkdir -p ~/.irssi/scripts/autorun; wget --no-check-certificate https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
 		</li>
-        <li>Load irssi script by typing the following command to irssi
-        <div class="code-block">/script load irssinotifier</div>
+		<li>Load irssi script by typing the following command to irssi
+		<div class="code-block">/script load irssinotifier</div>
 		</li>
-        <li>Set api token in irssi
-        <div class="code-block">{% if logged_in %}/set irssinotifier_api_token {{ user.api_token }}{% else %}<a href="{{ login_url }}">Log in to see instructions</a>{% endif %}</div>
+		<li>Set api token in irssi
+		<div class="code-block">{% if logged_in %}/set irssinotifier_api_token {{ user.api_token }}{% else %}<a href="{{ login_url }}">Log in to see instructions</a>{% endif %}</div>
 		</li>
-        <li>Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too. Password can be anything you like (forbidden characters: ", \, `). Do not use your Google account password (or any other existing password) for security reasons.
-        <div class="code-block">/set irssinotifier_encryption_password password</div>
+		<li>Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too. Password can be anything you like (forbidden characters: ", \, `). Do not use your Google account password (or any other existing password) for security reasons.
+		<div class="code-block">/set irssinotifier_encryption_password password</div>
 		</li>
-        <li>Query yourself and check <a href="#profile">profile page</a> to see if it works.</li>
+		<li>Query yourself and check <a href="#profile">profile page</a> to see if it works.</li>
 		</ol>
 
 		</div>
@@ -330,7 +330,7 @@
 			<h3>Registered devices:</h3>
 			<ul>
 		{% for token in tokens %}
-				<li><input type="checkbox" {% if token.enabled %}checked="checked"{% endif %} onclick="update(this, '{{ token.name }}', '{{ token.gcm_token }}');" />{{ token.name }} (Registered <span class="datetime">{{ token.registration_date_string }})</span></li>
+				<li><input type="checkbox" {% if token.enabled %}checked="checked"{% endif %} onclick="update(this, '{{ token.name }}', '{{ token.gcm_token }}');" />{{ token.name }} (Registered <span class="datetime">{{ token.registration_date_string }}</span>)</li>
 		{% endfor %}
 			</ul>
 			</div>
