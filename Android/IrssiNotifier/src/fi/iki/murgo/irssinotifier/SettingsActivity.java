@@ -130,9 +130,12 @@ public class SettingsActivity extends PreferenceActivity {
         } else {
             String hostName = data.getStringExtra(Intent.EXTRA_SHORTCUT_NAME);
             Intent intent = (Intent) data.getExtras().get(Intent.EXTRA_SHORTCUT_INTENT);
-            String intentUri = intent.toUri(0);
-            
-            prefs.setIcbHost(hostName, intentUri);
+            if (intent != null) {
+                String intentUri = intent.toUri(0);
+                prefs.setIcbHost(hostName, intentUri);
+            } else {
+                prefs.setIcbHost(null, null);
+            }
         }
         
         handleIcb();
