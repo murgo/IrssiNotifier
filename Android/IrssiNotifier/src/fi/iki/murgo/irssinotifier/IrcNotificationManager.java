@@ -301,7 +301,10 @@ public class IrcNotificationManager {
         } else if (mode == NotificationMode.PerChannel) {
             String channel = intent.getStringExtra("channel");
             if (channel != null) {
-                unread.get(channel).clear();
+                List<IrcMessage> msgs = unread.get(channel);
+                if (msgs != null) {
+                    msgs.clear();
+                }
             }
         }
     }
