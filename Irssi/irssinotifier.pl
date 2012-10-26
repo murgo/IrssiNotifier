@@ -119,7 +119,7 @@ sub send_notification {
     $lastTarget = encrypt($lastTarget);
 
     my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
-    my $result = `wget --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
+    my $result = `wget --tries=1 --timeout=10 --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
     if ($? != 0) {
         # Something went wrong, might be network error or authorization issue. Probably no need to alert user, though.
         # Irssi::print("IrssiNotifier: Sending hilight to server failed, check http://irssinotifier.appspot.com for updates");
