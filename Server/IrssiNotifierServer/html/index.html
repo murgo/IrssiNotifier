@@ -239,7 +239,7 @@
 
 		<p class="question news">12.9.2012 New version of Irssi script: 11.</p>
 		<p class="answer news-content">
-			Fixed bug where irssi script sometimes caused other scripts like mail.pl to crash.
+			Fixed bug where Irssi script sometimes caused other scripts like mail.pl to crash.
 		</p>
 
 		<p class="question news">6.9.2012 New web page!</p>
@@ -249,7 +249,7 @@
 
 		<p class="question news">6.9.2012 New version of Irssi script: 9.</p>
 		<div class="answer news-content">
-			New version of irssi script is released! The script is nearly completely re-written.
+			New version of Irssi script is released! The script is nearly completely re-written.
 			New features include new commands such as 
 			<div class="code-block">/set irssinotifier_ignored_channels [channel names]</div>
 			and
@@ -263,29 +263,38 @@
 		<h1>Help!</h1>
 
 		<div class="question">
-		Installation instructions
+		Irssi script installation instructions
 		</div>
-		
-		<div class="answer" id="instructions">
-		(to update the script, just follow steps 1-3): <br />
-		
-		<ol>
-		<li>Get and run android app</li>
-		<li>Download irssi script by copying and pasting the following command to your shell (don't mind any "File exists" -errors):
-		<div class="code-block">mkdir -p ~/.irssi/scripts/autorun; wget --no-check-certificate https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
-		</li>
-		<li>Load irssi script by typing the following command to irssi
-		<div class="code-block">/script load irssinotifier</div>
-		</li>
-		<li>Set api token in irssi
-		<div class="code-block">{% if logged_in %}/set irssinotifier_api_token {{ user.api_token }}{% else %}<a href="{{ login_url }}">Log in to see instructions</a>{% endif %}</div>
-		</li>
-		<li>Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too. Password can be anything you like (forbidden characters: ", \, `). Do not use your Google account password (or any other existing password) for security reasons.
-		<div class="code-block">/set irssinotifier_encryption_password password</div>
-		</li>
-		<li>Query yourself and check <a href="#profile">profile page</a> to see if it works.</li>
-		</ol>
 
+		<div class="answer" id="instructions">
+		(to update the script, just follow steps 1-2): <br />
+		<ol>
+			<li>Download Irssi script by copying and pasting the following command (as a single line) to your shell (don't mind any "File exists" -errors):
+			<div class="code-block">mkdir -p ~/.irssi/scripts/autorun; wget --no-check-certificate https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
+			</li>
+			<li>Load Irssi script by typing the following command to Irssi
+			<div class="code-block">/script load irssinotifier</div>
+			</li>
+			<li>Set api token in Irssi
+			<div class="code-block">{% if logged_in %}/set irssinotifier_api_token {{ user.api_token }}{% else %}<a href="{{ login_url }}">Log in to see instructions</a>{% endif %}</div>
+			</li>
+			<li>Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too. Password can be anything you like (forbidden characters: ", \, `). Do not use your Google account password (or any other existing password) for security reasons.
+			<div class="code-block">/set irssinotifier_encryption_password password</div>
+			</li>
+			<li>Query yourself and check <a href="#profile">profile page</a> to see if it works.</li>
+		</ol>
+		</div>
+
+		<div class="question">
+		Android app installation instructions
+		</div>
+
+		<div class="answer" id="instructions">
+		<ol>
+			<li>Download Android app from <a href="http://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">Google Play</a> store.</li>
+			<li>Run the app, select the Google account you want to use. Account must be the same as the one you signed to this website with.</li>
+			<li>Go to settings and set your encryption password. Encryption password must be the same as the one you've set in Irssi script.</li>
+		</ol>
 		</div>
 
 		<h2>Additional Irssi commands</h2>
@@ -317,7 +326,7 @@
 		<h2>Troubleshooting</h2>
 		<div id="troubleshooting">
 			<p class="question">I'm not getting any notifications!</p>
-			<p class="answer">Follow the installation instructions to the letter. Check the <a href="#profile">profile page</a> to see if the installation works (or at least it has been working). Ensure the script is loaded in your irssi. If you have restored the Android app from backup, clear its data. Notifications might also be blocked by firewall if you use wi-fi. If you need more support, please visit #irssinotifier @ IRCnet or contact me by mail at <a href="mailto:murgo@iki.fi">murgo@iki.fi</a>.</p>
+			<p class="answer">Follow the installation instructions to the letter. Check the <a href="#profile">profile page</a> to see if the installation works (or at least it has been working). Ensure the script is loaded in your Irssi. If you have restored the Android app from backup, clear its data. Notifications might also be blocked by firewall if you use wi-fi. If you need more support, please visit #irssinotifier @ IRCnet or contact me by mail at <a href="mailto:murgo@iki.fi">murgo@iki.fi</a>.</p>
 
 			<p class="question">Notifications work only every now and then!</p>
 			<p class="answer">Every device added to the system has certain limits for the amount of push notifications they can receive (about 20 per hour), which are reset gradually. Use above Irssi commands to reduce amount of wasteful messages sent to you. Furthermore, sometimes Android push notifications have unexpected delays, and some messages may even get lost.</p>
