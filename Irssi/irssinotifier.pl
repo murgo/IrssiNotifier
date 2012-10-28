@@ -31,7 +31,7 @@ sub private {
     $lastNick    = $nick;
     $lastAddress = $address;
     $lastTarget  = "!PRIVATE";
-	$lastWindow  = $nick;
+    $lastWindow  = $nick;
 }
 
 sub public {
@@ -41,7 +41,7 @@ sub public {
     $lastNick    = $nick;
     $lastAddress = $address;
     $lastTarget  = $target;
-	$lastWindow  = $target;
+    $lastWindow  = $target;
 }
 
 sub print_text {
@@ -168,12 +168,12 @@ sub encrypt {
 
     print $in "$text ";
     close $in;
-	
-	my $tmp = $/;
+
+    my $tmp = $/;
     undef $/;    # read full output at once
     my $result = readline $out;
     waitpid $pid, 0;
-	$/ = $tmp;
+    $/ = $tmp;
 
     $result =~ tr[+/][-_];
     $result =~ s/=//g;
