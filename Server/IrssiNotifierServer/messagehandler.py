@@ -1,6 +1,5 @@
 import logging
 from datamodels import Message
-import traceback
 import time
 import gcmhelper
 
@@ -15,8 +14,7 @@ class MessageHandler(object):
             dbMessage.server_timestamp = int(time.time())
             dbMessage.put()
         except Exception as e:
-            logging.error("Error while creating new message, exception %s", e)
-            traceback.print_exception(e)
+            logging.warn("Error while creating new message, exception %s", e)
             return False
         
         if irssiuser.notification_count is None:

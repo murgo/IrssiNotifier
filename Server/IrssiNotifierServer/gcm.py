@@ -122,4 +122,4 @@ class GCM(object):
                         logging.warn("Token not registered, deleting")
                         tokens[index].delete()
                     else:
-                        logging.error("Unrecoverable error: " + result["error"])
+                        logging.warn("Unrecoverable error: " + result["error"])
