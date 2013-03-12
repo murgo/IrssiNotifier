@@ -24,6 +24,8 @@ my $lastTarget;
 my $lastWindow;
 my $lastKeyboardActivity = time;
 
+my $forked;
+
 sub private {
     my ( $server, $msg, $nick, $address ) = @_;
     $lastServer  = $server;
@@ -111,23 +113,79 @@ sub is_dangerous_string {
 }
 
 sub send_notification {
-    my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
-    
-    my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
-    $lastMsg    = encrypt(Irssi::strip_codes($lastMsg));
-    $lastNick   = encrypt($lastNick);
-    $lastTarget = encrypt($lastTarget);
-
-    my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
-    my $result = `wget --tries=1 --timeout=5 --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
-    if ($? != 0) {
-        # Something went wrong, might be network error or authorization issue. Probably no need to alert user, though.
-        # Irssi::print("IrssiNotifier: Sending hilight to server failed, check http://irssinotifier.appspot.com for updates");
-        return;
+    if ($forked) {
+      Irssi::print("IrssiNotifier: previous send still in progress, skipping notification");
+      return 0;
     }
+
+    my ($rh,$wh);
+    pipe $rh, $wh;
+    $forked = 1;
+    my $pid = fork();
+
+    unless (defined($pid)) {
+      Irssi::print("IrssiNotifier: couldn't fork - abort");
+      close $rh; close $wh;
+      return 0;
+    }
+
+    if ($pid > 0) {
+      close $wh;
+      Irssi::pidwait_add($pid);
+      my $target = {fh => $$rh, tag => undef};
+      $target->{tag} = Irssi::input_add(fileno($rh), INPUT_READ, \&read_pipe, $target);
+    } else {
+      eval {
+        my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
     
-    if (length($result) > 0) {
-        Irssi::print("IrssiNotifier: $result");
+        my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
+        $lastMsg    = encrypt(Irssi::strip_codes($lastMsg));
+        $lastNick   = encrypt($lastNick);
+        $lastTarget = encrypt($lastTarget);
+
+        my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
+        my $result = `wget --tries=1 --timeout=5 --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
+        if (($? >> 8) != 0) {
+          # Something went wrong, might be network error or authorization issue. Probably no need to alert user, though.
+          print $wh "0 FAIL\n";
+        } else {
+          print $wh "1 OK\n";
+        }
+      }; # end eval
+
+      if ($@) {
+        print $wh "-1 IrssiNotifier internal error: $@\n";
+      }
+
+      close $rh; close $wh;
+      POSIX::_exit(1);
+    }
+    return 1;
+}
+
+sub read_pipe {
+    my $target = shift;
+    my $rh = $target->{fh};
+
+    my $output = <$rh>;
+    chomp($output);
+
+    close($target->{fh});
+    Irssi::input_remove($target->{tag});
+    $forked = 0;
+
+    $output =~ /^(-?\d+) (.*)$/;
+    my $ret = $1;
+    $output = $2;
+
+    if ($ret < 0) {
+      Irssi::print($IRSSI{name} . ": Error: send crashed: $output");
+      return 0;
+    }
+
+    if (!$ret) {
+      #Irssi::print($IRSSI{name} . ": Error: send failed: $output");
+      return 0;
     }
 }
 
