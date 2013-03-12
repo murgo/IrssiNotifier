@@ -25,6 +25,7 @@ my $lastWindow;
 my $lastKeyboardActivity = time;
 
 my $forked;
+my @delay_queue = ();
 
 sub private {
     my ( $server, $msg, $nick, $address ) = @_;
@@ -114,7 +115,16 @@ sub is_dangerous_string {
 
 sub send_notification {
     if ($forked) {
-      Irssi::print("IrssiNotifier: previous send still in progress, skipping notification");
+      if (scalar @delay_queue < 10) {
+        push @delay_queue, {
+                            'msg' => $lastMsg,
+                            'nick' => $lastNick,
+                            'target' => $lastTarget,
+                            'added' => time,
+                            };
+      } else {
+        Irssi::print("IrssiNotifier: previous send still in progress and queue full, skipping notification");
+      }
       return 0;
     }
 
@@ -173,6 +183,8 @@ sub read_pipe {
     close($target->{fh});
     Irssi::input_remove($target->{tag});
     $forked = 0;
+
+    check_delay_queue();
 
     $output =~ /^(-?\d+) (.*)$/;
     my $ret = $1;
@@ -252,6 +264,23 @@ sub are_settings_valid {
         return 0;
     }
 
+    return 1;
+}
+
+sub check_delay_queue {
+    if (scalar @delay_queue > 0) {
+      my $item = shift @delay_queue;
+      if (time - $item->{'added'} > 60) {
+          check_delay_queue();
+          return 0;
+      } else {
+          $lastMsg = $item->{'msg'};
+          $lastNick = $item->{'nick'};
+          $lastTarget = $item->{'target'};
+          send_notification();
+          return 0;
+      }
+    }
     return 1;
 }
 
