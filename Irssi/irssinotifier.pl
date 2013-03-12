@@ -3,6 +3,7 @@ use strict;
 use Irssi;
 use IPC::Open2 qw(open2);
 use POSIX;
+use Encode;
 use vars qw($VERSION %IRSSI);
 
 $VERSION = "14";
@@ -177,9 +178,9 @@ sub send_notification {
         my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
     
         my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
-        $lastMsg    = encrypt(Irssi::strip_codes($lastMsg));
-        $lastNick   = encrypt($lastNick);
-        $lastTarget = encrypt($lastTarget);
+        $lastMsg    = encrypt(Encode::encode_utf8(Irssi::strip_codes($lastMsg)));
+        $lastNick   = encrypt(Encode::encode_utf8($lastNick));
+        $lastTarget = encrypt(Encode::encode_utf8($lastTarget));
 
         my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
         my $result = `wget --tries=1 --timeout=5 --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
