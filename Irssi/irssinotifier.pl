@@ -5,7 +5,7 @@ use IPC::Open2 qw(open2);
 use POSIX;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "13";
+$VERSION = "14";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -13,7 +13,7 @@ $VERSION = "13";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "http://irssinotifier.appspot.com",
-    changed     => "2012-10-27"
+    changed     => "2012-10-28"
 );
 
 my $lastMsg;
@@ -34,7 +34,7 @@ sub private {
     $lastNick    = $nick;
     $lastAddress = $address;
     $lastTarget  = "!PRIVATE";
-	$lastWindow  = $nick;
+    $lastWindow  = $nick;
 }
 
 sub public {
@@ -44,7 +44,7 @@ sub public {
     $lastNick    = $nick;
     $lastAddress = $address;
     $lastTarget  = $target;
-	$lastWindow  = $target;
+    $lastWindow  = $target;
 }
 
 sub print_text {
@@ -97,6 +97,34 @@ sub should_send_notification {
             if (lc($channel) eq lc($lastWindow)) {
                 return 0; # ignored channel
             }
+        }
+    }
+
+    # Ignore any highlights from given nicks
+    my $ignored_nicks_string = Irssi::settings_get_str("irssinotifier_ignored_nicks");
+    if ($ignored_nicks_string ne '') {
+        my @ignored_nicks = split(/ /, $ignored_nicks_string);
+        if (grep { lc($_) eq lc($lastNick) } @ignored_nicks) {
+            return 0; # Ignored nick
+        }
+    }
+
+    # Ignore any highlights that match any specified patterns
+    my $ignored_highlight_pattern_string = Irssi::settings_get_str("irssinotifier_ignored_highlight_patterns");
+    if ($ignored_highlight_pattern_string ne '') {
+        my @ignored_patterns = split(/ /, $ignored_highlight_pattern_string);
+        if (grep { $lastMsg =~ /$_/i } @ignored_patterns) {
+            return 0; # Ignored pattern
+        }
+    }
+
+    # If specified, require a pattern to be matched before highlighting public
+    # messages
+    my $required_public_highlight_pattern_string = Irssi::settings_get_str("irssinotifier_required_public_highlight_patterns");
+    if ($required_public_highlight_pattern_string ne '' && ($dest->{level} & MSGLEVEL_PUBLIC)) {
+        my @required_patterns = split(/ /, $required_public_highlight_pattern_string);
+        if (!(grep { $lastMsg =~ /$_/i } @required_patterns)) {
+            return 0; # Required pattern not matched
         }
     }
 
@@ -211,12 +239,12 @@ sub encrypt {
 
     print $in "$text ";
     close $in;
-	
-	my $tmp = $/;
+
+    my $tmp = $/;
     undef $/;    # read full output at once
     my $result = readline $out;
     waitpid $pid, 0;
-	$/ = $tmp;
+    $/ = $tmp;
 
     $result =~ tr[+/][-_];
     $result =~ s/=//g;
@@ -292,6 +320,9 @@ Irssi::settings_add_str('irssinotifier', 'irssinotifier_encryption_password', 'p
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_api_token', '');
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignored_servers', '');
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignored_channels', '');
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignored_nicks', '');
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignored_highlight_patterns', '');
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_required_public_highlight_patterns', '');
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_ignore_active_window', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_away_only', 0);
 Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0);
