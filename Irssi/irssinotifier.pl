@@ -27,6 +27,8 @@ my $lastKeyboardActivity = time;
 my $forked;
 my @delay_queue = ();
 
+my $screen_socket_path;
+
 sub private {
     my ( $server, $msg, $nick, $address ) = @_;
     $lastServer  = $server;
@@ -70,6 +72,12 @@ sub should_send_notification {
 
     if (Irssi::settings_get_bool("irssinotifier_away_only") && !$lastServer->{usermode_away}) {
         return 0; # away only
+    }
+
+    if (Irssi::settings_get_bool('irssinotifier_screen_detached_only') &&
+        $screen_socket_path && defined($ENV{STY})) {
+        my $socket = $screen_socket_path . "/" . $ENV{'STY'};
+        return 0 if (-e $socket && ((stat($socket))[2] & 00100) != 0);
     }
 
     if (Irssi::settings_get_bool("irssinotifier_ignore_active_window") && $dest->{window}->{refnum} == Irssi::active_win()->{refnum}) {
@@ -316,6 +324,15 @@ sub event_key_pressed {
     $lastKeyboardActivity = time;
 }
 
+my $screen_ls = `LC_ALL="C" screen -ls`;
+if ($screen_ls !~ /^No Sockets found/s) {
+    $screen_ls =~ /^.+\d+ Sockets? in ([^\n]+)\.\n.+$/s;
+    $screen_socket_path = $1;
+} else {
+    $screen_ls =~ /^No Sockets found in ([^\n]+)\.\n.+$/s;
+    $screen_socket_path = $1;
+}
+
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_encryption_password', 'password');
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_api_token', '');
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignored_servers', '');
@@ -325,6 +342,7 @@ Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignored_highlight_patter
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_required_public_highlight_patterns', '');
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_ignore_active_window', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_away_only', 0);
+Irssi::settings_add_bool('irssinotifier', 'irssinotifier_screen_detached_only', 0);
 Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0);
 
 # these commands are renamed
