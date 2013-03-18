@@ -3,6 +3,8 @@ package fi.iki.murgo.irssinotifier;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Calendar;
+import java.util.Locale;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -71,6 +73,40 @@ public class IrcMessage {
 
     public String getServerTimestampAsString() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+        return dateFormat.format(serverTimestamp);
+    }
+
+    private static Calendar clearTimes(Calendar c) {
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        c.set(Calendar.MINUTE, 0);
+        c.set(Calendar.SECOND, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        return c;
+    }
+
+    public String getServerTimestampAsPrettyDate() {
+        Calendar today = Calendar.getInstance();
+        today = clearTimes(today);
+
+        Calendar yesterday = Calendar.getInstance();
+        yesterday.add(Calendar.DAY_OF_YEAR,-1);
+        yesterday = clearTimes(yesterday);
+
+        Calendar lastWeek = Calendar.getInstance();
+        lastWeek.add(Calendar.DAY_OF_YEAR,-7);
+        lastWeek = clearTimes(lastWeek);
+
+        if (serverTimestamp.getTime() > today.getTimeInMillis())
+            return "today";
+        else if (serverTimestamp.getTime() > yesterday.getTimeInMillis())
+            return "yesterday";
+        else if (serverTimestamp.getTime() > lastWeek.getTimeInMillis()) {
+            Locale locale = new Locale("US");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE", locale);
+            return dateFormat.format(serverTimestamp);
+        }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         return dateFormat.format(serverTimestamp);
     }
 
