@@ -103,14 +103,29 @@ public class MessagePagerAdapter extends PagerAdapter {
 
         LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
         String lastChannel = "";
+        String lastDate = "";
         LinearLayout feedChannel = (LinearLayout)layoutInflater.inflate(R.layout.feed_channel, null);
         for (IrcMessage message : messages) {
+            boolean dateChange = false;
 
-            if (!message.getLogicalChannel().equals(lastChannel)) {
+            if (!message.getServerTimestampAsPrettyDate().equals(lastDate)) {
                 feedChannel = (LinearLayout)layoutInflater.inflate(R.layout.feed_channel, null);
                 messageContainer.addView(feedChannel);
 
-                TextView tv = (TextView) layoutInflater.inflate(R.layout.channel_header, null);
+                dateChange = true;
+                lastDate = message.getServerTimestampAsPrettyDate();
+
+                TextView tv = (TextView) layoutInflater.inflate(R.layout.datechange_header, null);
+                tv.setText(lastDate);
+                feedChannel.addView(tv);
+            }
+
+            if (dateChange || !message.getLogicalChannel().equals(lastChannel)) {
+                TextView tv;
+                if (!dateChange)
+                    tv = (TextView) layoutInflater.inflate(R.layout.channel_header_paddingtop, null);
+                else
+                    tv = (TextView) layoutInflater.inflate(R.layout.channel_header, null);
                 lastChannel = message.getLogicalChannel();
                 tv.setText(lastChannel);
                 
@@ -155,7 +170,16 @@ public class MessagePagerAdapter extends PagerAdapter {
         View channelView = layoutInflater.inflate(R.layout.channel, null);
 
         LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
+        String lastDate = "";
         for (IrcMessage message : messages) {
+            if (!message.getServerTimestampAsPrettyDate().equals(lastDate)) {
+                lastDate = message.getServerTimestampAsPrettyDate();
+
+                TextView tv = (TextView) layoutInflater.inflate(R.layout.datechange_header, null);
+                tv.setText(lastDate);
+                messageContainer.addView(tv);
+            }
+
             TextView tv = (TextView) layoutInflater.inflate(R.layout.message, null);
             String s = message.getServerTimestampAsString() + " (" + message.getNick() + ") "
                     + message.getMessage();
