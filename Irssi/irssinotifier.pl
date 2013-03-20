@@ -186,9 +186,23 @@ sub send_notification {
         my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
     
         my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
-        $lastMsg    = encrypt(Encode::encode_utf8(Irssi::strip_codes($lastMsg)));
-        $lastNick   = encrypt(Encode::encode_utf8($lastNick));
-        $lastTarget = encrypt(Encode::encode_utf8($lastTarget));
+        $lastMsg = Irssi::strip_codes($lastMsg);
+
+        # encode messages to utf8 if terminal is not utf8 (irssi's recode should be on)
+        my $encoding;
+        eval {
+          require I18N::Langinfo;
+          $encoding = lc(I18N::Langinfo::langinfo(I18N::Langinfo::CODESET()));
+        };
+        if ($encoding && $encoding !~ /^utf-?8$/i) {
+          $lastMsg    = Encode::encode_utf8($lastMsg);
+          $lastNick   = Encode::encode_utf8($lastNick);
+          $lastTarget = Encode::encode_utf8($lastTarget);
+        }
+
+        $lastMsg    = encrypt($lastMsg);
+        $lastNick   = encrypt($lastNick);
+        $lastTarget = encrypt($lastTarget);
 
         my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
         my $result = `wget --tries=1 --timeout=5 --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
