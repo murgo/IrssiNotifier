@@ -20,12 +20,12 @@ $VERSION = "14";
 my $lastMsg;
 my $lastServer;
 my $lastNick;
-my $lastAddress;
 my $lastTarget;
 my $lastWindow;
 my $lastKeyboardActivity = time;
 my $forked;
-my @delay_queue = ();
+my $lastDcc = 1;
+my @delayQueue = ();
 
 my $screen_socket_path;
 
@@ -34,9 +34,9 @@ sub private {
     $lastServer  = $server;
     $lastMsg     = $msg;
     $lastNick    = $nick;
-    $lastAddress = $address;
     $lastTarget  = "!PRIVATE";
     $lastWindow  = $nick;
+    $lastDcc = 0;
 }
 
 sub joined {
@@ -44,9 +44,9 @@ sub joined {
     $lastServer  = $server;
     $lastMsg     = "joined";
     $lastNick    = $nick;
-    $lastAddress = $address;
     $lastTarget  = $target;
     $lastWindow  = $target;
+    $lastDcc = 0;
 }
 
 sub public {
@@ -54,9 +54,19 @@ sub public {
     $lastServer  = $server;
     $lastMsg     = $msg;
     $lastNick    = $nick;
-    $lastAddress = $address;
     $lastTarget  = $target;
     $lastWindow  = $target;
+    $lastDcc = 0;
+}
+
+sub dcc {
+    my ( $dcc, $msg ) = @_;
+    $lastServer  = $dcc->{server};
+    $lastMsg     = $msg;
+    $lastNick    = $dcc->{nick};
+    $lastTarget  = "!PRIVATE";
+    $lastWindow  = $dcc->{target};
+    $lastDcc = 1;
 }
 
 sub print_text {
@@ -72,8 +82,8 @@ sub should_send_notification {
     my $dest = @_ ? shift : $_;
 
     my $opt = MSGLEVEL_HILIGHT | MSGLEVEL_MSGS;
-    if (!($dest->{level} & $opt) || ($dest->{level} & MSGLEVEL_NOHILIGHT)) {
-        return 0; # not a hilight
+    if (!$lastDcc && (!($dest->{level} & $opt) || ($dest->{level} & MSGLEVEL_NOHILIGHT))) {
+        return 0; # not a hilight and not a dcc message
     }
 
     if (!are_settings_valid()) {
@@ -84,10 +94,14 @@ sub should_send_notification {
         return 0; # away only
     }
 
+    if ($lastDcc && !Irssi::settings_get_bool("irssinotifier_enable_dcc")) {
+        return 0; # dcc is not enabled
+    }
+
     if (Irssi::settings_get_bool('irssinotifier_screen_detached_only') &&
         $screen_socket_path && defined($ENV{STY})) {
         my $socket = $screen_socket_path . "/" . $ENV{'STY'};
-        return 0 if (-e $socket && ((stat($socket))[2] & 00100) != 0);
+        return 0 if (-e $socket && ((stat($socket))[2] & 00100) != 0); # screen is attached
     }
 
     if (Irssi::settings_get_bool("irssinotifier_ignore_active_window") && $dest->{window}->{refnum} == Irssi::active_win()->{refnum}) {
@@ -161,8 +175,8 @@ sub is_dangerous_string {
 
 sub send_notification {
     if ($forked) {
-      if (scalar @delay_queue < 10) {
-        push @delay_queue, {
+      if (scalar @delayQueue < 10) {
+        push @delayQueue, {
                             'msg' => $lastMsg,
                             'nick' => $lastNick,
                             'target' => $lastTarget,
@@ -249,7 +263,7 @@ sub read_pipe {
     Irssi::input_remove($target->{tag});
     $forked = 0;
 
-    check_delay_queue();
+    check_delayQueue();
 
     $output =~ /^(-?\d+) (.*)$/;
     my $ret = $1;
@@ -332,11 +346,11 @@ sub are_settings_valid {
     return 1;
 }
 
-sub check_delay_queue {
-    if (scalar @delay_queue > 0) {
-      my $item = shift @delay_queue;
+sub check_delayQueue {
+    if (scalar @delayQueue > 0) {
+      my $item = shift @delayQueue;
       if (time - $item->{'added'} > 60) {
-          check_delay_queue();
+          check_delayQueue();
           return 0;
       } else {
           $lastMsg = $item->{'msg'};
@@ -374,6 +388,7 @@ Irssi::settings_add_bool('irssinotifier', 'irssinotifier_ignore_active_window', 
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_away_only', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_screen_detached_only', 0);
 Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0);
+Irssi::settings_add_bool('irssinotifier', 'irssinotifier_enable_dcc', 1);
 
 # these commands are renamed
 Irssi::settings_remove('irssinotifier_ignore_server');
@@ -383,5 +398,7 @@ Irssi::signal_add('message irc action', 'public');
 Irssi::signal_add('message public',     'public');
 Irssi::signal_add('message private',    'private');
 Irssi::signal_add('message join',       'joined');
+Irssi::signal_add('message dcc',        'dcc');
+Irssi::signal_add('message dcc action', 'dcc');
 Irssi::signal_add('print text',         'print_text');
 Irssi::signal_add('setup changed',      'are_settings_valid');
