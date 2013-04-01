@@ -172,6 +172,35 @@
 		
 		<p class="answer">For latest developments, check project's <a href="https://github.com/murgo/irssinotifier">Github page</a>.<p>
 
+		<p class="question news">1.4.2013 Irssi script version 14 released</p>
+		<p class="answer news-content">
+			No, this is not an April Fools joke, I am actually releasing something. Lots of fixes and new features for the script, thanks to many people who have sent pull requests to me!
+			<br /><br />
+			New features and fixes:
+			<ul>
+				<li>Added optional support for DCC chats</li>
+				<li>Added support for /hilight -level JOINS somebody</li>
+				<li>Added support for non-UTF-8 encodings. Thanks, <a href="https://github.com/qvr">qvr</a>!</li>
+				<li>Added built-in <a href="http://en.wikipedia.org/wiki/GNU_Screen">Screen</a> integration. Thanks, <a href="https://github.com/qvr">qvr</a>!</li>
+				<li>Sending notifications should no longer freeze Irssi for a sec. Thanks, <a href="https://github.com/qvr">qvr</a>!</li>
+				<li>Added support for nick blacklisting. Thanks, <a href="https://github.com/turmoni">turmoni</a>!</li>
+				<li>Added support for pattern blaclisting. Thanks, <a href="https://github.com/turmoni">turmoni</a>!</li>
+				<li>Added support for pattern whitelisting. Thanks, <a href="https://github.com/turmoni">turmoni</a>!</li>
+				<li>Added support for https-proxy. Thanks, <a href="https://github.com/rsdy">rsdy</a>!</li>
+				<li>Fixed rarely occurring bug with encryption (reading environment variables didn't work on all systems)</li>
+			</ul>
+			<br />
+			Following new commands have been added, check <a href="#help">help page</a> for more details:
+			<ul>
+				<li>irssinotifier_enable_dcc</li>
+				<li>irssinotifier_https_proxy</li>
+				<li>irssinotifier_ignored_nicks</li>
+				<li>irssinotifier_ignored_highlight_patterns</li>
+				<li>irssinotifier_required_public_highlight_patterns</li>
+				<li>irssinotifier_screen_detached_only</li>
+			</ul>
+		</p>
+
 		<p class="question news">27.10.2012 Irssi script version 13 released</p>
 		<p class="answer news-content">
 			Yesterday's <a href="http://googleappengine.blogspot.fi/2012/10/about-todays-app-engine-outage.html">Google App Engine blackout</a> caused some IrssiNotifier users to receive duplicate messages, Irssi freezes and/or other hassle. Sorry for that!
@@ -310,6 +339,10 @@
 			<div class="code-block">/set irssinotifier_away_only [ON or OFF]</div>
 			<p class="answer">When set to ON, notifications will only be sent if you are away. Useful in combination with <a href="http://scripts.irssi.org/scripts/screen_away.pl">screen_away script</a>.
 
+			<p class="question">Don't receive notifications if attached to screen</p>
+			<div class="code-block">/set irssinotifier_screen_detached_only [ON or OFF]</div>
+			<p class="answer">If on, you don't get notifications when you are attached to the screen in which Irssi is running.</p>
+
 			<p class="question">Don't receive notifications from currently open window</p>
 			<div class="code-block">/set irssinotifier_ignore_active_window [ON or OFF]</div>
 			<p class="answer">When set to ON, notifications will NOT be sent from the Irssi window currently open. Be aware that if you forget window open while detaching your screen, you will not get notifications from that channel.</p>
@@ -321,6 +354,26 @@
 			<p class="question">Don't receive notifications from certain servers</p>
 			<div class="code-block">/set irssinotifier_ignored_servers [server names]</div>
 			<p class="answer">When one or more servers are set, you will not be notified about hilights from those servers. Useful for blocking bitlbee etc. Use space as a separator (e.g. /set irssinotifier_ignored_servers IRCnet quakenet).</p>
+
+			<p class="question">Don't receive notifications from certain nicks</p>
+			<div class="code-block">/set irssinotifier_ignored_nicks [nicks]</div>
+			<p class="answer">When one or more nicks are set, you will not be notified about hilights from those nicks (users). Use space as a separator (e.g. /set irssinotifier_ignored_nicks mom murgo).</p>
+
+			<p class="question">Don't receive notifications that contain certain patterns (regular expressions)</p>
+			<div class="code-block">/set irssinotifier_ignored_highlight_patterns [patterns]</div>
+			<p class="answer">Notifications about messages that contain the given regex-pattern are not sent. Uses <a href="http://perldoc.perl.org/perlop.html#Regexp-Quote-Like-Operators">perl regex</a>. Use space as a separator (e.g. /set irssinotifier_ignored_highlight_patterns slap [lL][oO]+[lL]).</p>
+
+			<p class="question">Don't receive notifications that DOESN'T contain certain patterns (regular expressions)</p>
+			<div class="code-block">/set irssinotifier_required_public_highlight_patterns [patterns]</div>
+			<p class="answer">Notifications about messages that doesn't contain the given regex-pattern are not sent. Only applies to public messages. Disabled if empty. Uses <a href="http://perldoc.perl.org/perlop.html#Regexp-Quote-Like-Operators">perl regex</a>. Use space as a separator (e.g. /set irssinotifier_required_public_highlight_patterns slap [lL][oO]+[lL]).</p>
+
+			<p class="question">Use proxy for HTTPS</p>
+			<div class="code-block">/set irssinotifier_https_proxy [proxy address]</div>
+			<p class="answer">The given proxy is used for the notification sending. Pretty self-explanatory.</p>
+
+			<p class="question">Enable or disable DCC chats</p>
+			<div class="code-block">/set irssinotifier_enable_dcc [ON or OFF]</div>
+			<p class="answer">If set to OFF, notifications from DCC chats are not sent.</p>
 		</div>
 
 		<h2>Troubleshooting</h2>
