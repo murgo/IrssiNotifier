@@ -1,4 +1,4 @@
-use strict;
+use strict; use warnings;
 
 use Irssi;
 use IPC::Open2 qw(open2);
@@ -24,7 +24,7 @@ my $lastTarget;
 my $lastWindow;
 my $lastKeyboardActivity = time;
 my $forked;
-my $lastDcc = 1;
+my $lastDcc = 0;
 my @delayQueue = ();
 
 my $screen_socket_path;
@@ -175,88 +175,90 @@ sub is_dangerous_string {
 
 sub send_notification {
     if ($forked) {
-      if (scalar @delayQueue < 10) {
-        push @delayQueue, {
+        if (scalar @delayQueue < 10) {
+            push @delayQueue, {
                             'msg' => $lastMsg,
                             'nick' => $lastNick,
                             'target' => $lastTarget,
                             'added' => time,
                             };
-      } else {
-        Irssi::print("IrssiNotifier: previous send still in progress and queue full, skipping notification");
-      }
-      return 0;
+        } else {
+            Irssi::print("IrssiNotifier: previous send is still in progress and queue is full, skipping notification");
+        }
+        return 0;
     }
 
-    my ($rh,$wh);
-    pipe $rh, $wh;
+    my ($readHandle,$writeHandle);
+    pipe $readHandle, $writeHandle;
     $forked = 1;
     my $pid = fork();
 
     unless (defined($pid)) {
-      Irssi::print("IrssiNotifier: couldn't fork - abort");
-      close $rh; close $wh;
-      return 0;
+        Irssi::print("IrssiNotifier: couldn't fork - abort");
+        close $readHandle; close $writeHandle;
+        return 0;
     }
 
     if ($pid > 0) {
-      close $wh;
-      Irssi::pidwait_add($pid);
-      my $target = {fh => $$rh, tag => undef};
-      $target->{tag} = Irssi::input_add(fileno($rh), INPUT_READ, \&read_pipe, $target);
+        close $writeHandle;
+        Irssi::pidwait_add($pid);
+        my $target = {fh => $$readHandle, tag => undef};
+        $target->{tag} = Irssi::input_add(fileno($readHandle), INPUT_READ, \&read_pipe, $target);
     } else {
-      eval {
-        my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
-        my $proxy     = Irssi::settings_get_str('irssinotifier_https_proxy');
-
-        my $encryption_password = Irssi::settings_get_str('irssinotifier_encryption_password');
-        $lastMsg = Irssi::strip_codes($lastMsg);
-
-        # encode messages to utf8 if terminal is not utf8 (irssi's recode should be on)
-        my $encoding;
         eval {
-          require I18N::Langinfo;
-          $encoding = lc(I18N::Langinfo::langinfo(I18N::Langinfo::CODESET()));
-        };
-        if ($encoding && $encoding !~ /^utf-?8$/i) {
-          $lastMsg    = Encode::encode_utf8($lastMsg);
-          $lastNick   = Encode::encode_utf8($lastNick);
-          $lastTarget = Encode::encode_utf8($lastTarget);
+            my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
+            my $proxy     = Irssi::settings_get_str('irssinotifier_https_proxy');
+
+            $lastMsg = Irssi::strip_codes($lastMsg);
+
+            encode_utf();
+            $lastMsg    = encrypt($lastMsg);
+            $lastNick   = encrypt($lastNick);
+            $lastTarget = encrypt($lastTarget);
+
+            if($proxy) {
+                $ENV{https_proxy} = $proxy;
+            }
+
+            my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
+            my $result = `wget --tries=1 --timeout=5 --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
+            if (($? >> 8) != 0) {
+                # Something went wrong, might be network error or authorization issue. Probably no need to alert user, though.
+                print $writeHandle "0 FAIL\n";
+            } else {
+                print $writeHandle "1 OK\n";
+            }
+        }; # end eval
+
+        if ($@) {
+            print $writeHandle "-1 IrssiNotifier internal error: $@\n";
         }
 
-        $lastMsg    = encrypt($lastMsg);
-        $lastNick   = encrypt($lastNick);
-        $lastTarget = encrypt($lastTarget);
-
-        if($proxy) {
-            $ENV{https_proxy} = $proxy;
-        }
-
-        my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
-        my $result = `wget --tries=1 --timeout=5 --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
-        if (($? >> 8) != 0) {
-          # Something went wrong, might be network error or authorization issue. Probably no need to alert user, though.
-          print $wh "0 FAIL\n";
-        } else {
-          print $wh "1 OK\n";
-        }
-      }; # end eval
-
-      if ($@) {
-        print $wh "-1 IrssiNotifier internal error: $@\n";
-      }
-
-      close $rh; close $wh;
-      POSIX::_exit(1);
+        close $readHandle; close $writeHandle;
+        POSIX::_exit(1);
     }
     return 1;
 }
 
+sub encode_utf {
+    # encode messages to utf8 if terminal is not utf8 (irssi's recode should be on)
+    my $encoding;
+    eval {
+        require I18N::Langinfo;
+        $encoding = lc(I18N::Langinfo::langinfo(I18N::Langinfo::CODESET()));
+    };
+    if ($encoding && $encoding !~ /^utf-?8$/i) {
+        $lastMsg    = Encode::encode_utf8($lastMsg);
+        $lastNick   = Encode::encode_utf8($lastNick);
+        $lastTarget = Encode::encode_utf8($lastTarget);
+    }
+}
+
 sub read_pipe {
     my $target = shift;
-    my $rh = $target->{fh};
+    my $readHandle = $target->{fh};
 
-    my $output = <$rh>;
+    my $output = <$readHandle>;
     chomp($output);
 
     close($target->{fh});
@@ -270,33 +272,47 @@ sub read_pipe {
     $output = $2;
 
     if ($ret < 0) {
-      Irssi::print($IRSSI{name} . ": Error: send crashed: $output");
-      return 0;
+        Irssi::print($IRSSI{name} . ": Error: send crashed: $output");
+        return 0;
     }
 
     if (!$ret) {
-      #Irssi::print($IRSSI{name} . ": Error: send failed: $output");
-      return 0;
+        #Irssi::print($IRSSI{name} . ": Error: send failed: $output");
+        return 0;
     }
 }
 
 sub encrypt {
     my ($text) = @_ ? shift : $_;
+    my $password = Irssi::settings_get_str('irssinotifier_encryption_password');
 
-    local $ENV{PASS} = Irssi::settings_get_str('irssinotifier_encryption_password');
-    my $pid = open2 my $out, my $in, qw(
-        openssl enc -aes-128-cbc -salt -base64 -A -pass env:PASS
-    );
+    chdir();
+    my $fifo = ".irssinotifier_fifo";
+    my $password_pid = fork();
+
+    if ($password_pid) {
+        # child process
+        unless (-p $fifo) {
+            unlink $fifo;
+            POSIX::mkfifo($fifo, 0700);
+        }
+        open (my $handle, "> $fifo"); # this line blocks until a reader (openssl) is spawned
+        print $handle $password;
+        close $handle;
+        unlink $fifo;
+        POSIX::_exit(1);
+    }
+
+    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -A -pass), "file:$fifo");
 
     print $in "$text ";
     close $in;
 
-    my $tmp = $/;
-    undef $/;    # read full output at once
+    local $/; # read full output at once
     my $result = readline $out;
     waitpid $pid, 0;
-    $/ = $tmp;
-
+    waitpid $password_pid, 0;
+    
     $result =~ tr[+/][-_];
     $result =~ s/=//g;
     return $result;
