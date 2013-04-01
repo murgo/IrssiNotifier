@@ -6,7 +6,7 @@ use POSIX;
 use Encode;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "14";
+$VERSION = "15";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -14,7 +14,7 @@ $VERSION = "14";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "http://irssinotifier.appspot.com",
-    changed     => "2013-04-01"
+    changed     => "2013-04-02"
 );
 
 my $lastMsg;
@@ -288,10 +288,10 @@ sub encrypt {
 
     chdir();
     my $fifo = ".irssinotifier_fifo";
-    my $password_pid = fork();
-
     unlink $fifo; # just in case
     POSIX::mkfifo($fifo, 0700);
+
+    my $password_pid = fork();
 
     if ($password_pid == 0) {
         # child process
