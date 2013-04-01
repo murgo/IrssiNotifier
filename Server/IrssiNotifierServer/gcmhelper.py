@@ -1,5 +1,6 @@
 from gcm import GCM
 from google.appengine.ext import deferred
+from google.appengine.api.taskqueue import TransientError
 from datamodels import GcmToken
 import logging
 

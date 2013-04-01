@@ -195,7 +195,7 @@ class MessageController(BaseController):
 
         if not ok:
             self.response.status = '400 Bad Request'
-            return False
+            return self.response
         self.response.out.write(serverMessage)
 
     def get(self):

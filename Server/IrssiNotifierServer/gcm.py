@@ -73,21 +73,23 @@ class GCM(object):
         
         request.add_data(json.dumps(jsonRequest))
 
+        responseBody = ''
+
         try:
             response = urllib2.urlopen(request)
-            text = response.read()
-            responseJson = json.loads(text)
+            responseBody = response.read()
+            responseJson = json.loads(responseBody)
         except HTTPError as e:
             if (e.code == 503):
                 raise Exception("503, retrying whole task") #retry
             else:
-                logging.error("Unable to send GCM message! Response code: %s, response text: %s " % (e.code, text))
+                logging.error("Unable to send GCM message! Response code: %s, response body: %s " % (e.code, responseBody))
                 return # do not retry
         except Exception as e:
             logging.warn("Unable to send GCM message! %s" % e)
             raise e #retry
         
-        logging.debug("GCM Message sent, response: %s" % text)
+        logging.debug("GCM Message sent, response: %s" % responseBody)
         
         if responseJson['failure'] == '0' and responseJson['canonical_ids'] == '0':
             return #success
