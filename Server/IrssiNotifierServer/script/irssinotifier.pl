@@ -290,18 +290,19 @@ sub encrypt {
     my $fifo = ".irssinotifier_fifo";
     my $password_pid = fork();
 
-    if ($password_pid) {
+    unlink $fifo; # just in case
+    POSIX::mkfifo($fifo, 0700);
+
+    if ($password_pid == 0) {
         # child process
-        unless (-p $fifo) {
-            unlink $fifo;
-            POSIX::mkfifo($fifo, 0700);
-        }
         open (my $handle, "> $fifo"); # this line blocks until a reader (openssl) is spawned
         print $handle $password;
         close $handle;
         unlink $fifo;
         POSIX::_exit(1);
     }
+
+    Irssi::pidwait_add($password_pid);
 
     my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -A -pass), "file:$fifo");
 
