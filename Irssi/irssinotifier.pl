@@ -14,7 +14,7 @@ $VERSION = "14";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "http://irssinotifier.appspot.com",
-    changed     => "2012-10-28"
+    changed     => "2013-04-01"
 );
 
 my $lastMsg;
@@ -24,7 +24,6 @@ my $lastAddress;
 my $lastTarget;
 my $lastWindow;
 my $lastKeyboardActivity = time;
-
 my $forked;
 my @delay_queue = ();
 
@@ -38,6 +37,16 @@ sub private {
     $lastAddress = $address;
     $lastTarget  = "!PRIVATE";
     $lastWindow  = $nick;
+}
+
+sub joined {
+    my ( $server, $target, $nick, $address ) = @_;
+    $lastServer  = $server;
+    $lastMsg     = "joined";
+    $lastNick    = $nick;
+    $lastAddress = $address;
+    $lastTarget  = $target;
+    $lastWindow  = $target;
 }
 
 sub public {
@@ -370,8 +379,9 @@ Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0
 Irssi::settings_remove('irssinotifier_ignore_server');
 Irssi::settings_remove('irssinotifier_ignore_channel');
 
-Irssi::signal_add( 'message irc action', 'public');
-Irssi::signal_add( 'message public',     'public');
-Irssi::signal_add( 'message private',    'private');
-Irssi::signal_add( 'print text',         'print_text');
-Irssi::signal_add( 'setup changed',      'are_settings_valid');
+Irssi::signal_add('message irc action', 'public');
+Irssi::signal_add('message public',     'public');
+Irssi::signal_add('message private',    'private');
+Irssi::signal_add('message join',       'joined');
+Irssi::signal_add('print text',         'print_text');
+Irssi::signal_add('setup changed',      'are_settings_valid');
