@@ -1,45 +1,31 @@
-import uuid
 from google.appengine.api import users
 import logging
-from datamodels import IrssiUser
-import time
+import dao
 
-class Login():
-    def generateApiToken(self):
-        return str(uuid.uuid4())
-    
-    def getIrssiUser(self, params):
-        logging.info("Login.getIrssiUser()")
-        user = users.get_current_user()
-        if not user:
-            logging.debug("No Google user found")
-            if 'apiToken' not in params:
-                logging.debug("No token found, failing")
-                return None
-            token = params['apiToken']
-            logging.debug("apiToken %s" % token)
-            irssi_users = IrssiUser.all()
-            irssi_users.filter('api_token = ', token)
-            return irssi_users.get()
-        
-        logging.debug("Google user found")
-        #logging.debug("%s %s %s %s %s" % (user.nickname(), user.user_id(), user.email(), user.federated_provider(), user.federated_identity()))
-        
-        feder = "%s%s" % (user.federated_provider(), user.federated_identity())
-        user_id = user.user_id() if user.user_id() is not None else feder
-    
-        irssi_user = IrssiUser.get_by_key_name(user_id)
-        if irssi_user is None:
-            logging.debug("IrssiUser not found, adding new one")
-            irssi_user = IrssiUser(key_name=user_id)
-            irssi_user.user_id = user_id
-            irssi_user.user_name = user.nickname()
-            irssi_user.email = user.email()
-            irssi_user.api_token = self.generateApiToken() 
-            irssi_user.registration_date = int(time.time())
-            irssi_user.notification_count = 0
-            irssi_user.put()
-        else:
-            logging.debug("IrssiUser found")
-        
-        return irssi_user
+
+def get_irssi_user(params):
+    logging.info("Login.getIrssiUser()")
+    user = users.get_current_user()
+    if not user:
+        logging.debug("No Google user found, using API token")
+        if 'apiToken' not in params:
+            logging.debug("No API token found, failing")
+            return None
+        token = params['apiToken']
+        logging.debug("apiToken %s" % token)
+        return dao.get_irssi_user_for_api_token(token)
+
+    logging.debug("Google user found")
+
+    federated_identity = "%s%s" % (user.federated_provider(), user.federated_identity())
+    user_id = user.user_id()
+    if user_id is None:
+        logging.warn("Strange, using federated identity %s" % federated_identity)
+        user_id = federated_identity
+
+    irssi_user = dao.get_irssi_user_for_key_name(user_id)
+    if irssi_user is None:
+        logging.debug("IrssiUser not found, adding new one")
+        dao.add_irssi_user(user, user_id)
+
+    return irssi_user

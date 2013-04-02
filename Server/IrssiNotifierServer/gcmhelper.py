@@ -1,33 +1,39 @@
-from gcm import GCM
 from google.appengine.ext import deferred
 from google.appengine.api.taskqueue import TransientError
-from datamodels import GcmToken
+from gcm import GCM
 import logging
+import dao
 
-def sendGcmToUserDeferred(irssiuser, message):
-    logging.info("queuing deferred task for sending message to user %s" % irssiuser.email)
+QueueName = 'gcmqueue'
+
+
+def send_gcm_to_user_deferred(irssiuser, message):
+    logging.info("Queuing deferred task for sending message to user %s" % irssiuser.email)
     key = irssiuser.key()
     try:
-        deferred.defer(_sendGcmToUser, key, message, _queue='gcmqueue')
+        deferred.defer(_send_gcm_to_user, key, message, _queue=QueueName)
     except TransientError as e:
         logging.warn("Transient error: %s" % e)
 
-def _sendGcmToUser(irssiuser_key, message):
-    logging.info("executing deferred task: _sendGcmToUser, %s, %s" % (irssiuser_key, message))
-    gcm = GCM()
-    gcm.sendGcmToUser(irssiuser_key, message)
 
-def sendGcmToTokenDeferred(token, message):
-    logging.info("queuing deferred task for sending message to token %s" % token.gcm_token)
+def _send_gcm_to_user(irssiuser_key, message):
+    logging.info("Executing deferred task: _send_gcm_to_user, %s, %s" % (irssiuser_key, message))
+    gcm = GCM()
+    gcm.send_gcm_to_user(irssiuser_key, message)
+
+
+def send_gcm_to_token_deferred(token, message):
+    logging.info("Queuing deferred task for sending message to token %s" % token.gcm_token)
     key = token.key()
     try:
-        deferred.defer(_sendGcmToToken, key, message, _queue='gcmqueue')
+        deferred.defer(_send_gcm_to_token, key, message, _queue=QueueName)
     except TransientError as e:
         logging.warn("Transient error: %s" % e)
 
-def _sendGcmToToken(token_key, message):
-    logging.info("executing deferred task: _sendGcmToToken, %s, %s" % (token_key, message))
+
+def _send_gcm_to_token(token_key, message):
+    logging.info("Executing deferred task: _send_gcm_to_token, %s, %s" % (token_key, message))
+    token = dao.get_gcm_token_for_key(token_key)
+
     gcm = GCM()
-    
-    token = GcmToken.get(token_key)
-    gcm.sendGcm([token], message)
+    gcm.send_gcm([token], message)

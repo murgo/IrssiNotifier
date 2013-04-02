@@ -1,5 +1,7 @@
 import json
+import logging
 from google.appengine.ext import db
+
 
 class IrssiUser(db.Model):
     user_name = db.StringProperty()
@@ -24,13 +26,32 @@ class Message(db.Model):
     message = db.TextProperty()
     channel = db.StringProperty()
     nick = db.StringProperty()
-    def ToJson(self):
-        return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
-    def ToGcmJson(self):
-        m = json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'message': self.message, 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
+
+    def to_json(self):
+        return json.dumps(
+            {'server_timestamp': '%f' % self.server_timestamp,
+             'message': self.message,
+             'channel': self.channel,
+             'nick': self.nick,
+             'id': self.key().id()})
+
+    def to_gcm_json(self):
+        m = json.dumps(
+            {'server_timestamp': '%f' % self.server_timestamp,
+             'message': self.message,
+             'channel': self.channel,
+             'nick': self.nick,
+             'id': self.key().id()})
         if len(m) < 3072:
             return m
-        return json.dumps({'server_timestamp': '%f' % self.server_timestamp, 'message': 'toolong', 'channel': self.channel, 'nick': self.nick, 'id': self.key().id()})
+
+        logging.warn("too big message %s, shortening" % len(m))
+        return json.dumps(
+            {'server_timestamp': '%f' % self.server_timestamp,
+             'message': 'toolong',
+             'channel': self.channel,
+             'nick': self.nick,
+             'id': self.key().id()})
 
 
 class AuthKey(db.Model):
