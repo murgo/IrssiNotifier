@@ -38,17 +38,16 @@ public class Server {
 
     private Map<ServerTarget, String> serverUrls = new HashMap<ServerTarget, String>();
 
-    private static final String SERVER_BASE_URL = "https://irssinotifier.appspot.com/API/";
+    private static final String SERVER_BASE_URL = "https://irssinotifier.appspot.com";
 
     private DefaultHttpClient http_client = new DefaultHttpClient();
 
     private static final int maxRetryCount = 3;
 
     public Server() {
-        serverUrls.put(ServerTarget.SaveSettings, SERVER_BASE_URL + "Settings");
-        serverUrls.put(ServerTarget.Message, SERVER_BASE_URL + "Message");
-        serverUrls.put(ServerTarget.Authenticate,
-                "https://irssinotifier.appspot.com/_ah/login?continue=https://localhost/&auth=");
+        serverUrls.put(ServerTarget.SaveSettings, SERVER_BASE_URL + "/API/Settings");
+        serverUrls.put(ServerTarget.Message, SERVER_BASE_URL + "/API/Message");
+        serverUrls.put(ServerTarget.Authenticate, SERVER_BASE_URL + "/_ah/login?continue=https://localhost/&auth=");
     }
 
     public boolean authenticate(String token) throws IOException {

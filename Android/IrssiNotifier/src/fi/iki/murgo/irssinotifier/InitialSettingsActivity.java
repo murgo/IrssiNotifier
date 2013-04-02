@@ -71,7 +71,7 @@ public class InitialSettingsActivity extends Activity {
         MessageBox
                 .Show(this,
                         "Success",
-                        "Check http://irssinotifier.appspot.com for information about setting up your irssi script.",
+                        "Check https://irssinotifier.appspot.com for information about setting up your irssi script.",
                         new Callback<Void>() {
                             public void doStuff(Void param) {
                                 Intent i = new Intent(ctx, IrssiNotifierActivity.class);
