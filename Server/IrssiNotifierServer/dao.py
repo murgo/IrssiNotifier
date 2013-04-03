@@ -63,6 +63,7 @@ def add_irssi_user(user, user_id=None):
 
 
 def update_irssi_user(irssi_user, version):
+    logging.debug("updating irssi user")
     if irssi_user.notification_count is None:
         irssi_user.notification_count = 1
     else:
