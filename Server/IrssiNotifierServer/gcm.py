@@ -1,6 +1,6 @@
 import urllib2
 import logging
-from google.appengine.dist.httplib import HTTPException
+from httplib import HTTPException
 from urllib2 import HTTPError
 import json
 

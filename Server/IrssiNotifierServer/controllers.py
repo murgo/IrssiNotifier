@@ -28,8 +28,6 @@ def getAndroidServerMessage(data):
             logging.warn('Client version is not integer')
             return (
                 False, "Too old version! Get latest version of IrssiNotifier from https://irssinotifier.appspot.com")
-    else:
-        logging.warn("Unable to validate version, no version in data")
     return True, ""
 
 
@@ -161,7 +159,7 @@ class WebController(BaseController):
 
 class SettingsController(BaseController):
     def post(self):
-        success = self.initController("SettingsController.post()", ["Name", "Enabled", "RegistrationId", "version"])
+        success = self.initController("SettingsController.post()", ["Name", "Enabled", "RegistrationId"])
         if not success:
             return self.response
 
@@ -218,7 +216,7 @@ class MessageController(BaseController):
             timestamp = 0
 
         messages = dao.get_messages(self.irssi_user, timestamp)
-        message_jsons = [message.ToJson() for message in messages]
+        message_jsons = [message.to_json() for message in messages]
         response_json = json.dumps({"servermessage": serverMessage, "messages": message_jsons})
 
         self.response.out.write(response_json)
