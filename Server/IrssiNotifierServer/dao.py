@@ -1,6 +1,7 @@
 import time
 import uuid
 from datamodels import *
+from google.appengine.ext import ndb
 
 OldMessageRemovalThreshold = 604800
 
@@ -111,8 +112,16 @@ def add_message(irssi_user, message=None, channel=None, nick=None):
 
 
 def clear_old_messages():
-    query = Message.query(Message.server_timestamp < int(time.time()) - OldMessageRemovalThreshold)
-    query.delete()
+    MaxAmount = 500
+    amount = MaxAmount
+
+    logging.info("Clearing old messages")
+    while amount == MaxAmount:
+        query = Message.query(Message.server_timestamp < (int(time.time()) - OldMessageRemovalThreshold))
+        keys = query.fetch(MaxAmount, keys_only=True)
+        ndb.delete_multi(keys)
+        amount = len(keys)
+        logging.info("Deleted %s messages" % amount)
 
 
 # settings stuff
@@ -141,10 +150,26 @@ def save_settings(user, token_id, enabled, name):
 def wipe_user(user):
     logging.info("Wiping everything for user %s" % user.user_id)
 
-    query = GcmToken.query(ancestor=user.key)
-    query.delete()
+    key = user.key
+    MaxAmount = 500
 
-    query = Message.query(ancestor=user.key)
-    query.delete()
+    amount = MaxAmount
+    logging.info("Wiping messages")
+    while amount == MaxAmount:
+        query = Message.query(ancestor=key)
+        keys = query.fetch(MaxAmount, keys_only=True)
+        ndb.delete_multi(keys)
+        amount = len(keys)
+        logging.info("Deleted %s messages" % amount)
 
-    user.delete()
+    amount = MaxAmount
+    logging.info("Wiping GCM tokens")
+    while amount == MaxAmount:
+        query = GcmToken.query(ancestor=key)
+        keys = query.fetch(MaxAmount, keys_only=True)
+        ndb.delete_multi(keys)
+        amount = len(keys)
+        logging.info("Deleted %s tokens" % amount)
+
+    logging.info("Wiping user")
+    user.key.delete()
