@@ -24,8 +24,8 @@ class GcmToken(db.Model):
 class Message(db.Model):
     server_timestamp = db.IntegerProperty(indexed=True)
     message = db.TextProperty()
-    channel = db.StringProperty()
-    nick = db.StringProperty()
+    channel = db.TextProperty()
+    nick = db.TextProperty()
 
     def to_json(self):
         return json.dumps(

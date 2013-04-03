@@ -78,13 +78,15 @@ def load_gcm_auth_key():
     key = AuthKey.get_by_key_name("GCM_AUTHKEY")
     if key is None:
         return None
-
     return key.gcm_authkey
 
 
 def add_gcm_auth_key():
     key = AuthKey(key_name="GCM_AUTHKEY")
-    key.gcm_authkey = 'secrets'
+    with open("secret.txt") as f:
+        authkey = f.readlines()
+    logging.info(authkey)
+    key.gcm_authkey = authkey[0].split('\n')[0]
     key.put()
     return key
 
@@ -100,6 +102,7 @@ def get_messages(user, timestamp):
 
     m = messages.fetch(50)
     logging.debug("Found %s messages" % len(m))
+    return m
 
 
 def add_message(irssi_user, message=None, channel=None, nick=None):
@@ -115,10 +118,7 @@ def add_message(irssi_user, message=None, channel=None, nick=None):
 def clear_old_messages():
     messages = Message.all()
     messages.filter("server_timestamp <", int(time.time()) - OldMessageRemovalThreshold)
-
-    firstCount = messages.count()
     db.delete(messages)
-    lastCount = messages.count()
 
     logging.info("Deleted %s rows" % (firstCount - lastCount))
 

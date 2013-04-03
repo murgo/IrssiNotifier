@@ -74,7 +74,7 @@ class BaseController(webapp2.RequestHandler):
                 # because of weird assertion error
                 self.data = {}
 
-        logging.debug("Data", self.data)
+        logging.debug("Data {0}".format(self.data))
 
         self.irssi_user = login.get_irssi_user(self.data)
         if not self.irssi_user:
@@ -212,14 +212,16 @@ class MessageController(BaseController):
             self.response.out.write(json.dumps({'servermessage': serverMessage, "messages": []}))
             return self.response
 
-        if "timestamp" not in self.data:
-            self.data["timestamp"] = 0
+        if "timestamp" in self.data:
+            timestamp = self.data["timestamp"]
+        else:
+            timestamp = 0
 
-        messages = dao.get_messages(self.data["timestamp"], self.irssi_user)
-        messageJsons = [message.ToJson() for message in messages]
-        responseJson = json.dumps({"servermessage": serverMessage, "messages": messageJsons})
+        messages = dao.get_messages(self.irssi_user, timestamp)
+        message_jsons = [message.ToJson() for message in messages]
+        response_json = json.dumps({"servermessage": serverMessage, "messages": message_jsons})
 
-        self.response.out.write(responseJson)
+        self.response.out.write(response_json)
 
 
 class WipeController(BaseController):

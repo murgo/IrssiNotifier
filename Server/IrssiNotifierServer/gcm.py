@@ -1,12 +1,10 @@
 import urllib2
 import logging
-from webapp2 import HTTPException
-import dao
+from google.appengine.dist.httplib import HTTPException
 from urllib2 import HTTPError
 import json
-import gcmhelper
 
-gcm_url = "https://android.googleapis.com/gcm/send"
+GcmUrl = "https://android.googleapis.com/gcm/send"
 
 
 def is_set(key, arr):
@@ -16,11 +14,13 @@ def is_set(key, arr):
 class GCM(object):
     authkey = None
 
-    def __init__(self):
+    def __init__(self, dao, gcmhelper):
         self.tokens = []
+        self.dao = dao
+        self.gcmhelper = gcmhelper
         if GCM.authkey is None:
-            #dao.insert_gcm_auth_key()
-            GCM.authkey = dao.load_gcm_auth_key()
+            #self.dao.add_gcm_auth_key()
+            GCM.authkey = self.dao.load_gcm_auth_key()
             if GCM.authkey is None:
                 logging.error("No auth key for GCM!")
 
@@ -30,7 +30,7 @@ class GCM(object):
             logging.error("No auth key for GCM!")
             return
 
-        tokens = dao.get_gcm_tokens_for_user_key(irssiuser_key)
+        tokens = self.dao.get_gcm_tokens_for_user_key(irssiuser_key)
         self.send_gcm(tokens, message)
 
     def send_gcm(self, tokens, message):
@@ -59,7 +59,7 @@ class GCM(object):
             self.handle_gcm_result(result, token, message)
 
     def send_request(self, message, tokens):
-        request = urllib2.Request(gcm_url)
+        request = urllib2.Request(GcmUrl)
         request.add_header('Authorization', 'key=%s' % GCM.authkey)
         request.add_header('Content-Type', 'application/json')
 
@@ -101,19 +101,19 @@ class GCM(object):
                 logging.warn("Error sending GCM message: %s" % error)
                 if error == "Unavailable":
                     logging.warn("Token unavailable, retrying")
-                    gcmhelper.send_gcm_to_token_deferred(token, message)
+                    self.gcmhelper.send_gcm_to_token_deferred(token, message)
                 elif error == "NotRegistered":
                     logging.warn("Token not registered, deleting")
-                    dao.remove_gcm_token(token)
+                    self.dao.remove_gcm_token(token)
                 else:
-                    logging.warn("Unrecoverable error: " + error)
+                    logging.error("Unrecoverable error: " + error)
 
     def replace_gcm_token_with_canonical(self, token, new_token_id):
-        already_exists = any(new_token_id == t.gcm_token for t in self.tokens)
+        already_exists = new_token_id in [t.gcm_token for t in self.tokens]
 
         if already_exists:
             logging.info("Canonical token already exists, removing old one: %s" % (new_token_id))
-            dao.remove_gcm_token(token)
+            self.dao.remove_gcm_token(token)
         else:
             logging.info("Updating token with canonical token: %s -> %s" % (token.gcm_token, new_token_id))
-            dao.update_gcm_token(token, new_token_id)
+            self.dao.update_gcm_token(token, new_token_id)

@@ -3,6 +3,7 @@ from google.appengine.api.taskqueue import TransientError
 from gcm import GCM
 import logging
 import dao
+import sys
 
 QueueName = 'gcmqueue'
 
@@ -18,7 +19,7 @@ def send_gcm_to_user_deferred(irssiuser, message):
 
 def _send_gcm_to_user(irssiuser_key, message):
     logging.info("Executing deferred task: _send_gcm_to_user, %s, %s" % (irssiuser_key, message))
-    gcm = GCM()
+    gcm = GCM(dao, sys.modules[__name__])
     gcm.send_gcm_to_user(irssiuser_key, message)
 
 
@@ -35,5 +36,5 @@ def _send_gcm_to_token(token_key, message):
     logging.info("Executing deferred task: _send_gcm_to_token, %s, %s" % (token_key, message))
     token = dao.get_gcm_token_for_key(token_key)
 
-    gcm = GCM()
+    gcm = GCM(dao, sys.modules[__name__])
     gcm.send_gcm([token], message)
