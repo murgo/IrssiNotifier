@@ -1,31 +1,35 @@
 import json
 import logging
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 
-class IrssiUser(db.Model):
-    user_name = db.StringProperty(indexed=False)
-    email = db.StringProperty()
-    user_id = db.StringProperty()
-    api_token = db.StringProperty()
-    registration_date = db.IntegerProperty(indexed=False)
-    notification_count = db.IntegerProperty(indexed=False)
-    last_notification_time = db.IntegerProperty(indexed=False)
-    irssi_script_version = db.IntegerProperty(indexed=False)
+class AuthKey(ndb.Model):
+    gcm_authkey = ndb.StringProperty()
 
 
-class GcmToken(db.Model):
-    gcm_token = db.StringProperty()
-    enabled = db.BooleanProperty()
-    name = db.StringProperty()
-    registration_date = db.IntegerProperty()
+class IrssiUser(ndb.Model):
+    user_name = ndb.StringProperty(indexed=False)
+    email = ndb.StringProperty()
+    user_id = ndb.StringProperty()
+    api_token = ndb.StringProperty()
+    registration_date = ndb.IntegerProperty(indexed=False)
+    notification_count = ndb.IntegerProperty(indexed=False)
+    last_notification_time = ndb.IntegerProperty(indexed=False)
+    irssi_script_version = ndb.IntegerProperty(indexed=False)
 
 
-class Message(db.Model):
-    server_timestamp = db.IntegerProperty(indexed=True)
-    message = db.TextProperty()
-    channel = db.TextProperty()
-    nick = db.TextProperty()
+class GcmToken(ndb.Model):
+    gcm_token = ndb.StringProperty()
+    enabled = ndb.BooleanProperty()
+    name = ndb.StringProperty()
+    registration_date = ndb.IntegerProperty()
+
+
+class Message(ndb.Model):
+    server_timestamp = ndb.IntegerProperty(indexed=True)
+    message = ndb.TextProperty()
+    channel = ndb.TextProperty()
+    nick = ndb.TextProperty()
 
     def to_json(self):
         return json.dumps(
@@ -33,7 +37,7 @@ class Message(db.Model):
              'message': self.message,
              'channel': self.channel,
              'nick': self.nick,
-             'id': self.key().id()})
+             'id': self.key.integer_id()})
 
     def to_gcm_json(self):
         m = json.dumps(
@@ -41,7 +45,7 @@ class Message(db.Model):
              'message': self.message,
              'channel': self.channel,
              'nick': self.nick,
-             'id': self.key().id()})
+             'id': self.key.integer_id()})
         if len(m) < 3072:
             return m
 
@@ -51,8 +55,4 @@ class Message(db.Model):
              'message': 'toolong',
              'channel': self.channel,
              'nick': self.nick,
-             'id': self.key().id()})
-
-
-class AuthKey(db.Model):
-    gcm_authkey = db.StringProperty()
+             'id': self.key.integer_id()})

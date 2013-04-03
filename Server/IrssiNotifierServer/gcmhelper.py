@@ -1,3 +1,4 @@
+import traceback
 from google.appengine.ext import deferred
 from google.appengine.api.taskqueue import TransientError
 from gcm import GCM
@@ -10,11 +11,11 @@ QueueName = 'gcmqueue'
 
 def send_gcm_to_user_deferred(irssiuser, message):
     logging.info("Queuing deferred task for sending message to user %s" % irssiuser.email)
-    key = irssiuser.key()
+    key = irssiuser.key
     try:
         deferred.defer(_send_gcm_to_user, key, message, _queue=QueueName)
     except TransientError as e:
-        logging.warn("Transient error: %s" % e)
+        logging.warn("Transient error: %s" % traceback.format_exc())
 
 
 def _send_gcm_to_user(irssiuser_key, message):
@@ -25,11 +26,11 @@ def _send_gcm_to_user(irssiuser_key, message):
 
 def send_gcm_to_token_deferred(token, message):
     logging.info("Queuing deferred task for sending message to token %s" % token.gcm_token)
-    key = token.key()
+    key = token.key
     try:
         deferred.defer(_send_gcm_to_token, key, message, _queue=QueueName)
     except TransientError as e:
-        logging.warn("Transient error: %s" % e)
+        logging.warn("Transient error: %s" % traceback.format_exc())
 
 
 def _send_gcm_to_token(token_key, message):

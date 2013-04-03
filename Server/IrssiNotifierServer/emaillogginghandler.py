@@ -132,7 +132,7 @@ class EmailLoggingHandler(logging.Handler):
     
             formatted_record = self.format(record)
 
-            if "NOMAIL" in formatter_record:
+            if "NOMAIL" in formatted_record:
                 return
 
             try:

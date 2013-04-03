@@ -1,7 +1,6 @@
 import time
 import uuid
 from datamodels import *
-from google.appengine.ext import db
 
 OldMessageRemovalThreshold = 604800
 
@@ -9,24 +8,23 @@ OldMessageRemovalThreshold = 604800
 # gcm token stuff
 
 def get_gcm_token_for_key(token_key):
-    return GcmToken.get(token_key)
+    return token_key.get()
 
 
 def get_gcm_tokens_for_user(user):
-    return get_gcm_tokens_for_user_key(user.key(), True)
+    return get_gcm_tokens_for_user_key(user.key, True)
 
 
 def get_gcm_tokens_for_user_key(irssi_user_key, include_disabled=False):
-    tokens = GcmToken.all()
-    tokens.ancestor(irssi_user_key)
+    query = GcmToken.query(ancestor=irssi_user_key)
     if not include_disabled:
-        tokens.filter("enabled =", True)
-    tokensList = tokens.fetch(10)
+        query = query.filter(GcmToken.enabled == True)  # must be ==
+    tokensList = query.fetch(10)
     return tokensList
 
 
 def remove_gcm_token(token):
-    token.delete()
+    token.key.delete()
 
 
 def update_gcm_token(token, new_token_id):
@@ -37,13 +35,12 @@ def update_gcm_token(token, new_token_id):
 # irssi user stuff
 
 def get_irssi_user_for_api_token(token):
-    irssi_users = IrssiUser.all()
-    irssi_users.filter('api_token = ', token)
-    return irssi_users.get()
+    query = IrssiUser.query(IrssiUser.api_token == token)
+    return query.get()
 
 
 def get_irssi_user_for_key_name(key_name):
-    return IrssiUser.get_by_key_name(key_name)
+    return IrssiUser.get_by_id(key_name)
 
 
 def generate_api_token():
@@ -51,7 +48,7 @@ def generate_api_token():
 
 
 def add_irssi_user(user, user_id=None):
-    irssi_user = IrssiUser(key_name=user_id)
+    irssi_user = IrssiUser(id=user_id)
     irssi_user.user_id = user_id
     irssi_user.user_name = user.nickname()
     irssi_user.email = user.email()
@@ -76,14 +73,14 @@ def update_irssi_user(irssi_user, version):
 # gcm auth key stuff
 
 def load_gcm_auth_key():
-    key = AuthKey.get_by_key_name("GCM_AUTHKEY")
+    key = AuthKey.get_by_id("GCM_AUTHKEY")
     if key is None:
         return None
     return key.gcm_authkey
 
 
 def add_gcm_auth_key():
-    key = AuthKey(key_name="GCM_AUTHKEY")
+    key = AuthKey(id="GCM_AUTHKEY")
     with open("secret.txt") as f:
         authkey = f.readlines()
     logging.info(authkey)
@@ -96,18 +93,15 @@ def add_gcm_auth_key():
 
 def get_messages(user, timestamp):
     logging.debug("Getting messages after: %s" % timestamp)
-    messages = Message.all()
-    messages.ancestor(user)
-    messages.filter("server_timestamp >", int(timestamp))
-    messages.order("server_timestamp")
+    query = Message.query(Message.server_timestamp > int(timestamp), ancestor=user.key).order(Message.server_timestamp)
 
-    m = messages.fetch(50)
+    m = query.fetch(50)
     logging.debug("Found %s messages" % len(m))
     return m
 
 
 def add_message(irssi_user, message=None, channel=None, nick=None):
-    msg = Message(parent=irssi_user.key())
+    msg = Message(parent=irssi_user.key)
     msg.message = message
     msg.channel = channel
     msg.nick = nick
@@ -117,20 +111,15 @@ def add_message(irssi_user, message=None, channel=None, nick=None):
 
 
 def clear_old_messages():
-    messages = Message.all()
-    messages.filter("server_timestamp <", int(time.time()) - OldMessageRemovalThreshold)
-    db.delete(messages)
-
-    logging.info("Deleted %s rows" % (firstCount - lastCount))
+    query = Message.query(Message.server_timestamp < int(time.time()) - OldMessageRemovalThreshold)
+    query.delete()
 
 
 # settings stuff
 
 def save_settings(user, token_id, enabled, name):
-    tokens = GcmToken.all()
-    tokens.ancestor(user.key())
-    tokens.filter("gcm_token =", token_id)
-    token = tokens.get()
+    query = GcmToken.query(GcmToken.gcm_token == token_id, ancestor=user.key)
+    token = query.get()
 
     if token is not None:
         logging.debug("Updating token: " + token_id)
@@ -140,7 +129,7 @@ def save_settings(user, token_id, enabled, name):
         return token
 
     logging.debug("Adding new token: " + token_id)
-    tokenToAdd = GcmToken(parent=user.key())
+    tokenToAdd = GcmToken(parent=user.key)
     tokenToAdd.gcm_token = token_id
     tokenToAdd.enabled = enabled
     tokenToAdd.name = name
@@ -152,13 +141,10 @@ def save_settings(user, token_id, enabled, name):
 def wipe_user(user):
     logging.info("Wiping everything for user %s" % user.user_id)
 
-    query = GcmToken.all()
-    query.ancestor(user)
-    db.delete(query)
+    query = GcmToken.query(ancestor=user.key)
+    query.delete()
 
-    query = Message.all()
-    query.ancestor(user)
-    db.delete(query)
+    query = Message.query(ancestor=user.key)
+    query.delete()
 
     user.delete()
-

@@ -1,3 +1,4 @@
+import traceback
 from google.appengine.api import users
 
 import webapp2
@@ -192,8 +193,8 @@ class MessageController(BaseController):
             message = dao.add_message(self.irssi_user, self.data["message"], self.data['channel'], self.data['nick'])
             dao.update_irssi_user(self.irssi_user, int(self.data['version']))
             gcmhelper.send_gcm_to_user_deferred(self.irssi_user, message.to_gcm_json())
-        except Exception as e:
-            logging.warn("Error while creating new message, exception %s", e)
+        except:
+            logging.warn("Error while creating new message, exception %s", traceback.format_exc())
             self.response.status = '400 Bad Request'
             return self.response
 

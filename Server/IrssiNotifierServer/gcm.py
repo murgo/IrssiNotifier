@@ -1,3 +1,4 @@
+import traceback
 import urllib2
 import logging
 from httplib import HTTPException
@@ -84,10 +85,10 @@ class GCM(object):
                     "Unable to send GCM message! Response code: %s, response body: %s " % (e.code, response_body))
                 return None  # do not retry
         except HTTPException as e:
-            logging.warn("HTTPException: Unable to send GCM message! %s" % e)
+            logging.warn("HTTPException: Unable to send GCM message! %s" % traceback.format_exc())
             raise HTTPException("NOMAIL %s " % e)  # retry
-        except Exception as e:
-            logging.error("Unable to send GCM message! %s" % e)
+        except:
+            logging.error("Unable to send GCM message! %s" % traceback.format_exc())
             return None
 
     def handle_gcm_result(self, result, token, message):
