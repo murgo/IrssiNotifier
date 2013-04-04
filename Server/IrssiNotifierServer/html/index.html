@@ -50,7 +50,7 @@
 
 			currentView = view;
 		}
-		
+
 		function hashChanged() {
 			var hash = window.location.hash.substring(1);
 			
@@ -74,34 +74,43 @@
 			hashChanged();
 		});
 		
-	function wipe() {
-		var answer = confirm("Wipe all user data?");
-		if (answer) {
-			$.post("/API/Wipe", { }, function(data) {
-				window.location.replace('{{ logout_url }}');
+		function wipe() {
+			var answer = confirm("Wipe all user data?");
+			if (answer) {
+				$.post("/API/Wipe", { }, function(data) {
+					window.location.replace('{{ logout_url }}');
+				});
+			}
+		}
+
+		function update(checkbox, name, token) {
+			var enabled = checkbox.checked ? 1 : 0;
+			$.post("/API/Settings", { "Name": name, "RegistrationId": token, "Enabled": enabled }, function(data) {
+				alert("Device " + name + (checkbox.checked ? " enabled." : " disabled."));
 			});
 		}
-	}
 
-	function update(checkbox, name, token) {
-		var enabled = checkbox.checked ? 1 : 0;
-		$.post("/API/Settings", { "Name": name, "RegistrationId": token, "Enabled": enabled }, function(data) {
-			alert("Device " + name + (checkbox.checked ? " enabled." : " disabled."));
-		});
-	}
-	
-	function replaceDateTimes() {
-		$(".datetime").each(function(index, element) {
-			var text = $(element).html();
-			if (!isNaN(text)) {
-				var utcSeconds = text;
-				var epoch = new Date(0);
-				epoch.setUTCSeconds(utcSeconds);
-
-				$(element).html(epoch.toLocaleString());
+		function remove_device(name, token) {
+			var answer = confirm("Remove device " + name + "?");
+			if (answer) {
+				$.post("/API/Wipe", { "RegistrationId": token }, function(data) {
+					location.reload();
+				});
 			}
-		});
-	}
+		}
+
+		function replaceDateTimes() {
+			$(".datetime").each(function(index, element) {
+				var text = $(element).html();
+				if (!isNaN(text)) {
+					var utcSeconds = text;
+					var epoch = new Date(0);
+					epoch.setUTCSeconds(utcSeconds);
+
+					$(element).html(epoch.toLocaleString());
+				}
+			});
+		}
 	</script>
 	
 </head>
@@ -173,12 +182,12 @@
 		<p class="answer">For latest developments, check project's <a href="https://github.com/murgo/irssinotifier">Github page</a>.<p>
 
 		<p class="question news">2.4.2013 Irssi script version 15 released</p>
-		<p class="answer news-content">
+		<div class="answer news-content">
 			I slightly botched up the version 14 release, so version 15 contains some hotfixes.
-		</p>
+		</div>
 
 		<p class="question news">1.4.2013 Irssi script version 14 released</p>
-		<p class="answer news-content">
+		<div class="answer news-content">
 			No, this is not an April Fools joke, I am actually releasing something. Lots of fixes and new features for the script, thanks to many people who have sent pull requests to me! Just follow the two simple steps on top of <a href="#help">help page</a> to update.
 			<br /><br />
 			New features and fixes:
@@ -204,30 +213,30 @@
 				<li>irssinotifier_required_public_highlight_patterns</li>
 				<li>irssinotifier_screen_detached_only</li>
 			</ul>
-		</p>
+		</div>
 
 		<p class="question news">27.10.2012 Irssi script version 13 released</p>
-		<p class="answer news-content">
+		<div class="answer news-content">
 			Yesterday's <a href="http://googleappengine.blogspot.fi/2012/10/about-todays-app-engine-outage.html">Google App Engine blackout</a> caused some IrssiNotifier users to receive duplicate messages, Irssi freezes and/or other hassle. Sorry for that!
 			<br /><br />
 			Now, to prevent this from happening in the future, newest Irssi script now times out before freezing up. <a href="#help">Updating</a> is very much recommended.
-		</p>
+		</div>
 
 		<p class="question news">11.10.2012 Irssi script was broken yesterday</p>
-		<p class="answer news-content">
+		<div class="answer news-content">
 			I accidentally deployed a broken work-in-progress version of the Irssi script yesterday, so if you installed or updated the script recently and are having problems, please update the script to the latest official version using these <a href="#help">instructions</a>.
-		</p>
+		</div>
 
 		<p class="question news">10.10.2012 IrssiNotifier 1.5 released</p>
-		<p class="answer news-content">
+		<div class="answer news-content">
 			New features:
 			<ul>
 				<li>Fixed bug that caused app sometimes to freeze when clearing notifications. Hopefully actually got it this time!</li>
 			</ul>
-		</p>
+		</div>
 
 		<p class="question news">1.10.2012 IrssiNotifier 1.4 released</p>
-		<p class="answer news-content">
+		<div class="answer news-content">
 			New features:
 			<ul>
 				<li>Added "legacy"-settings option that disables user interface theme</li>
@@ -235,15 +244,15 @@
 				<li>Fixed bug that caused app to crash when switching notification sound</li>
 				<li>Fixed settings colors behaving strangely on some devices</li>
 			</ul>
-		</p>
+		</div>
 
 		<p class="question news">15.9.2012 Irssi script version 12 released</p>
-		<p class="answer news-content">
+		<div class="answer news-content">
 			Fixed small bug with hard coded paths, if your Irssi complains about "cannot find wget" or OpenSSL, try updating the script.
-		</p>
+		</div>
 
 		<p class="question news">12.9.2012 IrssiNotifier 1.3 released!</p>
-		<p class="answer news-content">
+		<div class="answer news-content">
 			This is a major release. Older versions of Android app won't work any more, since server side has been changed a lot.
 			<br /> <br />
 			New features:
@@ -269,17 +278,17 @@
 			</ul>
 			
 			Whew!
-		</p>
+		</div>
 
 		<p class="question news">12.9.2012 New version of Irssi script: 11.</p>
-		<p class="answer news-content">
+		<div class="answer news-content">
 			Fixed bug where Irssi script sometimes caused other scripts like mail.pl to crash.
-		</p>
+		</div>
 
 		<p class="question news">6.9.2012 New web page!</p>
-		<p class="answer news-content">
+		<div class="answer news-content">
 			New web page layout! Feedback is welcomed. Enjoy.
-		</p>
+		</div>
 
 		<p class="question news">6.9.2012 New version of Irssi script: 9.</p>
 		<div class="answer news-content">
@@ -300,7 +309,7 @@
 		Irssi script installation instructions
 		</div>
 
-		<div class="answer" id="instructions">
+		<div class="answer">
 		(to update the script, just follow steps 1-2): <br />
 		<ol>
 			<li>Download Irssi script by copying and pasting the following command (as a single line) to your shell (don't mind any "File exists" -errors):
@@ -323,7 +332,7 @@
 		Android app installation instructions
 		</div>
 
-		<div class="answer" id="instructions">
+		<div class="answer">
 		<ol>
 			<li>Download Android app from <a href="http://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">Google Play</a> store.</li>
 			<li>Run the app, select the Google account you want to use. Account must be the same as the one you signed to this website with.</li>
@@ -402,12 +411,12 @@
 	</div>
 
 	<div class="hidden content" id="content-profile">
-	
-	{% if not logged_in %}
-	
+
+{% if not logged_in %}
+
 		<p class="center">Please <a href="{{ login_url }}">log in</a> using your Google account.</p>
 
-	{% else %}
+{% else %}
 		
 		<h2>Logged in as {{ user.email }}</h2>
 		<p><a href="{{ logout_url }}">Log out</a>.</p>
@@ -420,40 +429,51 @@
 
 		<h2>Android client status</h2>
 
-		{% if token_count != 0 %}
+{% if token_count != 0 %}
 
 			<p>Android device(s) <span class="working">confirmed as working.</span></p>
 		
 			<div id="devices">
 			<h3>Registered devices:</h3>
-			<ul>
-		{% for token in tokens %}
-				<li><input type="checkbox" {% if token.enabled %}checked="checked"{% endif %} onclick="update(this, '{{ token.name }}', '{{ token.gcm_token }}');" />{{ token.name }} (Registered <span class="datetime">{{ token.registration_date_string }}</span>)</li>
-		{% endfor %}
-			</ul>
+			<table>
+				<tr>
+					<th>Device</th>
+					<th>Registered</th>
+					<th>Enabled</th>
+					<th>Remove</th>
+				</tr>
+{% for token in tokens %}
+				<tr>
+					<td>{{ token.name }}</td>
+					<td><span class="datetime">{{ token.registration_date_string }}</span></td>
+					<td class="center"><input type="checkbox" {% if token.enabled %}checked="checked"{% endif %} onclick="update(this, '{{ token.name }}', '{{ token.gcm_token }}');" /></td>
+					<td><a href="#" onclick="remove_device('{{ token.name }}', '{{ token.gcm_token }}'); return false;">remove</a></td>
+				</tr>
+{% endfor %}
+			</table>
 			</div>
 			
-		{% else %}
+{% else %}
 			<p>Android device <span class="broken">not confirmed as working.</span></p>
-		{% endif %}
+{% endif %}
 			<h2>Irssi script status</h2>
 			
-		{% if irssi_working %}
+{% if irssi_working %}
 			<p>Irssi script <span class="working">confirmed as working</span>
-			{% if irssi_latest %}
+{% if irssi_latest %}
 			and is at <span class="working">latest version</span>.
-			{% else %}
+{% else %}
 			but is at <span class="oldversion">old version</span>. Check <a href="#help">help page</a> for upgrade instructions.
-			{% endif %}
+{% endif %}
 			</p>
-		{% else %}
+{% else %}
 			<p>Irssi script <span class="broken">not confirmed as working.</span> Check <a href="#help">help page</a> for installation instructions.</p>
-		{% endif %}
+{% endif %}
 		
 		<h2>Operations</h2>
 		<p><a onclick="wipe();" href="javascript:void(0)">Wipe your account and all data!</a></p>
 
-	{% endif %}	
+{% endif %}	
 
 	</div>
 	

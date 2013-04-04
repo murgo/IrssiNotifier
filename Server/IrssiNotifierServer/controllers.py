@@ -225,11 +225,16 @@ class MessageController(BaseController):
 
 class WipeController(BaseController):
     def post(self):
-        val = self.initController("WipeController.post()", [])
-        if not val:
+        success = self.initController("WipeController.post()", [])
+        if not success:
             return self.response
 
-        dao.wipe_user(self.irssi_user)
+        if 'RegistrationId' in self.data:
+            token = self.data['RegistrationId']
+            logging.info('Removing GCM Token: %s' % token)
+            dao.remove_gcm_token(dao.get_gcm_token_for_id(token))
+        else:
+            dao.wipe_user(self.irssi_user)
 
         responseJson = json.dumps({'response': 'ok'})
         self.response.headers['Content-Type'] = 'application/json'

@@ -148,3 +148,13 @@ img.center {
 .news-content {
 	margin-top: 10px;
 }
+
+table {
+	border-collapse:collapse;
+	width:100%
+}
+
+table, th, td {
+	border: 1px dashed #454545;
+	padding-left:2px padding-right:2px
+}

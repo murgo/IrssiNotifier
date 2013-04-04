@@ -12,6 +12,11 @@ def get_gcm_token_for_key(token_key):
     return token_key.get()
 
 
+def get_gcm_token_for_id(token_key):
+    query = GcmToken.query(GcmToken.gcm_token == token_key)
+    return query.get()
+
+
 def get_gcm_tokens_for_user(user):
     return get_gcm_tokens_for_user_key(user.key, True)
 
@@ -127,8 +132,7 @@ def clear_old_messages():
 # settings stuff
 
 def save_settings(user, token_id, enabled, name):
-    query = GcmToken.query(GcmToken.gcm_token == token_id, ancestor=user.key)
-    token = query.get()
+    token = get_gcm_token_for_id(token_id)
 
     if token is not None:
         logging.debug("Updating token: " + token_id)
