@@ -118,9 +118,9 @@ public class IrcMessage {
         channel = Crypto.decrypt(encryptionKey, channel);
         nick = Crypto.decrypt(encryptionKey, nick);
 
-        message = message.replace('´', '\'');
-        channel = channel.replace('´', '\'');
-        nick = nick.replace('´', '\'');
+        message = message.replace('Â´', '\'');
+        channel = channel.replace('Â´', '\'');
+        nick = nick.replace('Â´', '\'');
     }
 
     public boolean isPrivate() {

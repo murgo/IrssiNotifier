@@ -17,6 +17,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.cookie.BasicClientCookie2;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
@@ -25,9 +26,8 @@ import android.util.Log;
 public class Server {
     private static final String TAG = Server.class.getSimpleName();
 
-    // private static final String TAG =
-    // InitialSettingsActivity.class.getSimpleName();
-    
+    private boolean usingDevServer = true; // must be false when deploying
+
     public enum ServerTarget {
         SaveSettings,
         Test,
@@ -38,16 +38,20 @@ public class Server {
 
     private Map<ServerTarget, String> serverUrls = new HashMap<ServerTarget, String>();
 
-    private static final String SERVER_BASE_URL = "https://irssinotifier.appspot.com";
+    private String baseServerUrl = "https://irssinotifier.appspot.com";
 
     private DefaultHttpClient http_client = new DefaultHttpClient();
 
     private static final int maxRetryCount = 3;
 
     public Server() {
-        serverUrls.put(ServerTarget.SaveSettings, SERVER_BASE_URL + "/API/Settings");
-        serverUrls.put(ServerTarget.Message, SERVER_BASE_URL + "/API/Message");
-        serverUrls.put(ServerTarget.Authenticate, SERVER_BASE_URL + "/_ah/login?continue=https://localhost/&auth=");
+        if (usingDevServer) {
+            baseServerUrl = "http://10.0.2.2:8080";
+        }
+
+        serverUrls.put(ServerTarget.SaveSettings, baseServerUrl + "/API/Settings");
+        serverUrls.put(ServerTarget.Message, baseServerUrl + "/API/Message");
+        serverUrls.put(ServerTarget.Authenticate, baseServerUrl + "/_ah/login?continue=https://localhost/&auth=");
     }
 
     public boolean authenticate(String token) throws IOException {
@@ -55,6 +59,15 @@ public class Server {
     }
     
     private boolean authenticate(String token, int retryCount) throws IOException {
+        if (usingDevServer) {
+            BasicClientCookie2 cookie = new BasicClientCookie2("dev_appserver_login", "irssinotifier@gmail.com:False:118887942201532232498");
+            cookie.setDomain("10.0.2.2");
+            cookie.setPath("/");
+            http_client.getCookieStore().addCookie(cookie);
+
+            return true;
+        }
+
         if (retryCount >= maxRetryCount) {
             return false;
         }
@@ -92,7 +105,7 @@ public class Server {
             } else {
                 Log.v(TAG, "Redirected, OK. Status code: " + statusCode);
             }
-            
+
             return checkCookie();
         } finally {
             if (http_client != null)
