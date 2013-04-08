@@ -107,7 +107,9 @@ class GCM(object):
                     logging.warn("Token not registered, deleting")
                     self.dao.remove_gcm_token(token)
                 else:
-                    logging.error("Unrecoverable error: " + error)
+                    if error is "InternalServerError":
+                        logging.warn("InternalServerError in GCM: " + error)
+                    logging.error("Unrecoverable error in GCM: " + error)
 
     def replace_gcm_token_with_canonical(self, token, new_token_id):
         already_exists = new_token_id in [t.gcm_token for t in self.tokens]

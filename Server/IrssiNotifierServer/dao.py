@@ -1,5 +1,6 @@
 import time
 import uuid
+from google.appengine.api import memcache
 from datamodels import *
 from google.appengine.ext import ndb
 
@@ -25,7 +26,7 @@ def get_gcm_tokens_for_user_key(irssi_user_key, include_disabled=False):
     query = GcmToken.query(ancestor=irssi_user_key)
     if not include_disabled:
         query = query.filter(GcmToken.enabled == True)  # must be ==
-    tokensList = query.fetch(10)
+    tokensList = ndb.get_multi(query.fetch(keys_only=True))
     return tokensList
 
 
@@ -41,8 +42,16 @@ def update_gcm_token(token, new_token_id):
 # irssi user stuff
 
 def get_irssi_user_for_api_token(token):
+    api_token_key = "api-token" + str(token)
+    user = memcache.get(api_token_key)
+    if user is not None:
+        return user
+
     query = IrssiUser.query(IrssiUser.api_token == token)
-    return query.get()
+    user = query.get()
+
+    memcache.set(api_token_key, user)
+    return user
 
 
 def get_irssi_user_for_key_name(key_name):
@@ -62,6 +71,10 @@ def add_irssi_user(user, user_id=None):
     irssi_user.registration_date = int(time.time())
     irssi_user.notification_count = 0
     irssi_user.put()
+
+    api_token_key = "api-token" + str(irssi_user.api_token)
+    memcache.set(api_token_key, irssi_user)
+
     return irssi_user
 
 
@@ -74,6 +87,11 @@ def update_irssi_user(irssi_user, version):
     irssi_user.last_notification_time = int(time.time())
     irssi_user.irssi_script_version = version
     irssi_user.put()
+
+    api_token_key = "api-token" + str(irssi_user.api_token)
+    memcache.set(api_token_key, irssi_user)
+
+    return irssi_user
 
 
 # gcm auth key stuff

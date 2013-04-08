@@ -9,9 +9,9 @@ class AuthKey(ndb.Model):
 
 class IrssiUser(ndb.Model):
     user_name = ndb.StringProperty(indexed=False)
-    email = ndb.StringProperty()
-    user_id = ndb.StringProperty()
-    api_token = ndb.StringProperty()
+    email = ndb.StringProperty(indexed=True)
+    user_id = ndb.StringProperty(indexed=True)
+    api_token = ndb.StringProperty(indexed=True)
     registration_date = ndb.IntegerProperty(indexed=False)
     notification_count = ndb.IntegerProperty(indexed=False)
     last_notification_time = ndb.IntegerProperty(indexed=False)
@@ -19,17 +19,20 @@ class IrssiUser(ndb.Model):
 
 
 class GcmToken(ndb.Model):
-    gcm_token = ndb.StringProperty()
-    enabled = ndb.BooleanProperty()
-    name = ndb.StringProperty()
-    registration_date = ndb.IntegerProperty()
+    gcm_token = ndb.StringProperty(indexed=True)
+    enabled = ndb.BooleanProperty(indexed=True)
+    name = ndb.StringProperty(indexed=False)
+    registration_date = ndb.IntegerProperty(indexed=False)
 
 
 class Message(ndb.Model):
+    _use_memcache = False
+    _use_cache = False
+
     server_timestamp = ndb.IntegerProperty(indexed=True)
-    message = ndb.TextProperty()
-    channel = ndb.TextProperty()
-    nick = ndb.TextProperty()
+    message = ndb.TextProperty(indexed=False)
+    channel = ndb.TextProperty(indexed=False)
+    nick = ndb.TextProperty(indexed=False)
 
     def to_json(self):
         return json.dumps(
