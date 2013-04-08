@@ -1,0 +1,5 @@
+indexes:
+- kind: Message
+  ancestor: yes
+  properties:
+  - name: server_timestamp
