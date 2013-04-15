@@ -6,7 +6,7 @@ use POSIX;
 use Encode;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "15";
+$VERSION = "16";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -14,7 +14,7 @@ $VERSION = "15";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "http://irssinotifier.appspot.com",
-    changed     => "2013-04-02"
+    changed     => "2013-04-16"
 );
 
 my $lastMsg;
@@ -71,6 +71,12 @@ sub dcc {
 
 sub print_text {
     my ($dest, $text, $stripped) = @_;
+
+    if (!defined $lastMsg || index($text, $lastMsg) == -1)
+    {
+        # text doesn't contain the message, so printed text is about something else and notification doesn't need to be sent
+        return;
+    }
 
     if (should_send_notification($dest))
     {
