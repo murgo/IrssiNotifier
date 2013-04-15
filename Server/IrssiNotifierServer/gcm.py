@@ -109,7 +109,8 @@ class GCM(object):
                 else:
                     if error is "InternalServerError":
                         logging.warn("InternalServerError in GCM: " + error)
-                    logging.error("Unrecoverable error in GCM: " + error)
+                    else:
+                        logging.error("Unrecoverable error in GCM: " + error)
 
     def replace_gcm_token_with_canonical(self, token, new_token_id):
         already_exists = new_token_id in [t.gcm_token for t in self.tokens]
