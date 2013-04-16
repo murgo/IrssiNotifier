@@ -85,7 +85,11 @@ public class IrcNotificationManager {
 
             if (da == null)
                 da = new DataAccess(context);
-            da.handleMessage(msg);
+
+            if (!da.handleMessage(msg)) {
+                return;
+            }
+
             addUnread(msg);
 
             ValueList values = getValues(msg, mode);

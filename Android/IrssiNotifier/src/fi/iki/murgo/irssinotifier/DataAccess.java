@@ -70,11 +70,27 @@ public class DataAccess extends SQLiteOpenHelper {
         }
     }
 
-    public void handleMessage(IrcMessage message) {
+    /**
+     * @return true if message is accepted, false if message is duplicate
+     */
+    public boolean handleMessage(IrcMessage message) {
         synchronized (DataAccess.class) {
+            SQLiteDatabase database = null;
             try {
-                SQLiteDatabase database = getWritableDatabase();
-    
+                database = getWritableDatabase();
+                boolean isNew = true;
+
+                Cursor cur = database.query("IrcMessage", new String[] { "externalId", "message" },
+                        "externalId = ?", new String[] { message.getExternalId() }, null, null, null, "1");
+                if (!cur.isAfterLast()) {
+                    isNew = false;
+                    if (cur.getString(1).equals(message.getMessage())) {
+                        cur.close();
+                        return false;
+                    }
+                }
+                cur.close();
+
                 String channelName = message.getLogicalChannel();
                 List<Channel> channels = getChannels(database);
     
@@ -104,26 +120,23 @@ public class DataAccess extends SQLiteOpenHelper {
                 messageValues.put("nick", message.getNick());
                 messageValues.put("serverTimestamp", message.getServerTimestamp().getTime());
                 messageValues.put("externalId", message.getExternalId());
-    
-                Cursor cur = database.query("IrcMessage", new String[] {
-                        "externalId", "message"
-                }, "externalId = ?", new String[] {
-                    message.getExternalId()
-                }, null, null, null, "1");
-                if (cur.isAfterLast()) {
+
+                if (isNew) {
                     messageValues.put("shown", 0);
                     database.insert("IrcMessage", null, messageValues);
                 } else {
-                    // already in database, update if necessary
                     database.update("IrcMessage", messageValues, "externalId = ?", new String[] {
-                        message.getExternalId()
+                            message.getExternalId()
                     });
                 }
-                cur.close();
-                database.close();
             } catch (Exception e) {
                 e.printStackTrace();
+                return false;
+            } finally {
+                if (database != null)
+                    database.close();
             }
+            return true;
         }
     }
 
