@@ -273,7 +273,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
                     pager.setCurrentItem(0);
                 } else {
                     for (int i = 0; i < channels.size(); i++) {
-                        if (channels.get(i).getName().equals(channelToView)) {
+                        if (channels.get(i).getName().equalsIgnoreCase(channelToView)) {
                             pager.setCurrentItem(i + 1);
                             break;
                         }
@@ -349,7 +349,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
             }
 
             for (Channel ch : channels) {
-                if (ch.getName().equals(channelToView)) {
+                if (ch.getName().equalsIgnoreCase(channelToView)) {
                     channelToClear = ch;
                     break;
                 }

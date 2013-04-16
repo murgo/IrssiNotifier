@@ -1,9 +1,7 @@
 
 package fi.iki.murgo.irssinotifier;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -14,7 +12,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DataAccess extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "IrssiNotifier";
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
 
     public DataAccess(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -24,7 +22,7 @@ public class DataAccess extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         synchronized (DataAccess.class) {
             try {
-                db.execSQL("CREATE TABLE Channel (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, orderIndex INTEGER)");
+                db.execSQL("CREATE TABLE Channel (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT COLLATE nocase, orderIndex INTEGER)");
                 db.execSQL("CREATE TABLE IrcMessage (id INTEGER PRIMARY KEY AUTOINCREMENT, channelId INTEGER, message TEXT, nick TEXT, serverTimestamp INTEGER, externalId TEXT, shown INTEGER, clearedFromFeed INTEGER, FOREIGN KEY(channelId) REFERENCES Channel(Id))");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -42,6 +40,32 @@ public class DataAccess extends SQLiteOpenHelper {
                 onCreate(db);
             } else if (oldVersion < 4) {
                 db.execSQL("ALTER TABLE IrcMessage ADD COLUMN clearedFromFeed INTEGER");
+            } else if (oldVersion < 5) {
+                List<Channel> channels = getChannels(db);
+                db.execSQL("ALTER TABLE Channel RENAME TO TempChannel");
+                db.execSQL("CREATE TABLE Channel (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT COLLATE nocase, orderIndex INTEGER)");
+                HashMap<String, Channel> canonicalChannels = new HashMap<String, Channel>();
+                for (Channel ch : channels) {
+                    String canonicalKey = ch.getName().toLowerCase();
+                    boolean duplicate = canonicalChannels.containsKey(canonicalKey);
+                    if (duplicate) {
+                        long canonicalChannelId = canonicalChannels.get(canonicalKey).getId();
+                        ContentValues values = new ContentValues();
+                        values.put("channelId", canonicalChannelId);
+                        db.update("IrcMessage", values, "channelId = ?", new String[] {
+                                Long.toString(ch.getId())
+                        });
+                        clearChannel(ch, db);
+                    } else {
+                        canonicalChannels.put(canonicalKey, ch);
+                        ContentValues values = new ContentValues();
+                        values.put("id", ch.getId());
+                        values.put("name", ch.getName());
+                        values.put("orderIndex", ch.getOrder());
+                        db.insert("Channel", null, values);
+                    }
+                }
+                db.execSQL("DROP TABLE IF EXISTS TempChannel");
             }
         }
     }
@@ -58,7 +82,7 @@ public class DataAccess extends SQLiteOpenHelper {
                 Channel found = null;
                 for (Channel ch : channels) {
                     biggestOrder = Math.max(biggestOrder, ch.getOrder() + 1);
-                    if (ch.getName().equals(channelName)) {
+                    if (ch.getName().equalsIgnoreCase(channelName)) {
                         found = ch;
                         break;
                     }
@@ -243,14 +267,16 @@ public class DataAccess extends SQLiteOpenHelper {
     public void removeChannel(Channel channel) {
         synchronized (DataAccess.class) {
             SQLiteDatabase database = getWritableDatabase();
-    
-            clearChannel(channel, database);
-            database.delete("Channel", "id = ?", new String[] {
-                Long.toString(channel.getId())
-            });
-    
+            removeChannel(database, channel);
             database.close();
         }
+    }
+
+    private void removeChannel(SQLiteDatabase database, Channel channel) {
+        clearChannel(channel, database);
+        database.delete("Channel", "id = ?", new String[] {
+                Long.toString(channel.getId())
+        });
     }
 
     public void updateChannel(Channel channel) {

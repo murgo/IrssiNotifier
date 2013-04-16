@@ -46,14 +46,14 @@ public class IrcNotificationManager {
     }
 
     public int getUnreadCountForChannel(String channel) {
-        if (!unread.containsKey(channel))
+        if (!unread.containsKey(channel.toLowerCase()))
             return 0;
 
-        return unread.get(channel).size();
+        return unread.get(channel.toLowerCase()).size();
     }
 
     private void addUnread(IrcMessage msg) {
-        String key = msg.getLogicalChannel();
+        String key = msg.getLogicalChannel().toLowerCase();
 
         List<IrcMessage> msgs;
         if (unread.containsKey(key))
@@ -252,7 +252,7 @@ public class IrcNotificationManager {
 
             case PerChannel:
                 int channelUnreadCount = getUnreadCountForChannel(msg.getLogicalChannel());
-                id = msg.getLogicalChannel().hashCode();
+                id = msg.getLogicalChannel().toLowerCase().hashCode();
                 count = channelUnreadCount;
                 if (msg.isPrivate()) {
                     if (channelUnreadCount <= 1) {
@@ -272,7 +272,7 @@ public class IrcNotificationManager {
                     }
                 }
                 
-                List<IrcMessage> messages = unread.get(msg.getLogicalChannel());
+                List<IrcMessage> messages = unread.get(msg.getLogicalChannel().toLowerCase());
                 for (IrcMessage message : messages) {
                     messageLines.add("(" + message.getNick() + ") " + message.getMessage());
                 }
@@ -301,7 +301,7 @@ public class IrcNotificationManager {
         } else if (mode == NotificationMode.PerChannel) {
             String channel = intent.getStringExtra("channel");
             if (channel != null) {
-                List<IrcMessage> msgs = unread.get(channel);
+                List<IrcMessage> msgs = unread.get(channel.toLowerCase());
                 if (msgs != null) {
                     msgs.clear();
                 }
