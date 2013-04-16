@@ -17,8 +17,7 @@ public class UserHelper {
     public Account[] getAccounts(Context context)
     {
         AccountManager manager = AccountManager.get(context);
-        Account[] accounts = manager.getAccountsByType("com.google");
-        return accounts;
+        return manager.getAccountsByType("com.google");
     }
 
     public String getAuthToken(Activity activity, Account account)

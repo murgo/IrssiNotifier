@@ -18,8 +18,7 @@ public class SettingsSendingTask extends BackgroundAsyncTask<Void, Void, ServerR
         Preferences prefs = new Preferences(activity);
 
         try {
-            ServerResponse response = prefs.sendSettings();
-            return response;
+            return prefs.sendSettings();
         } catch (Exception e) {
             Log.e(TAG, "Unable to send settings: " + e.toString());
             e.printStackTrace();

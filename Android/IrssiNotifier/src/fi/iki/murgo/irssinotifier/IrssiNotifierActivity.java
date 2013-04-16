@@ -27,13 +27,12 @@ public class IrssiNotifierActivity extends SherlockActivity {
     private Preferences preferences;
     // private final String googleAnalyticsCode = "UA-29385499-1";
     private MessagePagerAdapter adapter;
-    private ViewPager pager;
     private boolean progressBarVisibility;
     private static IrssiNotifierActivity instance;
     private static boolean needsRefresh;
     private String channelToView;
     private List<Channel> channels;
-    private Object channelsLock = new Object();
+    private final Object channelsLock = new Object();
     private static final String FEED = "------------------------FEED";
 
     @Override
@@ -202,7 +201,8 @@ public class IrssiNotifierActivity extends SherlockActivity {
                                         }
                                     }
                                 });
-                        task.execute(param.getMessages().toArray(new IrcMessage[0]));
+                        List<IrcMessage> messages = param.getMessages();
+                        task.execute(messages.toArray(new IrcMessage[messages.size()]));
                     }
                 });
 
@@ -232,7 +232,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
             setIndeterminateProgressBarVisibility(!progressBarVisibility); // hack
             setIndeterminateProgressBarVisibility(!progressBarVisibility);
 
-            pager = (ViewPager) findViewById(R.id.pager);
+            ViewPager pager = (ViewPager) findViewById(R.id.pager);
 
             if (adapter == null) {
                 adapter = new MessagePagerAdapter(getLayoutInflater());

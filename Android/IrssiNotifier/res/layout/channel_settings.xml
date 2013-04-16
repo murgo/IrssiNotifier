@@ -12,9 +12,6 @@
         android:paddingBottom="0dp"
         android:paddingLeft="10dp"
         android:paddingTop="0dp"
-        dslv:collapsed_height="5dp"
-        dslv:drag_scroll_start="0.33"
-        dslv:float_background_color="#000000"
-        dslv:max_drag_scroll_speed="0.5" />
+        dslv:drag_start_mode="onMove" />
 
 </RelativeLayout>

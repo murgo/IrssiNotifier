@@ -200,8 +200,8 @@ public class DataAccess extends SQLiteOpenHelper {
                 message.setServerTimestamp(cursor.getLong(colServerTimestamp));
                 message.setExternalId(cursor.getString(colExternalId));
                 message.setChannel(channel.getName());
-                message.setShown(cursor.getInt(colShown) == 0 ? false : true);
-                message.setClearedFromFeed(cursor.getInt(colClearedFromFeed) == 0 ? false : true);
+                message.setShown(cursor.getInt(colShown) != 0);
+                message.setClearedFromFeed(cursor.getInt(colClearedFromFeed) != 0);
                 message.setId(cursor.getLong(colId));
     
                 list.add(message);

@@ -26,7 +26,7 @@ import android.util.Log;
 public class Server {
     private static final String TAG = Server.class.getSimpleName();
 
-    private boolean usingDevServer = true; // must be false when deploying
+    private boolean usingDevServer = false; // must be false when deploying
 
     public enum ServerTarget {
         SaveSettings,
@@ -38,13 +38,13 @@ public class Server {
 
     private Map<ServerTarget, String> serverUrls = new HashMap<ServerTarget, String>();
 
-    private String baseServerUrl = "https://irssinotifier.appspot.com";
-
     private DefaultHttpClient http_client = new DefaultHttpClient();
 
     private static final int maxRetryCount = 3;
 
     public Server() {
+        String baseServerUrl = "https://irssinotifier.appspot.com";
+
         if (usingDevServer) {
             baseServerUrl = "http://10.0.2.2:8080";
         }

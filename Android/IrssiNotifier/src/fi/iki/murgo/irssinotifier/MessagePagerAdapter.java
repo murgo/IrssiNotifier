@@ -8,12 +8,12 @@ import java.util.List;
 
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -21,7 +21,6 @@ import android.widget.TextView;
 public class MessagePagerAdapter extends PagerAdapter {
     private List<Channel> channels;
     private final LayoutInflater layoutInflater;
-    private ChannelMode channelMode;
 
     public MessagePagerAdapter(LayoutInflater layoutInflater) {
         super();
@@ -36,38 +35,22 @@ public class MessagePagerAdapter extends PagerAdapter {
 
         if (channels.size() == 0)
             return 1;
-        if (channelMode == ChannelMode.Feed)
-            return 1;
-        if (channelMode == ChannelMode.Channels)
-            return channels.size();
-        return channels.size() + 1; // if (channelMode == ChannelMode.Both)
+        return channels.size() + 1;
     }
 
-    /**
-     * Create the page for the given position. The adapter is responsible for
-     * adding the view to the container given here, although it only must ensure
-     * this is done by the time it returns from {@link #finishUpdate()}.
-     * 
-     * @param container The containing View in which the page will be shown.
-     * @param position The page position to be instantiated.
-     * @return Returns an Object representing the new page. This does not need
-     *         to be a View, but can be some other container of the page.
-     */
     @Override
-    public Object instantiateItem(View collection, int position) {
+    public Object instantiateItem(ViewGroup collection, int position) {
         View view;
 
         if (channels.size() == 0) {
             view = createEmptyChannel();
-        } else if (channelMode == ChannelMode.Channels) {
-            view = createChannel(position);
         } else if (position == 0) {
             view = createFeed();
         } else {
             view = createChannel(position - 1);
         }
 
-        ((ViewPager) collection).addView(view);
+        collection.addView(view);
         return view;
     }
     
@@ -129,14 +112,6 @@ public class MessagePagerAdapter extends PagerAdapter {
                 lastChannel = message.getLogicalChannel();
                 tv.setText(lastChannel);
                 
-                /*
-                if (lastChannel.startsWith("#")) {
-                    // some channels might not start with #, but they're really rare
-                    tv.setTextColor(ChannelColor);
-                } else {
-                    tv.setTextColor(PrivateColor);
-                }
-                */
                 feedChannel.addView(tv);
             }
 
@@ -203,42 +178,14 @@ public class MessagePagerAdapter extends PagerAdapter {
         return channelView;
     }
 
-    /**
-     * Remove a page for the given position. The adapter is responsible for
-     * removing the view from its container, although it only must ensure this
-     * is done by the time it returns from {@link #finishUpdate()}.
-     * 
-     * @param container The containing View from which the page will be removed.
-     * @param position The page position to be removed.
-     * @param object The same object that was returned by
-     *            {@link #instantiateItem(View, int)}.
-     */
     @Override
-    public void destroyItem(View collection, int position, Object view) {
-        ((ViewPager) collection).removeView((LinearLayout) view);
+    public void destroyItem(ViewGroup collection, int position, Object view) {
+        collection.removeView((LinearLayout) view);
     }
 
     @Override
     public boolean isViewFromObject(View view, Object object) {
-        return view == ((LinearLayout) object);
-    }
-
-    /**
-     * Called when the a change in the shown pages has been completed. At this
-     * point you must ensure that all of the pages have actually been added or
-     * removed from the container as appropriate.
-     * 
-     * @param container The containing View which is displaying this adapter's
-     *            page views.
-     */
-    @Override
-    public void finishUpdate(View arg0) {
-
-    }
-
-    @Override
-    public void restoreState(Parcelable arg0, ClassLoader arg1) {
-
+        return view == object;
     }
 
     @Override
@@ -254,12 +201,9 @@ public class MessagePagerAdapter extends PagerAdapter {
     public CharSequence getPageTitle(int position) {
         if (channels.size() == 0)
             return "";
-        if (channelMode == ChannelMode.Channels)
-            return channels.get(position).getName();
         if (position == 0)
             return "Feed";
-        return channels.get(position - 1).getName(); // if (channelMode ==
-                                                     // ChannelMode.Both)
+        return channels.get(position - 1).getName();
     }
 
 }

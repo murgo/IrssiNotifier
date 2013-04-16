@@ -52,5 +52,5 @@ public abstract class BackgroundAsyncTask<A, B, C> extends AsyncTask<A, B, C> {
 
     public void setDialog(ProgressDialog dialog) {
         this.dialog = dialog;
-    };
+    }
 }

@@ -55,7 +55,7 @@ public class InitialSettingsActivity extends Activity {
                 generateToken((Account) state);
                 break;
             case 1:
-                registerToGcm((String) state);
+                registerToGcm();
                 break;
             case 2:
                 sendSettings();
@@ -110,16 +110,16 @@ public class InitialSettingsActivity extends Activity {
                 "Generating authentication token...");
 
         final Context ctx = this;
-        task.setCallback(new Callback<StringOrException>() {
-            public void doStuff(StringOrException result) {
-                if (result.getException() != null) {
+        task.setCallback(new Callback<Throwable>() {
+            public void doStuff(Throwable result) {
+                if (result != null) {
                     Callback<Void> callback = new Callback<Void>() {
                         public void doStuff(Void param) {
                             whatNext(-1, null);
                         }
                     };
                     
-                    if (result.getException() instanceof IOException) {
+                    if (result instanceof IOException) {
                         MessageBox.Show(ctx, "Network error", "Ensure your internet connection works and try again.", callback); // TODO i18n
                     } else {
                         MessageBox.Show(ctx, null, "Unable to generate authentication token for account! Please try again later!", callback); // TODO i18n
@@ -128,14 +128,14 @@ public class InitialSettingsActivity extends Activity {
                     return;
                 }
 
-                whatNext(1, result.getString());
+                whatNext(1, null);
             }
         });
 
         task.execute(account);
     }
 
-    private void registerToGcm(String token) {
+    private void registerToGcm() {
         final GCMRegistrationTask task = new GCMRegistrationTask(this, "", "Registering to GCM..."); // TODO i18n
 
         final Context ctx = this;

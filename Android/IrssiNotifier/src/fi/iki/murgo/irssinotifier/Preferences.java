@@ -19,9 +19,6 @@ import android.provider.Settings;
  * Default settings are actually stored in preference_screen.xml :(
  */
 public class Preferences {
-    public static final String PREFERENCES_NAME = "IrssiNotifierPreferences";
-    public static final int PREFERENCES_MODE = Context.MODE_PRIVATE;
-
     private static final String AUTH_TOKEN_KEY = "AuthToken";
     private static final String GCM_REGISTRATION_ID_KEY = "GcmRegistrationId";
     private static final String GCM_REGISTRATION_ID_VERSION_KEY = "GcmRegistrationIdVersion";
@@ -48,8 +45,6 @@ public class Preferences {
     private static int versionCode;
 
     public Preferences(Context context) {
-        // sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME,
-        // PREFERENCES_MODE);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
@@ -114,12 +109,6 @@ public class Preferences {
         return response;
     }
 
-    public boolean setEncryptionPassword(String encryptionPassword) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(ENCRYPTION_PASSWORD, encryptionPassword);
-        return editor.commit();
-    }
-
     public String getEncryptionPassword() {
         return sharedPreferences.getString(ENCRYPTION_PASSWORD, "password");
     }
@@ -172,12 +161,6 @@ public class Preferences {
         return sharedPreferences.getBoolean(FEED_VIEW_DEFAULT, true);
     }
 
-    public boolean setFeedViewDefault(boolean b) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(FEED_VIEW_DEFAULT, b);
-        return editor.commit();
-    }
-
     public boolean setIcbHost(String hostName, String hostUri) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(ICB_HOST_NAME, hostName);
@@ -185,12 +168,6 @@ public class Preferences {
         return editor.commit();
     }
     
-    public boolean setIcbEnabled(boolean b) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(ICB_ENABLED, b);
-        return editor.commit();
-    }
-
     public String getIcbHostName() {
         return sharedPreferences.getString(ICB_HOST_NAME, null);
     }

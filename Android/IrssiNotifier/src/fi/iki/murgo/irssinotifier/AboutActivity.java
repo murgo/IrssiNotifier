@@ -23,18 +23,19 @@ public class AboutActivity extends Activity {
 
         List<FancyTextView> ftvs = new ArrayList<FancyTextView>();
 
-        PackageInfo pi = null;
+        PackageInfo pi;
         try {
             pi = getPackageManager().getPackageInfo(getPackageName(), 0);
         } catch (NameNotFoundException e) {
             e.printStackTrace();
+            return;
         }
 
         ftvs.add(new FancyTextView("About IrssiNotifier, version " + pi.versionName + " ("
                 + pi.versionCode + ")", this));
         ftvs.get(0).setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
 
-        ftvs.add(new FancyTextView("Made by Lauri H�rsil�, murgo@iki.fi.", this));
+        ftvs.add(new FancyTextView("Made by Lauri Härsilä, murgo@iki.fi.", this));
         ftvs.add(new FancyTextView(
                 "For instructions and help, please visit https://irssinotifier.appspot.com or join #IrssiNotifier @ IRCnet.",
                 this));

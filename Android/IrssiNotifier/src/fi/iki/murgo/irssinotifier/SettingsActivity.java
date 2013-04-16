@@ -14,7 +14,6 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.util.Log;
 
-@SuppressWarnings("deprecation") // fuck the police
 public class SettingsActivity extends PreferenceActivity {
     private static final String TAG = SettingsActivity.class.getSimpleName();
     protected static final int ICB_HOST_REQUEST_CODE = 666;
@@ -27,7 +26,7 @@ public class SettingsActivity extends PreferenceActivity {
         addPreferencesFromResource(R.xml.preference_screen);
 
         final Context ctx = this;
-        Preference aboutPref = (Preference) findPreference("about");
+        Preference aboutPref = findPreference("about");
         aboutPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 Intent i = new Intent(ctx, AboutActivity.class);
@@ -38,7 +37,7 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
 
-        Preference channelsPref = (Preference) findPreference("channels");
+        Preference channelsPref = findPreference("channels");
         channelsPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 Intent i = new Intent(ctx, ChannelSettingsActivity.class);
@@ -65,7 +64,7 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
 
-        Preference initialSettingsPref = (Preference) findPreference("redoInitialSettings");
+        Preference initialSettingsPref = findPreference("redoInitialSettings");
         initialSettingsPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 Preferences prefs = new Preferences(ctx);
@@ -78,7 +77,7 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
         
-        Preference disableThemePref = (Preference) findPreference("ThemeDisabled");
+        Preference disableThemePref = findPreference("ThemeDisabled");
         disableThemePref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 IrssiNotifierActivity.refreshIsNeeded();
@@ -107,7 +106,7 @@ public class SettingsActivity extends PreferenceActivity {
                 }
             });
             
-            Preference icbHostPref = (Preference) findPreference("IcbHost");
+            Preference icbHostPref = findPreference("IcbHost");
             
             Preferences prefs = new Preferences(this);
             String hostName = prefs.getIcbHostName();

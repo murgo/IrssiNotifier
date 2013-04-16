@@ -7,7 +7,7 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.util.Log;
 
-public class TokenGenerationTask extends BackgroundAsyncTask<Account, Void, StringOrException> {
+public class TokenGenerationTask extends BackgroundAsyncTask<Account, Void, Throwable> {
     private static final String TAG = TokenGenerationTask.class.getSimpleName();
 
     public TokenGenerationTask(Activity activity, String titleText,
@@ -16,22 +16,20 @@ public class TokenGenerationTask extends BackgroundAsyncTask<Account, Void, Stri
     }
 
     @Override
-    protected StringOrException doInBackground(Account... params) {
-        StringOrException hack = new StringOrException();
+    protected Throwable doInBackground(Account... params) {
         try {
             UserHelper uf = new UserHelper();
             String token = uf.getAuthToken(activity, params[0]);
             Preferences prefs = new Preferences(activity);
             prefs.setAuthToken(token);
-            hack.setString(token);
         } catch (IOException e) {
             // Network error
-            hack.setException(e);
+            return e;
         } catch (Exception e) {
             e.printStackTrace();
             Log.e(TAG, "Unable to generate token: " + e.toString());
-            hack.setException(e);
+            return e;
         }
-        return hack;
+        return null;
     }
 }
