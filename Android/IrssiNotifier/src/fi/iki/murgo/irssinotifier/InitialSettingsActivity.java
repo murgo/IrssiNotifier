@@ -1,8 +1,6 @@
 
 package fi.iki.murgo.irssinotifier;
 
-import java.io.IOException;
-
 import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
@@ -14,10 +12,19 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import org.apache.http.auth.AuthenticationException;
+
+import java.io.IOException;
 
 public class InitialSettingsActivity extends Activity {
 
     private static final String TAG = InitialSettingsActivity.class.getSimpleName();
+
+    private Callback<Void> errorCallback = new Callback<Void>() {
+        public void doStuff(Void param) {
+            whatNext(-1);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,31 +43,32 @@ public class InitialSettingsActivity extends Activity {
         listView.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 Account account = accounts[arg2];
-                whatNext(0, account);
+                Preferences prefs = new Preferences(InitialSettingsActivity.this);
+                prefs.setAccountName(account.name);
+                whatNext(0);
             }
         });
     }
 
     // stupid state machine
-    private void whatNext(int i, Object state) {
+    private void whatNext(int i) {
         Log.d(TAG, "Changing state: " + i);
         switch (i) {
             default:
             case -1:
                 Preferences prefs = new Preferences(this);
-                prefs.clear();
+                prefs.setAccountName(null);
+                prefs.setAuthToken(null);
+                prefs.setGcmRegistrationId(null);
                 finish();
                 break;
             case 0:
-                generateToken((Account) state);
-                break;
-            case 1:
                 registerToGcm();
                 break;
-            case 2:
+            case 1:
                 sendSettings();
                 break;
-            case 3:
+            case 2:
                 startMainApp();
                 break;
         }
@@ -88,51 +96,30 @@ public class InitialSettingsActivity extends Activity {
         final Context ctx = this;
         task.setCallback(new Callback<ServerResponse>() {
             public void doStuff(ServerResponse result) {
-                if (result == null || !result.wasSuccesful()) {
-                    MessageBox.Show(ctx, null, "Unable to send settings to the server! Please try again later!",
-                        new Callback<Void>() { // TODO i18n
-                            public void doStuff(Void param) {
-                                whatNext(-1, null);
-                            }
-                        });
+                if (result.getException() != null) {
+                    if (result.getException() instanceof IOException) {
+                        MessageBox.Show(ctx, "Network error", "Ensure your internet connection works and try again.", errorCallback);
+                    } else if (result.getException() instanceof AuthenticationException) {
+                        MessageBox.Show(ctx, "Authentication error", "Unable to authenticate to server.", errorCallback);
+                    } else if (result.getException() instanceof ServerException) {
+                        MessageBox.Show(ctx, "Server error", "Mystical server error, check if updates are available", errorCallback);
+                    } else {
+                        MessageBox.Show(ctx, null, "Unable to send settings to the server! Please try again later!", errorCallback);
+                    }
 
                     return;
                 }
-                whatNext(3, null);
+
+                if (!result.wasSuccesful()) {
+                    MessageBox.Show(ctx, null, "Unable to send settings to the server! Please try again later!", errorCallback);
+
+                    return;
+                }
+                whatNext(2);
             }
         });
 
         task.execute();
-    }
-
-    private void generateToken(Account account) {
-        TokenGenerationTask task = new TokenGenerationTask(this, "",
-                "Generating authentication token...");
-
-        final Context ctx = this;
-        task.setCallback(new Callback<Throwable>() {
-            public void doStuff(Throwable result) {
-                if (result != null) {
-                    Callback<Void> callback = new Callback<Void>() {
-                        public void doStuff(Void param) {
-                            whatNext(-1, null);
-                        }
-                    };
-                    
-                    if (result instanceof IOException) {
-                        MessageBox.Show(ctx, "Network error", "Ensure your internet connection works and try again.", callback); // TODO i18n
-                    } else {
-                        MessageBox.Show(ctx, null, "Unable to generate authentication token for account! Please try again later!", callback); // TODO i18n
-                    }
-                    
-                    return;
-                }
-
-                whatNext(1, null);
-            }
-        });
-
-        task.execute(account);
     }
 
     private void registerToGcm() {
@@ -148,14 +135,14 @@ public class InitialSettingsActivity extends Activity {
                     MessageBox.Show(ctx, null, "Unable to register to GCM! Please try again later!", // TODO i18n
                         new Callback<Void>() {
                             public void doStuff(Void param) {
-                                whatNext(-1, null);
+                                whatNext(-1);
                             }
                         });
 
                     return;
                 }
 
-                whatNext(2, null);
+                whatNext(1);
             }
         });
 

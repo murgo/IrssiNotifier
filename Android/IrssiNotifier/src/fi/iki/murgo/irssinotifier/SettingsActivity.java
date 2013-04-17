@@ -69,6 +69,7 @@ public class SettingsActivity extends PreferenceActivity {
             public boolean onPreferenceClick(Preference preference) {
                 Preferences prefs = new Preferences(ctx);
                 prefs.setAuthToken(null);
+                prefs.setAccountName(null);
                 prefs.setGcmRegistrationId(null);
 
                 IrssiNotifierActivity.refreshIsNeeded();

@@ -14,7 +14,6 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.Window;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -60,7 +59,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
         Preferences.setVersion(versionCode);
 
         // do initial settings
-        if (preferences.getAuthToken() == null || preferences.getGcmRegistrationId() == null || preferences.getGcmRegistrationIdVersion() != versionCode) {
+        if (preferences.getAccountName() == null || preferences.getGcmRegistrationId() == null || preferences.getGcmRegistrationIdVersion() != versionCode) {
             Log.d(TAG, "Asking for initial settings");
             Intent i = new Intent(this, InitialSettingsActivity.class);
             startActivity(i);
@@ -150,8 +149,6 @@ public class IrssiNotifierActivity extends SherlockActivity {
             sendSettings();
         }
 
-        final Activity ctx = this;
-
         final long now = new Date().getTime();
 
         final Callback<List<Channel>> dataAccessCallback = new Callback<List<Channel>>() {
@@ -164,49 +161,28 @@ public class IrssiNotifierActivity extends SherlockActivity {
             }
         };
 
-        final DataFetcherTask dataFetcherTask = new DataFetcherTask(preferences.getAuthToken(),
-                preferences.getEncryptionPassword(), preferences.getLastFetchTime(),
+        final DataFetcherTask dataFetcherTask = new DataFetcherTask(this, preferences.getEncryptionPassword(), preferences.getLastFetchTime(),
                 new Callback<DataFetchResult>() {
                     // TODO: Move this into its own activity, so orientation
                     // changes work correctly
                     public void doStuff(DataFetchResult param) {
                         backgroundOperationEnded();
                         if (param.getException() != null) {
-                            if (param.getException() instanceof AuthenticationException) {
-                                MessageBox.Show(ctx, "Authentication error", "Unable to authenticate to server, please re-register your application.", 
-                                    new Callback<Void>() {
-                                        public void doStuff(Void param) {
-                                            preferences.setAuthToken(null);
-                                            restart();
-                                        }
-                                    });
-                            } else if (param.getException() instanceof ServerException) {
-                                MessageBox.Show(ctx, "Server error", "Mystical server error, check if updates are available", null);
-                            } else if (param.getException() instanceof CryptoException) {
-                                MessageBox.Show(ctx, "Decryption error", "Unable to decrypt message, is your decryption password correct?", null);
-                                preferences.setLastFetchTime(now);
-                            } else if (param.getException() instanceof IOException) {
-                                MessageBox.Show(ctx, "Network error", "Is your internet connection available?", null);
-                                preferences.setLastFetchTime(now);
-                            } else {
-                                MessageBox.Show(ctx, "Error", "What happen", null);
-                            }
+                            handleDataFetcherException(param.getException());
                             return;
                         }
 
                         preferences.setLastFetchTime(now);
 
-                        if (param.getResponse().getServerMessage() != null
-                                && param.getResponse().getServerMessage().length() > 0) {
-                            MessageBox.Show(ctx, null, param.getResponse().getServerMessage(),
-                                    null, true);
+                        if (param.getResponse().getServerMessage() != null && param.getResponse().getServerMessage().length() > 0) {
+                            MessageBox.Show(IrssiNotifierActivity.this, null, param.getResponse().getServerMessage(), null, true);
                         }
 
                         if (param.getMessages().isEmpty()) {
                             return;
                         }
 
-                        DataAccessTask task = new DataAccessTask(ctx, dataAccessCallback);
+                        DataAccessTask task = new DataAccessTask(IrssiNotifierActivity.this, dataAccessCallback);
                         List<IrcMessage> messages = param.getMessages();
                         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, messages.toArray(new IrcMessage[messages.size()]));
                         backgroundOperationStarted();
@@ -223,7 +199,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
                     backgroundOperationStarted();
                 }
 
-                DataAccessTask datask = new DataAccessTask(ctx, dataAccessCallback);
+                DataAccessTask datask = new DataAccessTask(IrssiNotifierActivity.this, dataAccessCallback);
                 datask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 backgroundOperationStarted();
             }
@@ -313,16 +289,14 @@ public class IrssiNotifierActivity extends SherlockActivity {
         task.setCallback(new Callback<ServerResponse>() {
             public void doStuff(ServerResponse result) {
                 backgroundOperationEnded();
-                if (result != null && result.wasSuccesful()) {
+                if (result.getException() != null) {
+                    handleDataFetcherException(result.getException());
                     return;
                 }
 
-                MessageBox.Show(ctx, null,"Unable to register to GCM! Please try again later!",
-                    new Callback<Void>() {
-                        public void doStuff(Void param) {
-                            finish();
-                        }
-                    });
+                if (!result.wasSuccesful()) {
+                    MessageBox.Show(ctx, null, "Unable to send settings to the server! Please try again later!", null);
+                }
             }
         });
 
@@ -390,6 +364,25 @@ public class IrssiNotifierActivity extends SherlockActivity {
             channelToView = msg.getLogicalChannel();
         }
         startMainApp(false);
+    }
+
+    private void handleDataFetcherException(Exception exception) {
+        if (exception instanceof AuthenticationException) {
+            MessageBox.Show(this, "Authentication error", "Unable to authenticate to server, please re-register your application.",
+                    new Callback<Void>() {
+                        public void doStuff(Void param) {
+                            restart();
+                        }
+                    });
+        } else if (exception instanceof ServerException) {
+            MessageBox.Show(this, "Server error", "Mystical server error, check if updates are available", null);
+        } else if (exception instanceof CryptoException) {
+            MessageBox.Show(this, "Decryption error", "Unable to decrypt message, is your decryption password correct?", null);
+        } else if (exception instanceof IOException) {
+            MessageBox.Show(this, "Network error", "Is your internet connection available?", null);
+        } else {
+            MessageBox.Show(this, "Error", "What happen", null);
+        }
     }
 
     /*

@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 
-import org.apache.http.auth.AuthenticationException;
-
 import fi.iki.murgo.irssinotifier.Server.ServerTarget;
 
 import android.content.Context;
@@ -40,6 +38,7 @@ public class Preferences {
     private static final String ICB_HOST_NAME = "IcbHostName";
     private static final String ICB_ENABLED = "IcbEnabled";
     private static final String THEME_DISABLED = "ThemeDisabled";
+    private static final String ACCOUNT_NAME = "AccountName";
 
     private SharedPreferences sharedPreferences;
     private static int versionCode;
@@ -80,27 +79,16 @@ public class Preferences {
         return editor.commit();
     }
 
-    public void clear() {
-        sharedPreferences.edit().clear().commit();
-    }
-
     public boolean settingsNeedSending() {
         return !sharedPreferences.getBoolean(SETTINGS_SENT_KEY, false);
     }
 
-    public ServerResponse sendSettings() throws IOException, AuthenticationException {
+    public ServerResponse sendSettings(Server server) throws IOException {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("RegistrationId", getGcmRegistrationId());
         map.put(DEVICE_NAME_KEY, android.os.Build.MODEL);
         map.put(ENABLED_KEY, "1");
         MessageToServer msg = new MessageToServer(map);
-
-        Server server = new Server();
-        boolean authenticated = server.authenticate(getAuthToken());
-        if (!authenticated) {
-            setAuthToken(null);
-            throw new AuthenticationException();
-        }
 
         ServerResponse response = server.send(msg, ServerTarget.SaveSettings);
         if (response.wasSuccesful()) {
@@ -182,5 +170,15 @@ public class Preferences {
 
     public boolean isThemeDisabled() {
         return sharedPreferences.getBoolean(THEME_DISABLED, false);
+    }
+
+    public boolean setAccountName(String name) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(ACCOUNT_NAME, name);
+        return editor.commit();
+    }
+
+    public String getAccountName() {
+        return sharedPreferences.getString(ACCOUNT_NAME, null);
     }
 }

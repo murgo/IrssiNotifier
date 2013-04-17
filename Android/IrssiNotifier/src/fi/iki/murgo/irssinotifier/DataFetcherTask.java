@@ -3,6 +3,7 @@ package fi.iki.murgo.irssinotifier;
 
 import java.util.HashMap;
 
+import android.app.Activity;
 import org.apache.http.auth.AuthenticationException;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -14,14 +15,13 @@ import android.util.Log;
 public class DataFetcherTask extends AsyncTask<Void, Void, DataFetchResult> {
     private static final String TAG = DataFetcherTask.class.getSimpleName();
 
-    private final String authToken;
     private final Callback<DataFetchResult> callback;
     private final String encryptionKey;
     private final long lastFetchTime;
+    private final Activity activity;
 
-    public DataFetcherTask(String authToken, String encryptionKey, long lastFetchTime,
-            Callback<DataFetchResult> callback) {
-        this.authToken = authToken;
+    public DataFetcherTask(Activity activity, String encryptionKey, long lastFetchTime, Callback<DataFetchResult> callback) {
+        this.activity = activity;
         this.lastFetchTime = lastFetchTime;
         this.callback = callback;
         this.encryptionKey = encryptionKey;
@@ -32,8 +32,8 @@ public class DataFetcherTask extends AsyncTask<Void, Void, DataFetchResult> {
         long start = System.nanoTime();
         DataFetchResult result = new DataFetchResult();
         try {
-            Server server = new Server();
-            boolean authenticated = server.authenticate(authToken);
+            Server server = new Server(activity);
+            boolean authenticated = server.authenticate();
             if (!authenticated) {
                 throw new AuthenticationException();
             }
