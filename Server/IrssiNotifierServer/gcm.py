@@ -104,7 +104,10 @@ class GCM(object):
                     logging.warn("Token unavailable, retrying")
                     self.gcmhelper.send_gcm_to_token_deferred(token, message)
                 elif error == "NotRegistered":
-                    logging.warn("Token not registered, deleting")
+                    logging.warn("Token not registered, deleting token")
+                    self.dao.remove_gcm_token(token)
+                elif error == "InvalidRegistration":
+                    logging.error("Invalid registration, deleting token")
                     self.dao.remove_gcm_token(token)
                 else:
                     if error is "InternalServerError":
