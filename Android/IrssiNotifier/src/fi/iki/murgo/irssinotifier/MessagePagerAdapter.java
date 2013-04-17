@@ -127,8 +127,6 @@ public class MessagePagerAdapter extends PagerAdapter {
             public void run() {
                 boolean originalSmoothScroll = sv.isSmoothScrollingEnabled();
                 sv.setSmoothScrollingEnabled(false);
-                sv.setScrollbarFadingEnabled(false);
-                sv.setVerticalScrollBarEnabled(false);
                 sv.fullScroll(ScrollView.FOCUS_DOWN);
                 sv.setSmoothScrollingEnabled(originalSmoothScroll);
             }

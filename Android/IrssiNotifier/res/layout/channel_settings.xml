@@ -12,6 +12,8 @@
         android:paddingBottom="0dp"
         android:paddingLeft="10dp"
         android:paddingTop="0dp"
-        dslv:drag_start_mode="onMove" />
+        dslv:drag_start_mode="onMove"
+        dslv:drag_handle_id="@+id/drag"
+        />
 
 </RelativeLayout>

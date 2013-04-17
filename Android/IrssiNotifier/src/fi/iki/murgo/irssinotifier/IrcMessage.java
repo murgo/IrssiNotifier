@@ -22,11 +22,11 @@ public class IrcMessage {
     private boolean clearedFromFeed;
     private long id;
 
-    public void Deserialize(String payload) throws JSONException {
-        Deserialize(new JSONObject(payload));
+    public void deserialize(String payload) throws JSONException {
+        deserialize(new JSONObject(payload));
     }
 
-    public void Deserialize(JSONObject obj) {
+    public void deserialize(JSONObject obj) {
         try {
             setMessage(obj.getString("message"));
             setChannel(obj.getString("channel"));
@@ -110,7 +110,7 @@ public class IrcMessage {
         return dateFormat.format(serverTimestamp);
     }
 
-    public void Decrypt(String encryptionKey) throws CryptoException {
+    public void decrypt(String encryptionKey) throws CryptoException {
         if (message.equals(TOOLONG))
             message = "Message too long";
         else

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+import android.os.AsyncTask;
 import org.apache.http.auth.AuthenticationException;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -23,6 +24,8 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
 
 public class IrssiNotifierActivity extends SherlockActivity {
+    public static final String FEED = "------------------------FEED";
+
     private static final String TAG = IrssiNotifierActivity.class.getSimpleName();
     private Preferences preferences;
     // private final String googleAnalyticsCode = "UA-29385499-1";
@@ -33,7 +36,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
     private String channelToView;
     private List<Channel> channels;
     private final Object channelsLock = new Object();
-    private static final String FEED = "------------------------FEED";
+    private int backgroundOperations = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -150,13 +153,24 @@ public class IrssiNotifierActivity extends SherlockActivity {
         final Activity ctx = this;
 
         final long now = new Date().getTime();
+
+        final Callback<List<Channel>> dataAccessCallback = new Callback<List<Channel>>() {
+            public void doStuff(List<Channel> param) {
+                backgroundOperationEnded();
+                synchronized (channelsLock) {
+                    channels = param;
+                    refreshUi();
+                }
+            }
+        };
+
         final DataFetcherTask dataFetcherTask = new DataFetcherTask(preferences.getAuthToken(),
                 preferences.getEncryptionPassword(), preferences.getLastFetchTime(),
                 new Callback<DataFetchResult>() {
                     // TODO: Move this into its own activity, so orientation
                     // changes work correctly
                     public void doStuff(DataFetchResult param) {
-                        setIndeterminateProgressBarVisibility(false);
+                        backgroundOperationEnded();
                         if (param.getException() != null) {
                             if (param.getException() instanceof AuthenticationException) {
                                 MessageBox.Show(ctx, "Authentication error", "Unable to authenticate to server, please re-register your application.", 
@@ -192,37 +206,41 @@ public class IrssiNotifierActivity extends SherlockActivity {
                             return;
                         }
 
-                        DataAccessTask task = new DataAccessTask(ctx,
-                                new Callback<List<Channel>>() {
-                                    public void doStuff(List<Channel> param) {
-                                        synchronized (channelsLock) {
-                                            channels = param;
-                                            refreshUi();
-                                        }
-                                    }
-                                });
+                        DataAccessTask task = new DataAccessTask(ctx, dataAccessCallback);
                         List<IrcMessage> messages = param.getMessages();
-                        task.execute(messages.toArray(new IrcMessage[messages.size()]));
+                        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, messages.toArray(new IrcMessage[messages.size()]));
+                        backgroundOperationStarted();
                     }
                 });
 
-        final Callback<List<Channel>> dataAccessCallback = new Callback<List<Channel>>() {
-            public void doStuff(List<Channel> param) {
-                synchronized (channelsLock) {
-                    channels = param;
-                    refreshUi();
-                }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                refreshUi();
 
                 if (!uptodate) {
-                    setIndeterminateProgressBarVisibility(true);
-
-                    dataFetcherTask.execute();
+                    dataFetcherTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    backgroundOperationStarted();
                 }
-            }
-        };
 
-        DataAccessTask datask = new DataAccessTask(ctx, dataAccessCallback);
-        datask.execute();
+                DataAccessTask datask = new DataAccessTask(ctx, dataAccessCallback);
+                datask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                backgroundOperationStarted();
+            }
+        });
+    }
+
+    private void backgroundOperationEnded() {
+        backgroundOperations--;
+        if (backgroundOperations <= 0) {
+            backgroundOperations = 0;
+            setIndeterminateProgressBarVisibility(false);
+        }
+    }
+
+    private void backgroundOperationStarted() {
+        backgroundOperations++;
+        setIndeterminateProgressBarVisibility(true);
     }
 
     private void refreshUi() {
@@ -249,14 +267,9 @@ public class IrssiNotifierActivity extends SherlockActivity {
             titleIndicator.setOnPageChangeListener(new OnPageChangeListener() {
                 public void onPageSelected(int arg0) {
                     if (channels != null) {
-                        if (arg0 == 0) {
-                            // feed
-                            channelToView = FEED;
-                        } else {
-                            Channel ch = channels.get(arg0 - 1);
-                            if (ch != null) {
-                                channelToView = ch.getName();
-                            }
+                        Channel ch = channels.get(arg0);
+                        if (ch != null) {
+                            channelToView = ch.getName();
                         }
                     }
                 }
@@ -269,14 +282,10 @@ public class IrssiNotifierActivity extends SherlockActivity {
             });
 
             if (channelToView != null && channels != null) {
-                if (channelToView.equals(FEED)) {
-                    pager.setCurrentItem(0);
-                } else {
-                    for (int i = 0; i < channels.size(); i++) {
-                        if (channels.get(i).getName().equalsIgnoreCase(channelToView)) {
-                            pager.setCurrentItem(i + 1);
-                            break;
-                        }
+                for (int i = 0; i < channels.size(); i++) {
+                    if (channels.get(i).getName().equalsIgnoreCase(channelToView)) {
+                        pager.setCurrentItem(i);
+                        break;
                     }
                 }
             }
@@ -287,8 +296,13 @@ public class IrssiNotifierActivity extends SherlockActivity {
         }
     }
 
-    private void setIndeterminateProgressBarVisibility(boolean state) {
-        setSupportProgressBarIndeterminateVisibility(state);
+    private void setIndeterminateProgressBarVisibility(final boolean state) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setSupportProgressBarIndeterminateVisibility(state);
+            }
+        });
         progressBarVisibility = state;
     }
 
@@ -298,6 +312,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
         final Context ctx = this;
         task.setCallback(new Callback<ServerResponse>() {
             public void doStuff(ServerResponse result) {
+                backgroundOperationEnded();
                 if (result != null && result.wasSuccesful()) {
                     return;
                 }
@@ -311,7 +326,8 @@ public class IrssiNotifierActivity extends SherlockActivity {
             }
         });
 
-        task.execute();
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        backgroundOperationStarted();
     }
 
     @Override
@@ -331,6 +347,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_irssi_connectbot) {
             IrssiConnectbotLauncher.launchIrssiConnectbot(this);
+            //MessageGenerator.Flood(this);
         } else if (item.getItemId() == R.id.menu_settings) {
             Intent settingsActivity = new Intent(this, SettingsActivity.class);
             startActivity(settingsActivity);
