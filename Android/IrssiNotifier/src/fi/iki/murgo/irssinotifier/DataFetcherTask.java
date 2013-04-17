@@ -29,6 +29,7 @@ public class DataFetcherTask extends AsyncTask<Void, Void, DataFetchResult> {
 
     @Override
     protected DataFetchResult doInBackground(Void... params) {
+        long start = System.nanoTime();
         DataFetchResult result = new DataFetchResult();
         try {
             Server server = new Server();
@@ -54,14 +55,17 @@ public class DataFetcherTask extends AsyncTask<Void, Void, DataFetchResult> {
             for (int i = 0; i < arr.length(); i++) {
                 JSONObject object = new JSONObject(arr.getString(i));
                 IrcMessage message = new IrcMessage();
-                message.Deserialize(object);
-                message.Decrypt(encryptionKey);
+                message.deserialize(object);
+                message.decrypt(encryptionKey);
                 result.getMessages().add(message);
             }
         } catch (Exception e) {
             Log.e(TAG, "Error fetching data from server!", e);
             e.printStackTrace();
             result.setException(e);
+        } finally {
+            double elapsed = (System.nanoTime() - start) / 1e6;
+            Log.d(TAG, "Data fetching done, elapsed ms: " + elapsed);
         }
         return result;
     }

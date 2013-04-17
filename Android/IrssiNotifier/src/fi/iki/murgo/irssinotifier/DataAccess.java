@@ -24,6 +24,7 @@ public class DataAccess extends SQLiteOpenHelper {
             try {
                 db.execSQL("CREATE TABLE Channel (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT COLLATE nocase, orderIndex INTEGER)");
                 db.execSQL("CREATE TABLE IrcMessage (id INTEGER PRIMARY KEY AUTOINCREMENT, channelId INTEGER, message TEXT, nick TEXT, serverTimestamp INTEGER, externalId TEXT, shown INTEGER, clearedFromFeed INTEGER, FOREIGN KEY(channelId) REFERENCES Channel(Id))");
+                db.execSQL("CREATE INDEX IF NOT EXISTS IrcMessage_Timestamp ON IrcMessage (serverTimestamp DESC)");
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new RuntimeException(e);
@@ -66,6 +67,7 @@ public class DataAccess extends SQLiteOpenHelper {
                     }
                 }
                 db.execSQL("DROP TABLE IF EXISTS TempChannel");
+                db.execSQL("CREATE INDEX IF NOT EXISTS IrcMessage_Timestamp ON IrcMessage (serverTimestamp DESC)");
             }
         }
     }
@@ -82,9 +84,10 @@ public class DataAccess extends SQLiteOpenHelper {
 
                 Cursor cur = database.query("IrcMessage", new String[] { "externalId", "message" },
                         "externalId = ?", new String[] { message.getExternalId() }, null, null, null, "1");
-                if (!cur.isAfterLast()) {
+                if (cur.moveToFirst()) {
                     isNew = false;
-                    if (cur.getString(1).equals(message.getMessage())) {
+                    int messageIndex = cur.getColumnIndex("message");
+                    if (cur.getString(messageIndex).equals(message.getMessage())) {
                         cur.close();
                         return false;
                     }
@@ -214,11 +217,10 @@ public class DataAccess extends SQLiteOpenHelper {
     private List<IrcMessage> getMessagesForChannel(SQLiteDatabase database, Channel channel) {
         synchronized (DataAccess.class) {
             Cursor cursor = database.query("IrcMessage", new String[] {
-                    "message", "nick", "serverTimestamp", "shown", "externalId", "clearedFromFeed",
-                    "id"
+                    "message", "nick", "serverTimestamp", "shown", "externalId", "clearedFromFeed", "id"
             }, "channelId = ?", new String[] {
                 Long.toString(channel.getId())
-            }, null, null, "serverTimestamp DESC", "100");
+            }, null, null, "serverTimestamp DESC", "50");
             cursor.moveToFirst();
             List<IrcMessage> list = new ArrayList<IrcMessage>();
     
@@ -247,6 +249,46 @@ public class DataAccess extends SQLiteOpenHelper {
     
             cursor.close();
             Collections.reverse(list);
+            return list;
+        }
+    }
+
+    public List<IrcMessage> getFeedMessages() {
+        synchronized (DataAccess.class) {
+            SQLiteDatabase database = getReadableDatabase();
+            Cursor cursor = database.query("IrcMessage", new String[] {
+                    "message", "nick", "serverTimestamp", "shown", "externalId", "clearedFromFeed", "id", "channelId"
+                }, null, null, null, null, "serverTimestamp DESC", "50");
+            cursor.moveToFirst();
+            List<IrcMessage> list = new ArrayList<IrcMessage>();
+
+            int colMessage = cursor.getColumnIndex("message");
+            int colNick = cursor.getColumnIndex("nick");
+            int colServerTimestamp = cursor.getColumnIndex("serverTimestamp");
+            int colExternalId = cursor.getColumnIndex("externalId");
+            int colShown = cursor.getColumnIndex("shown");
+            int colClearedFromFeed = cursor.getColumnIndex("clearedFromFeed");
+            int colId = cursor.getColumnIndex("id");
+            int colChannelId = cursor.getColumnIndex("channelId");
+
+            while (!cursor.isAfterLast()) {
+                IrcMessage message = new IrcMessage();
+                message.setMessage(cursor.getString(colMessage));
+                message.setNick(cursor.getString(colNick));
+                message.setServerTimestamp(cursor.getLong(colServerTimestamp));
+                message.setExternalId(cursor.getString(colExternalId));
+                message.setChannel(Long.toString(cursor.getInt(colChannelId))); // quite a hack
+                message.setShown(cursor.getInt(colShown) != 0);
+                message.setClearedFromFeed(cursor.getInt(colClearedFromFeed) != 0);
+                message.setId(cursor.getLong(colId));
+
+                list.add(message);
+                cursor.moveToNext();
+            }
+
+            cursor.close();
+            Collections.reverse(list);
+            database.close();
             return list;
         }
     }

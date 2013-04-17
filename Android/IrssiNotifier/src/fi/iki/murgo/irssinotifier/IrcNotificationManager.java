@@ -80,8 +80,8 @@ public class IrcNotificationManager {
         List<String> messageLines = null;
 
         try {
-            msg.Deserialize(message);
-            msg.Decrypt(prefs.getEncryptionPassword());
+            msg.deserialize(message);
+            msg.decrypt(prefs.getEncryptionPassword());
 
             if (da == null)
                 da = new DataAccess(context);

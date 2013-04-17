@@ -1,9 +1,6 @@
 
 package fi.iki.murgo.irssinotifier;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import android.os.Parcelable;
@@ -33,21 +30,17 @@ public class MessagePagerAdapter extends PagerAdapter {
             return 0;
         }
 
-        if (channels.size() == 0)
-            return 1;
-        return channels.size() + 1;
+        return channels.size();
     }
 
     @Override
     public Object instantiateItem(ViewGroup collection, int position) {
         View view;
 
-        if (channels.size() == 0) {
+        if (channels.size() <= 1) {
             view = createEmptyChannel();
-        } else if (position == 0) {
-            view = createFeed();
         } else {
-            view = createChannel(position - 1);
+            view = createChannel(position, position == 0);
         }
 
         collection.addView(view);
@@ -66,44 +59,43 @@ public class MessagePagerAdapter extends PagerAdapter {
         return channelView;
     }
 
-    private View createFeed() {
-        List<IrcMessage> messages = new ArrayList<IrcMessage>();
-        for (Channel ch : channels) {
-            for (IrcMessage message : ch.getMessages()) {
-                if (!message.getClearedFromFeed()) {
-                    messages.add(message);
-                }
-            }
-        }
-
-        Collections.sort(messages, new Comparator<IrcMessage>() {
-            public int compare(IrcMessage lhs, IrcMessage rhs) {
-                return lhs.getServerTimestamp().compareTo(rhs.getServerTimestamp());
-            }
-        });
+    private View createChannel(int position, boolean feed) {
+        Channel channel = channels.get(position);
+        List<IrcMessage> messages = channel.getMessages();
 
         View channelView = layoutInflater.inflate(R.layout.channel, null);
 
         LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
+
+        LinearLayout feedChannel = null;
+        if (feed)
+            feedChannel = (LinearLayout)layoutInflater.inflate(R.layout.feed_channel, null);
+
         String lastChannel = "";
         String lastDate = "";
-        LinearLayout feedChannel = (LinearLayout)layoutInflater.inflate(R.layout.feed_channel, null);
         for (IrcMessage message : messages) {
             boolean dateChange = false;
+            String prettyDate = message.getServerTimestampAsPrettyDate();
 
-            if (!message.getServerTimestampAsPrettyDate().equals(lastDate)) {
-                feedChannel = (LinearLayout)layoutInflater.inflate(R.layout.feed_channel, null);
-                messageContainer.addView(feedChannel);
-
-                dateChange = true;
+            if (!prettyDate.equals(lastDate)) {
                 lastDate = message.getServerTimestampAsPrettyDate();
+                dateChange = true;
+
+                if (feed) {
+                    feedChannel = (LinearLayout)layoutInflater.inflate(R.layout.feed_channel, null);
+                    messageContainer.addView(feedChannel);
+                }
 
                 TextView tv = (TextView) layoutInflater.inflate(R.layout.datechange_header, null);
                 tv.setText(lastDate);
-                feedChannel.addView(tv);
+
+                if (feed)
+                    feedChannel.addView(tv);
+                else
+                    messageContainer.addView(tv);
             }
 
-            if (dateChange || !message.getLogicalChannel().equals(lastChannel)) {
+            if (feed && (dateChange || !message.getLogicalChannel().equals(lastChannel))) {
                 TextView tv;
                 if (!dateChange)
                     tv = (TextView) layoutInflater.inflate(R.layout.channel_header_paddingtop, null);
@@ -111,13 +103,12 @@ public class MessagePagerAdapter extends PagerAdapter {
                     tv = (TextView) layoutInflater.inflate(R.layout.channel_header, null);
                 lastChannel = message.getLogicalChannel();
                 tv.setText(lastChannel);
-                
+
                 feedChannel.addView(tv);
             }
 
             TextView tv = (TextView) layoutInflater.inflate(R.layout.message, null);
-            String s = message.getServerTimestampAsString() + " (" + message.getNick() + ") "
-                    + message.getMessage();
+            String s = message.getServerTimestampAsString() + " (" + message.getNick() + ") " + message.getMessage();
             final SpannableString ss = new SpannableString(s);
             Linkify.addLinks(ss, Linkify.ALL);
             tv.setText(ss);
@@ -125,53 +116,21 @@ public class MessagePagerAdapter extends PagerAdapter {
             tv.setLinksClickable(true);
             tv.setMovementMethod(LinkMovementMethod.getInstance());
 
-            feedChannel.addView(tv);
-        }
-
-        final ScrollView sv = (ScrollView) channelView.findViewById(R.id.scroll_view);
-        sv.post(new Runnable() {
-            public void run() {
-                sv.fullScroll(ScrollView.FOCUS_DOWN);
-            }
-        });
-
-        return channelView;
-    }
-
-    private View createChannel(int position) {
-        Channel channel = channels.get(position);
-        List<IrcMessage> messages = channel.getMessages();
-
-        View channelView = layoutInflater.inflate(R.layout.channel, null);
-
-        LinearLayout messageContainer = (LinearLayout) channelView.findViewById(R.id.message_container);
-        String lastDate = "";
-        for (IrcMessage message : messages) {
-            if (!message.getServerTimestampAsPrettyDate().equals(lastDate)) {
-                lastDate = message.getServerTimestampAsPrettyDate();
-
-                TextView tv = (TextView) layoutInflater.inflate(R.layout.datechange_header, null);
-                tv.setText(lastDate);
+            if (feed)
+                feedChannel.addView(tv);
+            else
                 messageContainer.addView(tv);
-            }
-
-            TextView tv = (TextView) layoutInflater.inflate(R.layout.message, null);
-            String s = message.getServerTimestampAsString() + " (" + message.getNick() + ") "
-                    + message.getMessage();
-            final SpannableString ss = new SpannableString(s);
-            Linkify.addLinks(ss, Linkify.ALL);
-            tv.setText(ss);
-            tv.setAutoLinkMask(Linkify.ALL);
-            tv.setLinksClickable(true);
-            tv.setMovementMethod(LinkMovementMethod.getInstance());
-
-            messageContainer.addView(tv);
         }
 
         final ScrollView sv = (ScrollView) channelView.findViewById(R.id.scroll_view);
         sv.post(new Runnable() {
             public void run() {
+                boolean originalSmoothScroll = sv.isSmoothScrollingEnabled();
+                sv.setSmoothScrollingEnabled(false);
+                sv.setScrollbarFadingEnabled(false);
+                sv.setVerticalScrollBarEnabled(false);
                 sv.fullScroll(ScrollView.FOCUS_DOWN);
+                sv.setSmoothScrollingEnabled(originalSmoothScroll);
             }
         });
 
@@ -199,11 +158,11 @@ public class MessagePagerAdapter extends PagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        if (channels.size() == 0)
+        if (channels.size() == 1)
             return "";
         if (position == 0)
             return "Feed";
-        return channels.get(position - 1).getName();
+        return channels.get(position).getName();
     }
 
 }
