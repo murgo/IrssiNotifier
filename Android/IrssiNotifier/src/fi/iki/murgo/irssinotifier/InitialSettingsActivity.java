@@ -45,6 +45,7 @@ public class InitialSettingsActivity extends Activity {
                 Account account = accounts[arg2];
                 Preferences prefs = new Preferences(InitialSettingsActivity.this);
                 prefs.setAccountName(account.name);
+                prefs.setNotificationsEnabled(true);
                 whatNext(0);
             }
         });

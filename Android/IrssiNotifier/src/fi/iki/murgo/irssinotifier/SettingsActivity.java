@@ -13,6 +13,9 @@ import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.util.Log;
+import org.apache.http.auth.AuthenticationException;
+
+import java.io.IOException;
 
 public class SettingsActivity extends PreferenceActivity {
     private static final String TAG = SettingsActivity.class.getSimpleName();
@@ -26,6 +29,39 @@ public class SettingsActivity extends PreferenceActivity {
         addPreferencesFromResource(R.xml.preference_screen);
 
         final Context ctx = this;
+
+        CheckBoxPreference enabled = (CheckBoxPreference) findPreference("NotificationsEnabled");
+        enabled.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                String s = "Disabling notifications...";
+                if ((Boolean)newValue) {
+                    s = "Enabling notifications...";
+                }
+
+                SettingsSendingTask task = new SettingsSendingTask(SettingsActivity.this, "Sending settings", s);
+                task.setCallback(new Callback<ServerResponse>() {
+                    @Override
+                    public void doStuff(ServerResponse result) {
+                        if (result.getException() != null) {
+                            if (result.getException() instanceof IOException) {
+                                MessageBox.Show(ctx, "Network error", "Ensure your internet connection works and try again.", null);
+                            } else if (result.getException() instanceof AuthenticationException) {
+                                MessageBox.Show(ctx, "Authentication error", "Unable to authenticate to server.", null);
+                            } else if (result.getException() instanceof ServerException) {
+                                MessageBox.Show(ctx, "Server error", "Mystical server error, check if updates are available", null);
+                            } else {
+                                MessageBox.Show(ctx, null, "Unable to send settings to the server! Please try again later!", null);
+                            }
+                        }
+                    }
+                });
+
+                task.execute();
+
+                return true;
+            }
+        });
+
         Preference aboutPref = findPreference("about");
         aboutPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {

@@ -38,6 +38,7 @@ public class Server {
         FetchData,
         Authenticate,
         Message,
+        WipeSettings,
     }
 
     private Map<ServerTarget, String> serverUrls = new HashMap<ServerTarget, String>();
@@ -56,6 +57,7 @@ public class Server {
         }
 
         serverUrls.put(ServerTarget.SaveSettings, baseServerUrl + "/API/Settings");
+        serverUrls.put(ServerTarget.WipeSettings, baseServerUrl + "/API/Wipe");
         serverUrls.put(ServerTarget.Message, baseServerUrl + "/API/Message");
         serverUrls.put(ServerTarget.Authenticate, baseServerUrl + "/_ah/login?continue=https://localhost/&auth=");
     }

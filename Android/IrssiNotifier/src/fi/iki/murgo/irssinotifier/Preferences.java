@@ -85,12 +85,25 @@ public class Preferences {
 
     public ServerResponse sendSettings(Server server) throws IOException {
         HashMap<String, String> map = new HashMap<String, String>();
+
+        if (getGcmRegistrationId() == null) {
+            throw new IllegalStateException();
+        }
+
         map.put("RegistrationId", getGcmRegistrationId());
-        map.put(DEVICE_NAME_KEY, android.os.Build.MODEL);
-        map.put(ENABLED_KEY, "1");
+        ServerTarget target;
+
+        if (isNotificationsEnabled()) {
+            map.put(DEVICE_NAME_KEY, android.os.Build.MODEL);
+            map.put(ENABLED_KEY, "1");
+            target = ServerTarget.SaveSettings;
+        } else {
+            target = ServerTarget.WipeSettings;
+        }
+
         MessageToServer msg = new MessageToServer(map);
 
-        ServerResponse response = server.send(msg, ServerTarget.SaveSettings);
+        ServerResponse response = server.send(msg, target);
         if (response.wasSuccesful()) {
             sharedPreferences.edit().putBoolean(SETTINGS_SENT_KEY, true).commit();
         }
@@ -180,5 +193,11 @@ public class Preferences {
 
     public String getAccountName() {
         return sharedPreferences.getString(ACCOUNT_NAME, null);
+    }
+
+    public boolean setNotificationsEnabled(boolean b) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(NOTIFICATIONS_ENABLED, b);
+        return editor.commit();
     }
 }
