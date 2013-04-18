@@ -183,13 +183,17 @@ public class IrcNotificationManager {
         notificationManager.notify(notificationId, notification);
     }
 
-    public void mainActivityOpened(Context context) {
+    public boolean mainActivityOpened(Context context) {
+        boolean hadMessages = false;
         if (unread != null) {
+            hadMessages = unread.size() > 0;
             unread.clear();
         }
-        
+
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
+
+        return hadMessages;
     }
 
     private ValueList getValues(IrcMessage msg, NotificationMode mode) {

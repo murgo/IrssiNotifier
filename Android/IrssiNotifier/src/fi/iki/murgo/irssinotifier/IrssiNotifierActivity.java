@@ -115,7 +115,9 @@ public class IrssiNotifierActivity extends SherlockActivity {
         super.onResume();
         instance = this;
 
-        if (needsRefresh) {
+        boolean hadMessages = IrcNotificationManager.getInstance().mainActivityOpened(this);
+
+        if (hadMessages || needsRefresh) {
             Log.v(TAG, "onResume needs refreshing");
             needsRefresh = false;
             restart();
