@@ -37,6 +37,14 @@ public class IrcNotificationManager {
     private long lastSoundDate = 0;
     private DataAccess da;
 
+    public long getLastSoundDate() {
+        return lastSoundDate;
+    }
+
+    public void setLastSoundDate(long time) {
+        lastSoundDate = time;
+    }
+
     private int getUnreadCount() {
         int total = 0;
         for (List<IrcMessage> msgs : unread.values()) {

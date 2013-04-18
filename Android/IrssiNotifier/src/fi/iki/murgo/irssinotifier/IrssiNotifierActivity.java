@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Vibrator;
 import org.apache.http.auth.AuthenticationException;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -360,6 +363,25 @@ public class IrssiNotifierActivity extends SherlockActivity {
     }
 
     public void newMessage(IrcMessage msg) {
+        if ((!preferences.isSpamFilterEnabled() || new Date().getTime() > IrcNotificationManager.getInstance().getLastSoundDate() + 60000L)) {
+            Uri sound = preferences.getNotificationSound();
+            if (sound != null) {
+                MediaPlayer mp = MediaPlayer.create(this, sound);
+                if (mp != null) {
+                    mp.start();
+                }
+            }
+
+            if (preferences.isVibrationEnabled()) {
+                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                if (v != null) {
+                    v.vibrate(500);
+                }
+            }
+
+            IrcNotificationManager.getInstance().setLastSoundDate(new Date().getTime());
+        }
+
         if (preferences.isFeedViewDefault()) {
             channelToView = FEED;
         } else {
