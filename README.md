@@ -17,6 +17,7 @@ Web page: https://irssinotifier.appspot.com/
 - [ActionBarSherlock](https://github.com/JakeWharton/ActionBarSherlock). Thanks, [Jake Wharton](https://github.com/JakeWharton).
 - [ViewPagerIndicator](https://github.com/JakeWharton/Android-ViewPagerIndicator/). Thanks, [Jake Wharton](https://github.com/JakeWharton).
 - [DragSortListView](https://github.com/bauerca/drag-sort-listview). Thanks, [Carl Bauer](https://github.com/bauerca).
+- [AmbilWarna, Android color picker](https://code.google.com/p/android-color-picker/). Thanks, [Yuku Sugianto](https://code.google.com/u/yukuku/).
 
 ##License
 
