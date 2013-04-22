@@ -110,7 +110,7 @@ class GCM(object):
                     logging.error("Invalid registration, deleting token")
                     self.dao.remove_gcm_token(token)
                 else:
-                    if error is "InternalServerError":
+                    if error == "InternalServerError":
                         logging.warn("InternalServerError in GCM: " + error)
                     else:
                         logging.error("Unrecoverable error in GCM: " + error)
