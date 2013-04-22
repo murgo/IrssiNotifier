@@ -39,6 +39,8 @@ public class Preferences {
     private static final String ICB_ENABLED = "IcbEnabled";
     private static final String THEME_DISABLED = "ThemeDisabled";
     private static final String ACCOUNT_NAME = "AccountName";
+    private static final String CUSTOM_LIGHT_COLOR = "CustomLightColor";
+    private static final String USE_DEFAULT_LIGHT_COLOR = "UseDefaultLightColor";
 
     private SharedPreferences sharedPreferences;
     private static int versionCode;
@@ -199,5 +201,19 @@ public class Preferences {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(NOTIFICATIONS_ENABLED, b);
         return editor.commit();
+    }
+
+    public int getCustomLightColor() {
+        return sharedPreferences.getInt(CUSTOM_LIGHT_COLOR, 0xff0000ff);
+    }
+
+    public boolean setCustomLightColor(int color) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(CUSTOM_LIGHT_COLOR, color);
+        return editor.commit();
+    }
+
+    public boolean getUseDefaultLightColor() {
+        return sharedPreferences.getBoolean(USE_DEFAULT_LIGHT_COLOR, true);
     }
 }

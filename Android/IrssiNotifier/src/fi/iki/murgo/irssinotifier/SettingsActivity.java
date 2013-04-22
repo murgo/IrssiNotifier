@@ -2,6 +2,8 @@
 package fi.iki.murgo.irssinotifier;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,10 +14,14 @@ import android.preference.PreferenceCategory;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import org.apache.http.auth.AuthenticationException;
+import yuku.ambilwarna.AmbilWarnaDialog;
 
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class SettingsActivity extends PreferenceActivity {
     private static final String TAG = SettingsActivity.class.getSimpleName();
@@ -122,9 +128,73 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
 
+        handleColorPicker();
+
         handleIcb();
     }
-    
+
+    private void handleColorPicker() {
+        Preference colorPickerPref = findPreference("PickCustomLightColor");
+        colorPickerPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(final Preference preference) {
+                final Context ctx = SettingsActivity.this;
+
+                final Preferences preferences = new Preferences(ctx);
+                final int color = preferences.getCustomLightColor();
+
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(ctx);
+                builder.setSmallIcon(R.drawable.notification_icon);
+                builder.setTicker("Preview selected color");
+                builder.setAutoCancel(false);
+                builder.setOngoing(true);
+                builder.setContentText("Wait for the screen to turn off to see selected light color in action");
+                builder.setContentTitle("Preview light color");
+                builder.setLights(color, 300, 5000);
+
+                final Notification notification = builder.build();
+                final NotificationManager notificationManager = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.notify(666, notification);
+
+                final Timer timer = new Timer();
+
+                final AmbilWarnaDialog dialog = new AmbilWarnaDialog(ctx, color, new AmbilWarnaDialog.OnAmbilWarnaListener() {
+                    @Override
+                    public void onCancel(AmbilWarnaDialog dialog) {
+                        notificationManager.cancel(666);
+                        timer.cancel();
+                    }
+
+                    @Override
+                    public void onOk(AmbilWarnaDialog dialog, int color) {
+                        notificationManager.cancel(666);
+                        timer.cancel();
+                        preferences.setCustomLightColor(color);
+                    }
+                });
+
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (notification.ledARGB != dialog.getColor()) {
+                                    notification.ledARGB = dialog.getColor();
+                                    notificationManager.notify(666, notification);
+                                }
+                            }
+                        });
+                    }
+                }, 1000, 1000);
+
+                dialog.show();
+
+                return true;
+            }
+        });
+    }
+
     private void handleIcb() {
         CheckBoxPreference showIcbIconPreference = (CheckBoxPreference)findPreference("IcbEnabled");
         if (!IntentSniffer.isIntentAvailable(this, IrssiConnectbotLauncher.INTENT_IRSSICONNECTBOT)) {

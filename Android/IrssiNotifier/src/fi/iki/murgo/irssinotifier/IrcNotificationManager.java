@@ -139,13 +139,22 @@ public class IrcNotificationManager {
         builder.setAutoCancel(true);
         builder.setContentText(notificationMessage);
         builder.setContentTitle(titleText);
-        
+
         if (currentUnreadCount > 1) {
             builder.setNumber(currentUnreadCount);
         }
-        
+
+        int defaults = 0;
+
+        if (prefs.isLightsEnabled()) {
+            if (prefs.getUseDefaultLightColor()) {
+                defaults |=  Notification.DEFAULT_LIGHTS;
+            } else {
+                builder.setLights(prefs.getCustomLightColor(), 300, 5000);
+            }
+        }
+
         if ((!prefs.isSpamFilterEnabled() || new Date().getTime() > lastSoundDate + 60000L)) {
-            int defaults = 0;
             if (prefs.isSoundEnabled()) {
                 builder.setSound(prefs.getNotificationSound());
             }
@@ -154,13 +163,10 @@ public class IrcNotificationManager {
                 defaults |= Notification.DEFAULT_VIBRATE;
             }
 
-            if (prefs.isLightsEnabled()) {
-                defaults |=  Notification.DEFAULT_LIGHTS;
-            }
-
             lastSoundDate = new Date().getTime();
-            builder.setDefaults(defaults);
         }
+
+        builder.setDefaults(defaults);
 
         Intent toLaunch = new Intent(context, IrssiNotifierActivity.class);
         toLaunch.putExtra("Channel", msg.getLogicalChannel());

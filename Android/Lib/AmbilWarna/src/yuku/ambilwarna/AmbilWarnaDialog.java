@@ -160,7 +160,7 @@ public class AmbilWarnaDialog {
 		viewTarget.setLayoutParams(layoutParams);
 	}
 
-	private int getColor() {
+	public int getColor() {
 		return Color.HSVToColor(currentColorHsv);
 	}
 
