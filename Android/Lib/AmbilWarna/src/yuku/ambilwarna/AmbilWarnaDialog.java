@@ -11,6 +11,7 @@ public class AmbilWarnaDialog {
 	public interface OnAmbilWarnaListener {
 		void onCancel(AmbilWarnaDialog dialog);
 		void onOk(AmbilWarnaDialog dialog, int color);
+		void onColorChanged(AmbilWarnaDialog dialog, int color);
 	}
 
 	final AlertDialog dialog;
@@ -26,7 +27,7 @@ public class AmbilWarnaDialog {
 
 	/**
 	 * create an AmbilWarnaDialog. call this only from OnCreateDialog() or from a background thread.
-	 * 
+	 *
 	 * @param context
 	 *            current context
 	 * @param color
@@ -69,6 +70,8 @@ public class AmbilWarnaDialog {
 					moveCursor();
 					viewNewColor.setBackgroundColor(getColor());
 
+					AmbilWarnaDialog.this.listener.onColorChanged(AmbilWarnaDialog.this, getColor());
+
 					return true;
 				}
 				return false;
@@ -94,6 +97,8 @@ public class AmbilWarnaDialog {
 					// update view
 					moveTarget();
 					viewNewColor.setBackgroundColor(getColor());
+
+					AmbilWarnaDialog.this.listener.onColorChanged(AmbilWarnaDialog.this, getColor());
 
 					return true;
 				}
@@ -136,6 +141,7 @@ public class AmbilWarnaDialog {
 				moveCursor();
 				moveTarget();
 				view.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+				AmbilWarnaDialog.this.listener.onColorChanged(AmbilWarnaDialog.this, getColor());
 			}
 		});
 	}
@@ -160,7 +166,7 @@ public class AmbilWarnaDialog {
 		viewTarget.setLayoutParams(layoutParams);
 	}
 
-	public int getColor() {
+	private int getColor() {
 		return Color.HSVToColor(currentColorHsv);
 	}
 

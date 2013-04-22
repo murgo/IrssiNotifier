@@ -41,6 +41,11 @@ public class AmbilWarnaPreference extends Preference {
 			@Override public void onCancel(AmbilWarnaDialog dialog) {
 				// nothing to do
 			}
+
+			@Override
+			public void onColorChanged(AmbilWarnaDialog dialog, int color) {
+				// nothing to do
+			}
 		}).show();
 	}
 

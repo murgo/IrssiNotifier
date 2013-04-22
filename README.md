@@ -1,15 +1,15 @@
 #IrssiNotifier
 
-Now released on [Google Play](https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier)!
+Get notifications from IRC hilights and private messages from Irssi to Android.
 
-IRC notifications for Android (and possibly other devices).
+Check it out on [Google Play](https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier)!
 
 Web page: https://irssinotifier.appspot.com/
 
 ##Goals:
 
-- Low battery usage (users [GCM](http://developer.android.com/guide/google/gcm/index.html))
-- Easy to set up (hosted server)
+- Low battery usage (uses [GCM](http://developer.android.com/guide/google/gcm/index.html))
+- Easy to set up (minimum dependencies for Irssi user, centralized server)
 - Good privacy (end-to-end -encryption)
 
 ##Dependencies
@@ -21,6 +21,6 @@ Web page: https://irssinotifier.appspot.com/
 
 ##License
 
-    Copyright 2012 Lauri H‰rsil‰ where applicable (commits made by murgo, Lauri H‰rsil‰ or Unknown on this repository. I'm new to this github stuff).
+    Copyright 2013 Lauri H√§rsil√§.
 
     Licensed under the Apache License, Version 2.0, see LICENSE.

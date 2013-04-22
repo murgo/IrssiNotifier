@@ -20,8 +20,6 @@ import org.apache.http.auth.AuthenticationException;
 import yuku.ambilwarna.AmbilWarnaDialog;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class SettingsActivity extends PreferenceActivity {
     private static final String TAG = SettingsActivity.class.getSimpleName();
@@ -147,7 +145,7 @@ public class SettingsActivity extends PreferenceActivity {
                 builder.setSmallIcon(R.drawable.notification_icon);
                 builder.setTicker("Preview selected color");
                 builder.setAutoCancel(false);
-                builder.setOngoing(true);
+                builder.setOngoing(false);
                 builder.setContentText("Wait for the screen to turn off to see selected light color in action");
                 builder.setContentTitle("Preview light color");
                 builder.setLights(color, 300, 5000);
@@ -156,37 +154,24 @@ public class SettingsActivity extends PreferenceActivity {
                 final NotificationManager notificationManager = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
                 notificationManager.notify(666, notification);
 
-                final Timer timer = new Timer();
-
                 final AmbilWarnaDialog dialog = new AmbilWarnaDialog(ctx, color, new AmbilWarnaDialog.OnAmbilWarnaListener() {
                     @Override
                     public void onCancel(AmbilWarnaDialog dialog) {
                         notificationManager.cancel(666);
-                        timer.cancel();
                     }
 
                     @Override
                     public void onOk(AmbilWarnaDialog dialog, int color) {
                         notificationManager.cancel(666);
-                        timer.cancel();
                         preferences.setCustomLightColor(color);
                     }
-                });
 
-                timer.schedule(new TimerTask() {
                     @Override
-                    public void run() {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (notification.ledARGB != dialog.getColor()) {
-                                    notification.ledARGB = dialog.getColor();
-                                    notificationManager.notify(666, notification);
-                                }
-                            }
-                        });
+                    public void onColorChanged(AmbilWarnaDialog dialog, int color) {
+                        notification.ledARGB = color;
+                        notificationManager.notify(666, notification);
                     }
-                }, 1000, 1000);
+                });
 
                 dialog.show();
 
