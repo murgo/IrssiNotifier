@@ -1,0 +1,64 @@
+Param([string]$type)
+
+$regexPackageName = 'package=".+"'
+$regexApplicationName = '<string name="app_name">.+?</string>'
+$regexC2dPermission = 'fi\.iki\.murgo\.irssinotifier\..*?permission\.C2D_MESSAGE'
+$regexCategory = '<category android:name="fi\.iki\.murgo\.irssinotifier.*?" />'
+
+Function Replace-File
+{
+    Param([string]$file, [string]$regex, [string]$value)
+    $path = Resolve-Path $file
+    $text = (Get-Content $path -Encoding UTF8 | Out-String) |
+        Foreach-Object {$_ -replace $regex, $value}
+    [System.IO.File]::WriteAllLines($path, $text.TrimEnd())
+}
+
+# TODO: replace import R
+# TODO: Fix GCM
+Function Change-Premium()
+{
+    Write-Host "Changing values to premium..."
+    Replace-File "AndroidManifest.xml" $regexPackageName 'package="fi.iki.murgo.irssinotifier.premium"'
+    Replace-File "AndroidManifest.xml" $regexC2dPermission 'fi.iki.murgo.irssinotifier.premium.permission.C2D_MESSAGE'
+    Replace-File "AndroidManifest.xml" $regexCategory '<category android:name="fi.iki.murgo.irssinotifier.premium" />'
+    Replace-File "res\values\strings.xml" $regexApplicationName '<string name="app_name">IrssiNotifier &lt;3</string>'
+    $regexImport = '(package fi.iki.murgo.irssinotifier;)'
+    $import = '$1import fi.iki.murgo.irssinotifier.premium.R;'
+    Replace-File "src\fi\iki\murgo\irssinotifier\InitialSettingsActivity.java" $regexImport $import
+    Replace-File "src\fi\iki\murgo\irssinotifier\SettingsActivity.java" $regexImport $import
+    Replace-File "src\fi\iki\murgo\irssinotifier\MessagePagerAdapter.java" $regexImport $import
+    Replace-File "src\fi\iki\murgo\irssinotifier\AboutActivity.java" $regexImport $import
+    Replace-File "src\fi\iki\murgo\irssinotifier\ChannelSettingsActivity.java" $regexImport $import
+    Replace-File "src\fi\iki\murgo\irssinotifier\IrcNotificationManager.java" $regexImport $import
+    Replace-File "src\fi\iki\murgo\irssinotifier\IrssiNotifierActivity.java" $regexImport $import
+}
+
+Function Change-Free()
+{
+    Write-Host "Changing values to free..."
+    Replace-File "AndroidManifest.xml" $regexPackageName 'package="fi.iki.murgo.irssinotifier"'
+    Replace-File "AndroidManifest.xml" $regexC2dPermission 'fi.iki.murgo.irssinotifier.permission.C2D_MESSAGE'
+    Replace-File "AndroidManifest.xml" $regexCategory '<category android:name="fi.iki.murgo.irssinotifier" />'
+    Replace-File "res\values\strings.xml" $regexApplicationName '<string name="app_name">IrssiNotifier</string>'
+    $regexImport = 'import fi\.iki\.murgo\.irssinotifier\.premium\.R;'
+    Replace-File "src\fi\iki\murgo\irssinotifier\InitialSettingsActivity.java" $regexImport ''
+    Replace-File "src\fi\iki\murgo\irssinotifier\SettingsActivity.java" $regexImport ''
+    Replace-File "src\fi\iki\murgo\irssinotifier\MessagePagerAdapter.java" $regexImport ''
+    Replace-File "src\fi\iki\murgo\irssinotifier\AboutActivity.java" $regexImport ''
+    Replace-File "src\fi\iki\murgo\irssinotifier\ChannelSettingsActivity.java" $regexImport ''
+    Replace-File "src\fi\iki\murgo\irssinotifier\IrcNotificationManager.java" $regexImport ''
+    Replace-File "src\fi\iki\murgo\irssinotifier\IrssiNotifierActivity.java" $regexImport ''
+}
+
+If ($type -eq "premium")
+{
+    Change-Premium
+}
+ElseIf ($type -eq "free")
+{
+    Change-Free
+}
+Else {
+    Write-Host "Specify -type premium or -type free to change manifest"
+}
