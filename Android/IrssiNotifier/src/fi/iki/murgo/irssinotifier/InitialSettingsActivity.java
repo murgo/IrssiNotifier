@@ -12,6 +12,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import org.apache.http.auth.AuthenticationException;
 
 import java.io.IOException;
@@ -31,6 +32,11 @@ public class InitialSettingsActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.initialsettings);
 
+        if (LicenseHelper.isPaidVersion(this)) {
+            TextView tv = (TextView)findViewById(R.id.textViewWelcomeHelp);
+            tv.setText("Thanks for supporting IrssiNotifier! " + tv.getText());
+        }
+
         UserHelper fetcher = new UserHelper();
         final Account[] accounts = fetcher.getAccounts(this);
         String[] accountNames = new String[accounts.length];
@@ -49,6 +55,10 @@ public class InitialSettingsActivity extends Activity {
                 whatNext(0);
             }
         });
+
+        if (LicenseHelper.bothEditionsInstalled(this)) {
+            MessageBox.Show(this, "Not the greatest idea", "You have both free and paid versions of IrssiNotifier installed. Uninstall either, or you'll get duplicate notifications.", null);
+        }
     }
 
     // stupid state machine

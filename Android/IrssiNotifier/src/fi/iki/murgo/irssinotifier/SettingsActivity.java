@@ -182,7 +182,7 @@ public class SettingsActivity extends PreferenceActivity {
 
     private void handleIcb() {
         CheckBoxPreference showIcbIconPreference = (CheckBoxPreference)findPreference("IcbEnabled");
-        if (!IntentSniffer.isIntentAvailable(this, IrssiConnectbotLauncher.INTENT_IRSSICONNECTBOT)) {
+        if (!IntentSniffer.isPackageAvailable(this, IrssiConnectbotLauncher.PACKAGE_IRSSICONNECTBOT)) {
             PreferenceCategory icbCategory = (PreferenceCategory)findPreference("IcbCategory");
             icbCategory.setEnabled(false);
             
@@ -211,7 +211,7 @@ public class SettingsActivity extends PreferenceActivity {
             icbHostPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
                     Intent i = new Intent("android.intent.action.PICK");
-                    i.setClassName(IrssiConnectbotLauncher.INTENT_IRSSICONNECTBOT, IrssiConnectbotLauncher.INTENT_IRSSICONNECTBOT + ".HostListActivity");
+                    i.setClassName(IrssiConnectbotLauncher.PACKAGE_IRSSICONNECTBOT, IrssiConnectbotLauncher.PACKAGE_IRSSICONNECTBOT + ".HostListActivity");
                     startActivityForResult(i, ICB_HOST_REQUEST_CODE);
                     return true;
                 }

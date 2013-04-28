@@ -314,7 +314,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
         super.onCreateOptionsMenu(menu);
         getSupportMenuInflater().inflate(R.menu.mainmenu, menu);
 
-        if (!preferences.getIcbEnabled() || !IntentSniffer.isIntentAvailable(this, IrssiConnectbotLauncher.INTENT_IRSSICONNECTBOT)) {
+        if (!preferences.getIcbEnabled() || !IntentSniffer.isPackageAvailable(this, IrssiConnectbotLauncher.PACKAGE_IRSSICONNECTBOT)) {
             menu.findItem(R.id.menu_irssi_connectbot).setVisible(false);
             menu.findItem(R.id.menu_irssi_connectbot).setEnabled(false);
         }
