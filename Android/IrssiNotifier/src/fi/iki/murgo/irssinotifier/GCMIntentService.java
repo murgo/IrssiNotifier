@@ -16,6 +16,10 @@ public class GCMIntentService extends GCMBaseIntentService {
 
     public static Callback<Boolean> callback;
 
+    public GCMIntentService() {
+        super(SENDER_ID);
+    }
+
     public static void setRegistrationCallback(Callback<Boolean> callback) {
         GCMIntentService.callback = callback;
     }
