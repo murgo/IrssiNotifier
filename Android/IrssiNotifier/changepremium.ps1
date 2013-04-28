@@ -1,4 +1,7 @@
-Param([string]$type)
+Param(
+    [Switch] $premium,
+    [Switch] $free
+)
 
 $regexPackageName = 'package=".+"'
 $regexApplicationName = '<string name="app_name">.+?</string>'
@@ -14,8 +17,6 @@ Function Replace-File
     [System.IO.File]::WriteAllLines($path, $text.TrimEnd())
 }
 
-# TODO: replace import R
-# TODO: Fix GCM
 Function Change-Premium()
 {
     Write-Host "Changing values to premium..."
@@ -51,14 +52,17 @@ Function Change-Free()
     Replace-File "src\fi\iki\murgo\irssinotifier\IrssiNotifierActivity.java" $regexImport ''
 }
 
-If ($type -eq "premium")
+If (($premium -and $free) -or (!$premium -and !$free))
+{
+    Write-Host "Use switch -premium OR -free"
+    exit
+}
+
+If ($premium)
 {
     Change-Premium
 }
-ElseIf ($type -eq "free")
+ElseIf ($free)
 {
     Change-Free
-}
-Else {
-    Write-Host "Specify -type premium or -type free to change manifest"
 }
