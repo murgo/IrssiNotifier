@@ -21,6 +21,8 @@ import yuku.ambilwarna.AmbilWarnaDialog;
 
 import java.io.IOException;
 
+
+@SuppressWarnings("deprecation")
 public class SettingsActivity extends PreferenceActivity {
     private static final String TAG = SettingsActivity.class.getSimpleName();
     protected static final int ICB_HOST_REQUEST_CODE = 666;
