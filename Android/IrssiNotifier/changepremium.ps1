@@ -23,7 +23,7 @@ Function Change-Premium()
     Replace-File "AndroidManifest.xml" $regexPackageName 'package="fi.iki.murgo.irssinotifier.premium"'
     Replace-File "AndroidManifest.xml" $regexC2dPermission 'fi.iki.murgo.irssinotifier.premium.permission.C2D_MESSAGE'
     Replace-File "AndroidManifest.xml" $regexCategory '<category android:name="fi.iki.murgo.irssinotifier.premium" />'
-    Replace-File "res\values\strings.xml" $regexApplicationName '<string name="app_name">IrssiNotifier &lt;3</string>'
+    Replace-File "res\values\strings.xml" $regexApplicationName '<string name="app_name">IrssiNotifier+</string>'
     $regexImport = '(package fi.iki.murgo.irssinotifier;)'
     $import = '$1import fi.iki.murgo.irssinotifier.premium.R;'
     Replace-File "src\fi\iki\murgo\irssinotifier\InitialSettingsActivity.java" $regexImport $import
