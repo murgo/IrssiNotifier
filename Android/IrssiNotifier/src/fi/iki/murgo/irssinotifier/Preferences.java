@@ -41,6 +41,8 @@ public class Preferences {
     private static final String ACCOUNT_NAME = "AccountName";
     private static final String CUSTOM_LIGHT_COLOR = "CustomLightColor";
     private static final String USE_DEFAULT_LIGHT_COLOR = "UseDefaultLightColor";
+    private static final String LAST_LICENSE_TIME = "LastLicenseTime";
+    private static final String LICENSE_COUNT = "LicenseCount";
 
     private SharedPreferences sharedPreferences;
     private static int versionCode;
@@ -215,5 +217,25 @@ public class Preferences {
 
     public boolean getUseDefaultLightColor() {
         return sharedPreferences.getBoolean(USE_DEFAULT_LIGHT_COLOR, true);
+    }
+
+    public boolean setLastLicenseTime(long l) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putLong(LAST_LICENSE_TIME, l);
+        return editor.commit();
+    }
+
+    public long getLastLicenseTime() {
+        return sharedPreferences.getLong(LAST_LICENSE_TIME, 0);
+    }
+
+    public boolean incrementLicenseCount() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(LICENSE_COUNT, sharedPreferences.getInt(LICENSE_COUNT, 0) + 1);
+        return editor.commit();
+    }
+
+    public int getLicenseCount() {
+        return sharedPreferences.getInt(LICENSE_COUNT, 0);
     }
 }

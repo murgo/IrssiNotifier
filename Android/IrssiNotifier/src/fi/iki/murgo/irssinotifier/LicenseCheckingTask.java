@@ -24,6 +24,10 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
     private static final int LICENSED_OLD_KEY = 0x2;
     private Server server;
 
+    public LicenseCheckingTask(Activity activity) {
+        super(activity);
+    }
+
     public LicenseCheckingTask(Activity activity, String titleText, String text) {
         super(activity, titleText, text);
     }
@@ -149,6 +153,11 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
         }
 
         if (response.getResponseString().equals("OK")) {
+            Log.i(TAG, "IrssiNotifier+ licensed succesfully!");
+            Preferences prefs = new Preferences(activity);
+            prefs.setLastLicenseTime(System.currentTimeMillis());
+            prefs.incrementLicenseCount();
+
             return LicenseCheckingStatus.Allow;
         }
 

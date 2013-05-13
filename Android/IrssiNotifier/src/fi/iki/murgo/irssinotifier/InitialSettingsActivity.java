@@ -80,17 +80,51 @@ public class InitialSettingsActivity extends Activity {
                 sendSettings();
                 break;
             case 2:
+                if (LicenseHelper.isPaidVersion(this)) {
+                    checkLicense();
+                    break;
+                }
+
+                startMainApp();
+                break;
+            case 3:
                 startMainApp();
                 break;
         }
     }
 
+    private void checkLicense() {
+        LicenseCheckingTask task = new LicenseCheckingTask(this, "", "Verifying license...");
+
+        task.setCallback(new Callback<LicenseCheckingTask.LicenseCheckingStatus>() {
+            public void doStuff(LicenseCheckingTask.LicenseCheckingStatus result) {
+                switch (result) {
+                    case Allow:
+                        whatNext(3);
+                        break;
+                    case Disallow:
+                        MessageBox.Show(InitialSettingsActivity.this, "IrssiNotifier+ not licensed!", "Shame on you!", errorCallback);
+                        break;
+                    case Error:
+                        MessageBox.Show(InitialSettingsActivity.this, "Error while licensing",
+                                "An error occurred while trying to check IrssiNotifier+ license validity, please try again after a short while. If problem persist, contact support at https://irssinotifier.appspot.com.", errorCallback);
+                        break;
+                }
+            }
+        });
+
+        task.execute();
+    }
+
     private void startMainApp() {
         final Context ctx = this;
-        MessageBox
-                .Show(this,
-                        "Success",
-                        "Check https://irssinotifier.appspot.com for information about setting up your irssi script.",
+        String msg = "Check https://irssinotifier.appspot.com for information about setting up your irssi script.";
+        String title = "Success";
+        if (LicenseHelper.isPaidVersion(this)) {
+            msg = "App licensed, thanks! Your account has been upgraded and pull notification system has been enabled. Check https://irssinotifier.appspot.com for information about setting up your irssi script.";
+            title = "Thank you for your support!";
+        }
+        MessageBox.Show(this, title, msg,
                         new Callback<Void>() {
                             public void doStuff(Void param) {
                                 Intent i = new Intent(ctx, IrssiNotifierActivity.class);

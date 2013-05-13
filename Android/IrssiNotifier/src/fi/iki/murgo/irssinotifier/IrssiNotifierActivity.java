@@ -207,8 +207,46 @@ public class IrssiNotifierActivity extends SherlockActivity {
                 DataAccessTask datask = new DataAccessTask(IrssiNotifierActivity.this, dataAccessCallback);
                 datask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 backgroundOperationStarted();
+
+                if (LicenseHelper.isPaidVersion(IrssiNotifierActivity.this)) {
+                    checkLicense();
+                }
             }
         });
+    }
+
+    private void checkLicense() {
+        if (preferences.getLicenseCount() < 2) {
+            if (System.currentTimeMillis() - preferences.getLastLicenseTime() > 1000 * 60 * 30) {
+                // over half hour since last registration, register again to prevent 15 minute abuse
+                LicenseCheckingTask task = new LicenseCheckingTask(this);
+                task.setCallback(new Callback<LicenseCheckingTask.LicenseCheckingStatus>() {
+                    @Override
+                    public void doStuff(LicenseCheckingTask.LicenseCheckingStatus param) {
+                        backgroundOperationEnded();
+
+                        switch (param) {
+                            case Allow:
+                                // yay! do nothing
+                                break;
+                            case Disallow:
+                                MessageBox.Show(IrssiNotifierActivity.this, "IrssiNotifier+ not licensed!", "Shame on you!", new Callback<Void>() {
+                                    @Override
+                                    public void doStuff(Void param) {
+                                        IrssiNotifierActivity.this.finish();
+                                    }
+                                });
+                                break;
+                            case Error:
+                                // do nothing, on next startup licensing will be retried
+                                break;
+                        }
+                    }
+                });
+                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                backgroundOperationStarted();
+            }
+        }
     }
 
     private void backgroundOperationEnded() {
