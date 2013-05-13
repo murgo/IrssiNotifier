@@ -8,7 +8,8 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
-import com.google.android.vending.licensing.*;
+import com.android.vending.licensing.ILicenseResultListener;
+import com.android.vending.licensing.ILicensingService;
 
 import java.io.IOException;
 import java.util.HashMap;
