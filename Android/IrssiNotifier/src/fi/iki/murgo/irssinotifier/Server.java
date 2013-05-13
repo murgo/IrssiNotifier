@@ -40,7 +40,7 @@ public class Server {
         Message,
         WipeSettings,
         GetNonce,
-        VerifyPremium,
+        License,
     }
 
     private Map<ServerTarget, String> serverUrls = new HashMap<ServerTarget, String>();
@@ -63,7 +63,7 @@ public class Server {
         serverUrls.put(ServerTarget.Message, baseServerUrl + "/API/Message");
         serverUrls.put(ServerTarget.Authenticate, baseServerUrl + "/_ah/login?continue=https://localhost/&auth=");
         serverUrls.put(ServerTarget.GetNonce, baseServerUrl + "/API/Nonce");
-        serverUrls.put(ServerTarget.GetNonce, baseServerUrl + "/API/VerifyPremium");
+        serverUrls.put(ServerTarget.License, baseServerUrl + "/API/License");
     }
 
     public boolean authenticate() throws IOException {

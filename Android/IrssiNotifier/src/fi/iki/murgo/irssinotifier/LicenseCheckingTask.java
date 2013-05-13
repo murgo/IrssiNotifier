@@ -91,6 +91,21 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
             return LicenseCheckingStatus.Error;
         }
 
+        long startTime = System.currentTimeMillis();
+        while (service == null && System.currentTimeMillis() - startTime < 10000) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return LicenseCheckingStatus.Error;
+            }
+        }
+
+        if (service == null) {
+            Log.e(TAG, "Could not connect to service in time");
+            return LicenseCheckingStatus.Error;
+        }
+
         final Object[] licenseResponseData = new Object[3];
         try {
             Log.i(TAG, "Calling checkLicense");
@@ -107,10 +122,10 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
             return LicenseCheckingStatus.Error;
         }
 
-        long startTime = System.currentTimeMillis();
-        String signedData = null;
-        while (signedData == null || System.currentTimeMillis() - startTime > 10000) {
-            signedData = (String) licenseResponseData[1];
+        startTime = System.currentTimeMillis();
+        Object signedDataObject = null;
+        while (signedDataObject == null && System.currentTimeMillis() - startTime < 10000) {
+            signedDataObject = licenseResponseData[1];
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
@@ -119,7 +134,25 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
             }
         }
 
+        if (signedDataObject == null) {
+            Log.e(TAG, "Could not connect to service in time");
+            return LicenseCheckingStatus.Error;
+        }
+
+        /* Response codes:
+            private static final int LICENSED = 0x0;
+            private static final int NOT_LICENSED = 0x1;
+            private static final int LICENSED_OLD_KEY = 0x2;
+            private static final int ERROR_NOT_MARKET_MANAGED = 0x3;
+            private static final int ERROR_SERVER_FAILURE = 0x4;
+            private static final int ERROR_OVER_QUOTA = 0x5;
+
+            private static final int ERROR_CONTACTING_SERVER = 0x101;
+            private static final int ERROR_INVALID_PACKAGE_NAME = 0x102;
+            private static final int ERROR_NON_MATCHING_UID = 0x103;
+         */
         int responseCode = (Integer) licenseResponseData[0];
+        String signedData = (String) licenseResponseData[1];
         String signature = (String) licenseResponseData[2];
 
         switch (responseCode) {
@@ -141,7 +174,7 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
 
         ServerResponse response;
         try {
-            response = server.post(new MessageToServer(map), Server.ServerTarget.VerifyPremium);
+            response = server.post(new MessageToServer(map), Server.ServerTarget.License);
         } catch (IOException e) {
             e.printStackTrace();
             return LicenseCheckingStatus.Error;
@@ -156,7 +189,7 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
             Log.i(TAG, "IrssiNotifier+ licensed succesfully!");
             Preferences prefs = new Preferences(activity);
             prefs.setLastLicenseTime(System.currentTimeMillis());
-            prefs.incrementLicenseCount();
+            prefs.setLicenseCount(prefs.getLicenseCount() + 1);
 
             return LicenseCheckingStatus.Allow;
         }

@@ -20,6 +20,7 @@ import java.io.IOException;
 public class InitialSettingsActivity extends Activity {
 
     private static final String TAG = InitialSettingsActivity.class.getSimpleName();
+    private Preferences preferences;
 
     private Callback<Void> errorCallback = new Callback<Void>() {
         public void doStuff(Void param) {
@@ -31,6 +32,8 @@ public class InitialSettingsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.initialsettings);
+
+        preferences = new Preferences(this);
 
         if (LicenseHelper.isPaidVersion(this)) {
             TextView tv = (TextView)findViewById(R.id.textViewWelcomeHelp);
@@ -49,15 +52,14 @@ public class InitialSettingsActivity extends Activity {
         listView.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 Account account = accounts[arg2];
-                Preferences prefs = new Preferences(InitialSettingsActivity.this);
-                prefs.setAccountName(account.name);
-                prefs.setNotificationsEnabled(true);
+                preferences.setAccountName(account.name);
+                preferences.setNotificationsEnabled(true);
                 whatNext(0);
             }
         });
 
         if (LicenseHelper.bothEditionsInstalled(this)) {
-            MessageBox.Show(this, "Not the greatest idea", "You have both free and paid versions of IrssiNotifier installed. Uninstall either, or you'll get duplicate notifications.", null);
+            MessageBox.Show(this, "Not the greatest idea.", "You have both free and paid versions of IrssiNotifier installed. Uninstall either, or you'll get duplicate notifications.", null);
         }
     }
 
@@ -67,10 +69,9 @@ public class InitialSettingsActivity extends Activity {
         switch (i) {
             default:
             case -1:
-                Preferences prefs = new Preferences(this);
-                prefs.setAccountName(null);
-                prefs.setAuthToken(null);
-                prefs.setGcmRegistrationId(null);
+                preferences.setAccountName(null);
+                preferences.setAuthToken(null);
+                preferences.setGcmRegistrationId(null);
                 finish();
                 break;
             case 0:
@@ -103,11 +104,12 @@ public class InitialSettingsActivity extends Activity {
                         whatNext(3);
                         break;
                     case Disallow:
+                        preferences.setLicenseCount(0);
                         MessageBox.Show(InitialSettingsActivity.this, "IrssiNotifier+ not licensed!", "Shame on you!", errorCallback);
                         break;
                     case Error:
-                        MessageBox.Show(InitialSettingsActivity.this, "Error while licensing",
-                                "An error occurred while trying to check IrssiNotifier+ license validity, please try again after a short while. If problem persist, contact support at https://irssinotifier.appspot.com.", errorCallback);
+                        MessageBox.Show(InitialSettingsActivity.this, "Licensing error",
+                                "An error occurred while trying to check IrssiNotifier+ license validity, please try again after a short while. If problem persist, contact support at https://irssinotifier.appspot.com.", errorCallback, true);
                         break;
                 }
             }

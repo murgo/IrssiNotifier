@@ -62,7 +62,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
         Preferences.setVersion(versionCode);
 
         // do initial settings
-        if (preferences.getAccountName() == null || preferences.getGcmRegistrationId() == null || preferences.getGcmRegistrationIdVersion() != versionCode) {
+        if (preferences.getAccountName() == null || preferences.getGcmRegistrationId() == null || preferences.getGcmRegistrationIdVersion() != versionCode || (LicenseHelper.isPaidVersion(this) && preferences.getLicenseCount() == 0)) {
             Log.d(TAG, "Asking for initial settings");
             Intent i = new Intent(this, InitialSettingsActivity.class);
             startActivity(i);
@@ -230,6 +230,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
                                 // yay! do nothing
                                 break;
                             case Disallow:
+                                preferences.setLicenseCount(0);
                                 MessageBox.Show(IrssiNotifierActivity.this, "IrssiNotifier+ not licensed!", "Shame on you!", new Callback<Void>() {
                                     @Override
                                     public void doStuff(Void param) {

@@ -229,9 +229,9 @@ public class Preferences {
         return sharedPreferences.getLong(LAST_LICENSE_TIME, 0);
     }
 
-    public boolean incrementLicenseCount() {
+    public boolean setLicenseCount(int i) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt(LICENSE_COUNT, sharedPreferences.getInt(LICENSE_COUNT, 0) + 1);
+        editor.putInt(LICENSE_COUNT, i);
         return editor.commit();
     }
 
