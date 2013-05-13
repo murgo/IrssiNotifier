@@ -20,13 +20,13 @@ Function Replace-File
 Function Change-Premium()
 {
     Write-Host "Changing values to premium..."
-    Replace-File "AndroidManifest.xml" $regexPackageName 'package="fi.iki.murgo.irssinotifier.premium"'
-    Replace-File "AndroidManifest.xml" $regexC2dPermission 'fi.iki.murgo.irssinotifier.premium.permission.C2D_MESSAGE'
-    Replace-File "AndroidManifest.xml" $regexCategory '<category android:name="fi.iki.murgo.irssinotifier.premium" />'
+    Replace-File "AndroidManifest.xml" $regexPackageName 'package="fi.iki.murgo.irssinotifier.plus"'
+    Replace-File "AndroidManifest.xml" $regexC2dPermission 'fi.iki.murgo.irssinotifier.plus.permission.C2D_MESSAGE'
+    Replace-File "AndroidManifest.xml" $regexCategory '<category android:name="fi.iki.murgo.irssinotifier.plus" />'
     Replace-File "AndroidManifest.xml" '(<uses-permission android:name="com\.google\.android\.c2dm\.permission\.RECEIVE" />)' '$1<uses-permission android:name="com.android.vending.CHECK_LICENSE" />'
     Replace-File "res\values\strings.xml" $regexApplicationName '<string name="app_name">IrssiNotifier+</string>'
     $regexImport = '(package fi.iki.murgo.irssinotifier;)'
-    $import = '$1import fi.iki.murgo.irssinotifier.premium.R;'
+    $import = '$1import fi.iki.murgo.irssinotifier.plus.R;'
     Replace-File "src\fi\iki\murgo\irssinotifier\InitialSettingsActivity.java" $regexImport $import
     Replace-File "src\fi\iki\murgo\irssinotifier\SettingsActivity.java" $regexImport $import
     Replace-File "src\fi\iki\murgo\irssinotifier\MessagePagerAdapter.java" $regexImport $import
@@ -44,7 +44,7 @@ Function Change-Free()
     Replace-File "AndroidManifest.xml" $regexCategory '<category android:name="fi.iki.murgo.irssinotifier" />'
     Replace-File "AndroidManifest.xml" '<uses-permission android:name="com\.android\.vending\.CHECK_LICENSE" />' ''
     Replace-File "res\values\strings.xml" $regexApplicationName '<string name="app_name">IrssiNotifier</string>'
-    $regexImport = 'import fi\.iki\.murgo\.irssinotifier\.premium\.R;'
+    $regexImport = 'import fi\.iki\.murgo\.irssinotifier\.plus\.R;'
     Replace-File "src\fi\iki\murgo\irssinotifier\InitialSettingsActivity.java" $regexImport ''
     Replace-File "src\fi\iki\murgo\irssinotifier\SettingsActivity.java" $regexImport ''
     Replace-File "src\fi\iki\murgo\irssinotifier\MessagePagerAdapter.java" $regexImport ''
