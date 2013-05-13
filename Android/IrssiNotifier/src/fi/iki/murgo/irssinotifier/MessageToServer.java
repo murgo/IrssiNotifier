@@ -13,11 +13,17 @@ public class MessageToServer {
 
     private Map<String, String> map = new HashMap<String, String>();
 
+    public MessageToServer() {
+        this(null);
+    }
+
     public MessageToServer(Map<String, String> values) {
         map.put(LANGUAGE, Locale.getDefault().getISO3Language());
         map.put(VERSION, Integer.toString(version));
-        for (Map.Entry<String, String> pair : values.entrySet()) {
-            map.put(pair.getKey(), pair.getValue());
+        if (values != null) {
+            for (Map.Entry<String, String> pair : values.entrySet()) {
+                map.put(pair.getKey(), pair.getValue());
+            }
         }
     }
 

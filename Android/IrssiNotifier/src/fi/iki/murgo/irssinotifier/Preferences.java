@@ -105,7 +105,7 @@ public class Preferences {
 
         MessageToServer msg = new MessageToServer(map);
 
-        ServerResponse response = server.send(msg, target);
+        ServerResponse response = server.post(msg, target);
         if (response.wasSuccesful()) {
             sharedPreferences.edit().putBoolean(SETTINGS_SENT_KEY, true).commit();
         }

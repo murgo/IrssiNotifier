@@ -39,6 +39,8 @@ public class Server {
         Authenticate,
         Message,
         WipeSettings,
+        GetNonce,
+        VerifyPremium,
     }
 
     private Map<ServerTarget, String> serverUrls = new HashMap<ServerTarget, String>();
@@ -60,6 +62,8 @@ public class Server {
         serverUrls.put(ServerTarget.WipeSettings, baseServerUrl + "/API/Wipe");
         serverUrls.put(ServerTarget.Message, baseServerUrl + "/API/Message");
         serverUrls.put(ServerTarget.Authenticate, baseServerUrl + "/_ah/login?continue=https://localhost/&auth=");
+        serverUrls.put(ServerTarget.GetNonce, baseServerUrl + "/API/Nonce");
+        serverUrls.put(ServerTarget.GetNonce, baseServerUrl + "/API/VerifyPremium");
     }
 
     public boolean authenticate() throws IOException {
@@ -165,7 +169,7 @@ public class Server {
         return false;
     }
 
-    public ServerResponse send(MessageToServer message, ServerTarget target) throws IOException {
+    public ServerResponse post(MessageToServer message, ServerTarget target) throws IOException {
         HttpPost httpPost = new HttpPost(serverUrls.get(target));
         httpPost.setEntity(new StringEntity(message.getHttpString()));
 
@@ -175,7 +179,7 @@ public class Server {
 
         ServerResponse serverResponse;
         serverResponse = new ServerResponse(statusCode == 200, responseString);
-        
+
         if (serverResponse.wasSuccesful()) {
             Log.i(TAG, "Settings sent to server");
         } else {
