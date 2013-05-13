@@ -256,3 +256,23 @@ class CronController(webapp2.RequestHandler):
     def get(self):
         logging.info("Clearing data")
         dao.clear_old_messages()
+
+
+class NonceController(BaseController):
+    def get(self):
+        val = self.initController("NonceController.get()", [])
+        if not val:
+            return self.response
+
+        self.response.out.write('666')
+
+
+class LicensingController(BaseController):
+    def post(self):
+        val = self.initController("LicensingController.get()", ['SignedData', 'Signature'])
+        if not val:
+            return self.response
+
+        logging.info('Verifying license for user %s, SignedData: %s, Signature: %s' % (self.irssi_user.email, self.data['SignedData'], self.data['Signature']))
+
+        self.response.out.write('OK')
