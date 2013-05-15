@@ -3,3 +3,9 @@ indexes:
   ancestor: yes
   properties:
   - name: server_timestamp
+
+- kind: Nonce
+  ancestor: yes
+  properties:
+  - name: issue_timestamp
+    direction: desc

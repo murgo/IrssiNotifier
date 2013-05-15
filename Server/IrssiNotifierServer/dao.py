@@ -205,17 +205,13 @@ def wipe_user(user):
 
 def get_new_nonce(user):
     query = Nonce.query(ancestor=user.key).order(-Nonce.issue_timestamp)
-    nonces = query.fetch(1)
-    logging.debug("Found %s nonces" % len(nonces))
+    nonce = query.get()
 
-    nonce_expiration_time = 20
+    nonce_expiration_time = 20 * 60
 
-    nonce = None
-    if len(nonces) != 0:
-        nonce = nonces[0]
-        if nonce.issue_timestamp + nonce_expiration_time > time.time():
-            logging.debug("Returning old nonce, issue_timestamp: %s" % nonce.issue_timestamp)
-            return nonce
+    if nonce is not None and nonce.issue_timestamp + nonce_expiration_time > time.time():
+        logging.debug("Returning old nonce, issue_timestamp: %s" % nonce.issue_timestamp)
+        return nonce
 
     rand = random.randint(-2147483648, 2147483647)
     if nonce is None:
@@ -232,11 +228,8 @@ def get_new_nonce(user):
 
 
 def get_nonce(user, nonce):
-    query = Nonce.query(Nonce.nonce == nonce, ancestor=user.key).order(-Nonce.issue_timestamp)
-    nonces = query.fetch(1)
-    if len(nonces) > 0:
-        return nonces[0]
-    return None
+    query = Nonce.query(Nonce.nonce == nonce, ancestor=user.key)
+    return query.get()
 
 
 def load_licensing_public_key():

@@ -20,6 +20,9 @@ class Licensing(object):
             Licensing.public_key = RSA.importKey(base64.standard_b64decode(Licensing.public_key_base64))
 
     def check_license(self, irssi_user, signed_data, signature):
+        signed_data = signed_data.replace('%3D', '=')
+        signature = signature.replace('%3D', '=')
+
         try:
             split = signed_data.split(':')
             main_data = split[0]
@@ -43,9 +46,9 @@ class Licensing(object):
             return False
 
         old_nonce = dao.get_nonce(irssi_user, nonce)
-        if old_nonce is None or old_nonce != nonce:
-            logging.error("Nonces do not match! old: %s, given: %s" % (old_nonce, nonce))
-            #return False
+        if old_nonce is None:
+            logging.error("Nonces do not match! given: %s" % nonce)
+            return False
 
         h = SHA.new()
         h.update(signed_data)

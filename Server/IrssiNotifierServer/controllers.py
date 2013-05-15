@@ -87,7 +87,6 @@ class BaseController(webapp2.RequestHandler):
         return True
 
     def decode_params(self, request):
-        logging.debug("Decoding parameters: %s" % request.body)
         d = request.body
         pairs = d.split('&')
         data = {}
@@ -118,6 +117,7 @@ class WebController(BaseController):
         registration_date = 'Aeons ago'
         last_notification_time = 'Never'
         notification_count = 0
+        license_type = 'Free'
 
         if user is not None:
             tokens = dao.get_gcm_tokens_for_user(user)
@@ -141,6 +141,11 @@ class WebController(BaseController):
             if user.notification_count is not None:
                 notification_count = user.notification_count
 
+            if user.license_timestamp is not None:
+                license_type = 'Plus'
+
+
+
         template_values = {
             'user': user,
             'tokens': tokens,
@@ -152,7 +157,8 @@ class WebController(BaseController):
             'irssi_latest': irssi_script_version >= LatestScriptVersion,
             'registration_date': registration_date,
             'last_notification_time': last_notification_time,
-            'notification_count': notification_count
+            'notification_count': notification_count,
+            'license_type': license_type
         }
 
         template = jinja_environment.get_template('html/index.html')
@@ -275,9 +281,7 @@ class LicensingController(BaseController):
         if not val:
             return self.response
 
-        logging.info('Verifying license for user %s, SignedData: %s, Signature: %s' % (self.irssi_user.email,
-                                                                                       self.data['SignedData'],
-                                                                                       self.data['Signature']))
+        logging.info('Verifying license for user %s' % self.irssi_user.email)
 
         ok = licensing.Licensing().check_license(self.irssi_user, self.data['SignedData'], self.data['Signature'])
 
