@@ -115,9 +115,11 @@ class WebController(BaseController):
         tokens = []
         irssi_script_version = 0
         registration_date = 'Aeons ago'
-        last_notification_time = 'Never'
-        notification_count = 0
+        last_notification_time = 'Upgrade to Plus to see'
+        notification_count_since_licensed = 'Upgrade to Plus to see'
         license_type = 'Free'
+        irssi_working = False
+        license_timestamp = 0
 
         if user is not None:
             tokens = dao.get_gcm_tokens_for_user(user)
@@ -128,6 +130,20 @@ class WebController(BaseController):
                 else:
                     token.registration_date_string = 'Yesterday?'
 
+            if user.license_timestamp is not None:
+                license_type = 'Plus'
+                license_timestamp = user.license_timestamp
+
+                if user.last_notification_time is not None:
+                    last_notification_time = user.last_notification_time
+                else:
+                    last_notification_time = 'Never'
+
+                if user.notification_count_since_licensed is not None:
+                    notification_count_since_licensed = user.notification_count_since_licensed
+                else:
+                    notification_count_since_licensed = 0
+
             irssi_script_version = user.irssi_script_version
             if irssi_script_version is None:
                 irssi_script_version = 0
@@ -136,15 +152,7 @@ class WebController(BaseController):
                 registration_date = user.registration_date
 
             if user.last_notification_time is not None:
-                last_notification_time = user.last_notification_time
-
-            if user.notification_count is not None:
-                notification_count = user.notification_count
-
-            if user.license_timestamp is not None:
-                license_type = 'Plus'
-
-
+                irssi_working = True
 
         template_values = {
             'user': user,
@@ -153,12 +161,13 @@ class WebController(BaseController):
             'logged_in': user is not None,
             'login_url': users.create_login_url("#profile").replace("&", "&amp;"),
             'logout_url': users.create_logout_url("").replace("&", "&amp;"),
-            'irssi_working': last_notification_time != 'Never',
+            'irssi_working': irssi_working,
             'irssi_latest': irssi_script_version >= LatestScriptVersion,
             'registration_date': registration_date,
             'last_notification_time': last_notification_time,
-            'notification_count': notification_count,
-            'license_type': license_type
+            'notification_count_since_licensed': notification_count_since_licensed,
+            'license_type': license_type,
+            'license_timestamp': license_timestamp
         }
 
         template = jinja_environment.get_template('html/index.html')
@@ -198,7 +207,7 @@ class MessageController(BaseController):
 
         try:
             message = dao.add_message(self.irssi_user, self.data["message"], self.data['channel'], self.data['nick'])
-            dao.update_irssi_user(self.irssi_user, int(self.data['version']))
+            dao.update_irssi_user_from_message(self.irssi_user, int(self.data['version']))
             gcmhelper.send_gcm_to_user_deferred(self.irssi_user, message.to_gcm_json())
         except:
             logging.warn("Error while creating new message, exception %s", traceback.format_exc())

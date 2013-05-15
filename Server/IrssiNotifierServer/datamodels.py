@@ -13,7 +13,7 @@ class IrssiUser(ndb.Model):
     user_id = ndb.StringProperty(indexed=True)
     api_token = ndb.StringProperty(indexed=True)
     registration_date = ndb.IntegerProperty(indexed=False)
-    notification_count = ndb.IntegerProperty(indexed=False)
+    notification_count_since_licensed = ndb.IntegerProperty(indexed=False)
     last_notification_time = ndb.IntegerProperty(indexed=False)
     irssi_script_version = ndb.IntegerProperty(indexed=False)
     license_timestamp = ndb.IntegerProperty(indexed=False)

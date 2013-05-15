@@ -73,7 +73,6 @@ def add_irssi_user(user, user_id=None):
     irssi_user.email = user.email()
     irssi_user.api_token = generate_api_token()
     irssi_user.registration_date = int(time.time())
-    irssi_user.notification_count = 0
     irssi_user.put()
 
     api_token_key = "api-token" + str(irssi_user.api_token)
@@ -82,18 +81,29 @@ def add_irssi_user(user, user_id=None):
     return irssi_user
 
 
-def update_irssi_user(irssi_user, version):
+def update_irssi_user_from_message(irssi_user, version):
     logging.debug("updating irssi user")
-    if irssi_user.notification_count is None:
-        irssi_user.notification_count = 1
-    else:
-        irssi_user.notification_count += 1
-    irssi_user.last_notification_time = int(time.time())
-    irssi_user.irssi_script_version = version
-    irssi_user.put()
+    modified = False
+    if irssi_user.license_timestamp is not None:
+        modified = True
+        irssi_user.last_notification_time = int(time.time())
+        if irssi_user.notification_count_since_licensed is None:
+            irssi_user.notification_count_since_licensed = 1
+        else:
+            irssi_user.notification_count_since_licensed += 1
 
-    api_token_key = "api-token" + str(irssi_user.api_token)
-    memcache.set(api_token_key, irssi_user)
+    if irssi_user.last_notification_time is None:
+        modified = True
+        irssi_user.last_notification_time = int(time.time())
+
+    if irssi_user.irssi_script_version != version:
+        modified = True
+        irssi_user.irssi_script_version = version
+
+    if modified:
+        irssi_user.put()
+        api_token_key = "api-token" + str(irssi_user.api_token)
+        memcache.set(api_token_key, irssi_user)
 
     return irssi_user
 
@@ -136,7 +146,11 @@ def add_message(irssi_user, message=None, channel=None, nick=None):
     msg.channel = channel
     msg.nick = nick
     msg.server_timestamp = int(time.time())
-    msg.put()
+    if irssi_user.license_timestamp is not None:
+        logging.debug("Licensed user, saving message")
+        msg.put()
+    else:
+        logging.debug("Free user, not saving message")
     return msg
 
 
@@ -181,6 +195,9 @@ def wipe_user(user):
     key = user.key
     MaxAmount = 500
 
+    api_token_key = "api-token" + str(user.api_token)
+    memcache.delete(api_token_key)
+
     amount = MaxAmount
     logging.info("Wiping messages")
     while amount == MaxAmount:
@@ -201,7 +218,6 @@ def wipe_user(user):
 
     logging.info("Wiping user")
     user.key.delete()
-
 
 def get_new_nonce(user):
     query = Nonce.query(ancestor=user.key).order(-Nonce.issue_timestamp)
@@ -261,14 +277,16 @@ def get_secret(secret_name):
         return None
 
 
-def save_license(user, response_code, nonce, package_name, version_code, user_id, timestamp, extra_data):
-    logging.info("User %s licensed!" % user.email)
+def save_license(irssi_user, response_code, nonce, package_name, version_code, user_id, timestamp, extra_data):
+    logging.info("User %s licensed!" % irssi_user.email)
 
     current_time = int(time.time())
-    user.license_timestamp = current_time
-    user.put()
+    irssi_user.license_timestamp = current_time
+    irssi_user.put()
+    api_token_key = "api-token" + str(irssi_user.api_token)
+    memcache.set(api_token_key, irssi_user)
 
-    l = License(parent=user.key)
+    l = License(parent=irssi_user.key)
     l.response_code = response_code
     l.nonce = nonce
     l.package_name = package_name

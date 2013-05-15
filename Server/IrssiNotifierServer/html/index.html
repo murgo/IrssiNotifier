@@ -118,9 +118,12 @@
 	<a href="https://github.com/murgo/irssinotifier"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
 	
 	<div class="box">
-	
-	<img class="center banner" src="static/banner.png" alt="IrssiNotifier" />
 
+{% if license_type == 'Plus' %}
+	<img class="center banner" src="static/banner_plus.png" alt="IrssiNotifier" />
+{% else %}
+	<img class="center banner" src="static/banner.png" alt="IrssiNotifier" />
+{% endif %}
 	<div id="navi" class="center">
 		<div class="navibutton navi-main"><a href="#main">Main</a></div>
 		<div class="navibutton navi-new"><a href="#new">What's new</a></div>
@@ -429,11 +432,15 @@
 		<p><a href="{{ logout_url }}">Log out</a>.</p>
 		
 		<h2>Your details</h2>
-		<p>Registered since: <span class="datetime">{{ registration_date }}</span></p>
+		<p>Registered on: <span class="datetime">{{ registration_date }}</span></p>
 		<p>API token: {{ user.api_token }}</p>
-		<p>Notification count (since 2012-09-11): {{ notification_count }}</p>
-		<p>Last notification time: <span class="datetime">{{ last_notification_time }}</span></p>
+{% if license_type == 'Plus' %}
+		<p>License type: <span class="working">{{ license_type }}</span> (upgraded on <span class="datetime">{{ license_timestamp }}</span>)</p>
+{% else %}
 		<p>License type: {{ license_type }}</p>
+{% endif %}
+		<p>Notification count (since Plus): {{ notification_count_since_licensed }}</p>
+		<p>Last notification time: <span class="datetime">{{ last_notification_time }}</span></p>
 
 		<h2>Android client status</h2>
 
