@@ -131,6 +131,13 @@ public class SettingsActivity extends PreferenceActivity {
         handleColorPicker();
 
         handleIcb();
+
+        if (!LicenseHelper.isPaidVersion(this)) {
+            CheckBoxPreference usePullMechanismPref = (CheckBoxPreference)findPreference("UsePullMechanism");
+            usePullMechanismPref.setSummary(usePullMechanismPref.getSummary() + ". Only in Plus version.");
+            usePullMechanismPref.setEnabled(false);
+            usePullMechanismPref.setChecked(false);
+        }
     }
 
     private void handleColorPicker() {

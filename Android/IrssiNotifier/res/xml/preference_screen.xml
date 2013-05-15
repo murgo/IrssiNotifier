@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory android:title="Encryption settings" >
+    <PreferenceCategory android:title="General settings" >
         <EditTextPreference
             android:defaultValue="password"
             android:key="EncryptionPassword"
             android:summary="Must be the same as the one set in Irssi"
             android:title="Encryption password" />
+        <CheckBoxPreference
+            android:key="UsePullMechanism"
+            android:title="Check for new messages"
+            android:summary="Pull unreceived messages from server on app startup"
+            android:defaultValue="true"
+            />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Notifications" >

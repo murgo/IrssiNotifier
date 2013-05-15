@@ -43,6 +43,7 @@ public class Preferences {
     private static final String USE_DEFAULT_LIGHT_COLOR = "UseDefaultLightColor";
     private static final String LAST_LICENSE_TIME = "LastLicenseTime";
     private static final String LICENSE_COUNT = "LicenseCount";
+    private static final String USE_PULL_MECHANISM = "UsePullMechanism";
 
     private SharedPreferences sharedPreferences;
     private static int versionCode;
@@ -237,5 +238,9 @@ public class Preferences {
 
     public int getLicenseCount() {
         return sharedPreferences.getInt(LICENSE_COUNT, 0);
+    }
+
+    public boolean isPullMechanismInUse() {
+        return sharedPreferences.getBoolean(USE_PULL_MECHANISM, true);
     }
 }

@@ -105,7 +105,7 @@ public class InitialSettingsActivity extends Activity {
                         break;
                     case Disallow:
                         preferences.setLicenseCount(0);
-                        MessageBox.Show(InitialSettingsActivity.this, "IrssiNotifier+ not licensed!", "Shame on you!", errorCallback);
+                        MessageBox.Show(InitialSettingsActivity.this, "IrssiNotifier+ is not licensed!", "Shame on you!", errorCallback);
                         break;
                     case Error:
                         MessageBox.Show(InitialSettingsActivity.this, "Licensing error",
@@ -123,7 +123,7 @@ public class InitialSettingsActivity extends Activity {
         String msg = "Check https://irssinotifier.appspot.com for information about setting up your irssi script.";
         String title = "Success";
         if (LicenseHelper.isPaidVersion(this)) {
-            msg = "App licensed, thanks! Your account has been upgraded and pull notification system has been enabled. Check https://irssinotifier.appspot.com for information about setting up your irssi script.";
+            msg = "App licensed, thanks! Your account has been upgraded to Plus and pull notification system has been enabled. Check https://irssinotifier.appspot.com for information about setting up your irssi script.";
             title = "Thank you for your support!";
         }
         MessageBox.Show(this, title, msg,

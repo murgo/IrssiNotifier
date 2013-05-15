@@ -199,7 +199,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
             public void run() {
                 refreshUi();
 
-                if (!uptodate) {
+                if (!uptodate && preferences.isPullMechanismInUse() && LicenseHelper.isPaidVersion(IrssiNotifierActivity.this)) {
                     dataFetcherTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     backgroundOperationStarted();
                 }
@@ -231,7 +231,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
                                 break;
                             case Disallow:
                                 preferences.setLicenseCount(0);
-                                MessageBox.Show(IrssiNotifierActivity.this, "IrssiNotifier+ not licensed!", "Shame on you!", new Callback<Void>() {
+                                MessageBox.Show(IrssiNotifierActivity.this, "IrssiNotifier+ is not licensed!", "Shame on you!", new Callback<Void>() {
                                     @Override
                                     public void doStuff(Void param) {
                                         IrssiNotifierActivity.this.finish();
