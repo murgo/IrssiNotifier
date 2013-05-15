@@ -21,10 +21,9 @@ class GCM(object):
         self.dao = dao
         self.gcmhelper = gcmhelper
         if GCM.authkey is None:
-            #self.dao.add_gcm_auth_key()
             GCM.authkey = self.dao.load_gcm_auth_key()
             if GCM.authkey is None:
-                logging.error("No auth key for GCM!")
+                raise Exception("No auth key for GCM!")
 
     def send_gcm_to_user(self, irssiuser_key, message):
         logging.debug("Sending gcm message to user %s" % irssiuser_key)

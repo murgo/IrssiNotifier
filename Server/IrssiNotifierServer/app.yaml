@@ -1,5 +1,5 @@
 application: irssinotifier
-version: 5
+version: 6
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -27,6 +27,10 @@ handlers:
   
 libraries:
 - name: jinja2
+  version: latest
+- name: pycrypto
+  version: latest
+- name: yaml
   version: latest
 
 builtins:

@@ -3,6 +3,7 @@ from google.appengine.api import users
 
 import webapp2
 import logging
+import licensing
 import login
 import dao
 import gcmhelper
@@ -264,7 +265,8 @@ class NonceController(BaseController):
         if not val:
             return self.response
 
-        self.response.out.write('666')
+        nonce = dao.get_new_nonce(self.irssi_user)
+        self.response.out.write(nonce.nonce)
 
 
 class LicensingController(BaseController):
@@ -273,6 +275,13 @@ class LicensingController(BaseController):
         if not val:
             return self.response
 
-        logging.info('Verifying license for user %s, SignedData: %s, Signature: %s' % (self.irssi_user.email, self.data['SignedData'], self.data['Signature']))
+        logging.info('Verifying license for user %s, SignedData: %s, Signature: %s' % (self.irssi_user.email,
+                                                                                       self.data['SignedData'],
+                                                                                       self.data['Signature']))
 
-        self.response.out.write('OK')
+        ok = licensing.Licensing().check_license(self.irssi_user, self.data['SignedData'], self.data['Signature'])
+
+        if ok:
+            self.response.out.write('OK')
+        else:
+            self.response.status = '403 Forbidden'
