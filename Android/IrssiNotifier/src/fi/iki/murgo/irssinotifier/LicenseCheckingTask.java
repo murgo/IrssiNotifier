@@ -169,8 +169,8 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
 
     private LicenseCheckingStatus verifyResponseData(String signedData, String signature) {
         HashMap<String, String> map = new HashMap<String, String>();
-        map.put("SignedData", signedData);
-        map.put("Signature", signature);
+        map.put("SignedData", makeBase64UrlSafe(signedData));
+        map.put("Signature", makeBase64UrlSafe(signature));
 
         ServerResponse response;
         try {
@@ -196,5 +196,9 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
 
         Log.w(TAG, "Licensing: Disallowing, server said: " + response.getResponseString());
         return LicenseCheckingStatus.Disallow;
+    }
+
+    private String makeBase64UrlSafe(String data) {
+        return data.replace("=", "%3D");
     }
 }
