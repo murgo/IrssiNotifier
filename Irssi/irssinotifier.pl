@@ -13,8 +13,8 @@ $VERSION = "16";
     name        => "IrssiNotifier",
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
-    url         => "http://irssinotifier.appspot.com",
-    changed     => "2013-04-16"
+    url         => "https://irssinotifier.appspot.com",
+    changed     => "2013-05-17"
 );
 
 my $lastMsg;
@@ -227,7 +227,7 @@ sub send_notification {
             }
 
             my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
-            my $result = `wget --tries=1 --timeout=5 --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
+            my $result = `wget --tries=2 --timeout=10 --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
             if (($? >> 8) != 0) {
                 # Something went wrong, might be network error or authorization issue. Probably no need to alert user, though.
                 print $writeHandle "0 FAIL\n";
