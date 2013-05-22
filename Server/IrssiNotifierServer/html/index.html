@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 
-<!-- IrssiNotifier, last updated 2013-04-17 -->
+<!-- IrssiNotifier, last updated 2013-05-23 -->
 
 <html>
 <head>
@@ -133,46 +133,74 @@
 
     <div id="content-main" class="hidden content">
 
+        <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">
+            <img src="static/phone.png" alt="IrssiNotifier screenshot" style="float:right;" />
+        </a>
+
         <h1>IrssiNotifier</h1>
 
         <div class="google-play">
-            <a href="http://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">
-            <img alt="Android app on Google Play" src="http://www.android.com/images/brand/android_app_on_play_logo_large.png" />
+            <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">
+                <img alt="Android app on Google Play" src="https://developer.android.com/images/brand/en_app_rgb_wo_60.png" />
             </a>
         </div>
 
+        <h2>IrssiNotifier+</h2>
+
+        <div class="google-play">
+            <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier.plus">
+                <img alt="Android app on Google Play" src="https://developer.android.com/images/brand/en_app_rgb_wo_45.png" />
+            </a>
+        </div>
+
+        <br >
+
         <div class="questions">
         <p class="question">What?</p>
-        <p class="answer">Get notifications from IRC hilights and private messages straight to your Android device! Project is open source, see <a href="https://github.com/murgo/IrssiNotifier">GitHub project page</a>. Check <a href="http://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">Google Play</a> for screenshots.</p>
+        <p class="answer">
+            Get notifications from IRC hilights and private messages straight to your Android™ device! Project is open source, see <a href="https://github.com/murgo/IrssiNotifier">GitHub project page</a> for details. Check <a href="http://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">Google Play™</a> for screenshots. There are also unofficial support for <a href="http://www.weechat.org/files/scripts/irssinotifier.py">WeeChat</a> and <a href="https://github.com/evgeni/IrssiNotifier/tree/python/Python">Python</a>.
+        </p>
 
         <p class="question">How?</p>
-        <p class="answer">IrssiNotifier uses Irssi script to send IRC messages to server, and Google's Cloud to Device Messaging framework to send notifications to Android device. This minimizes the battery usage of your device, and enables notifications to be sent near real time.</p>
+        <p class="answer">
+            IrssiNotifier uses Irssi script to send IRC messages to server, and Google's Cloud to Device Messaging framework to send notifications to Android device. This minimizes the battery usage of your device, and enables notifications to be sent near real time.
+        </p>
 
         <p class="question">Where?</p>
-        <p class="answer">First download IrssiNotifier Android app from <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">Google Play</a>. After that, follow instructions about setting up the Irssi script in the <a href="#help">help page</a>.</p>
+        <p class="answer">
+            First download IrssiNotifier Android app from <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">Google Play</a>. After that, follow instructions about setting up the Irssi script in the <a href="#help">help page</a>.
+        </p>
 
         <p class="question">What do I need?</p>
-        <p class="answer">You'll need Irssi running on Linux server or similar. You'll also need an Android device (phone or tablet, or both) with Android version 2.2 (froyo) or later.</p>
+        <p class="answer">
+            You'll need Irssi running on Linux server or similar. You'll also need an Android device (phone or tablet, or both) with Android version 2.2 (froyo) or later.
+        </p>
 
         <p class="question">Privacy?</p>
-        <p class="answer">All data is end-to-end encrypted with the encryption password of your choice. Password is never sent to the server. You'll have to login with your Google account, but no password or other sensitive data is collected. Check <a href="#privacy">privacy page</a> for details.</p>
+        <p class="answer">
+            All data is end-to-end encrypted with the encryption password of your choice. Password is never sent to the server. You'll have to login with your Google account, but no password or other sensitive data is collected. Check <a href="#privacy">privacy page</a> for details.
+        </p>
 
         <p class="question">Who?</p>
-        <p class="answer">This service was made by Lauri Härsilä, murgo @ IRCnet. If you have any questions, drop me a line by <a href="mailto:murgo@iki.fi">email</a> or join #IrssiNotifier at IRCnet. Huge thanks to everybody who have donated money or contributed source! </p>
+        <p class="answer">
+            This service was made by Lauri Härsilä, murgo @ IRCnet. If you have any questions, drop me a line by <a href="mailto:murgo@iki.fi">email</a> or join #irssinotifier at IRCnet. Huge thanks to everybody who have donated money or contributed source!
+        </p>
 
         <p class="question">How can I help?</p>
-        <p class="answer"> IrssiNotifier was created entirely on my free time. If you have found IrssiNotifier useful and want to help keep project alive, please consider donating through PayPal or straight to my bank account (IBAN: FI0810455000756308). PayPal takes 0,35€ per transaction. Flattr donations are now also available.</p>
+        <p class="answer">
+            IrssiNotifier was created entirely on my free time. If you have found IrssiNotifier useful and want to help keep project alive, please consider buying the <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier.plus">IrssiNotifier+</a> and/or donating through PayPal or Flattr.
+        </p>
 
-            <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-                <input type="hidden" name="cmd" value="_s-xclick">
-                <input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----">
-                <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" name="submit" alt="PayPal - The safer, easier way to pay online!">
-                <img alt="" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-            </form>
+        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" style="float:left">
+            <input type="hidden" name="cmd" value="_s-xclick">
+            <input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----">
+            <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+            <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+        </form>
 
-            <a href="http://flattr.com/thing/628213/IrssiNotifier" target="_blank">
-                <img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" style="margin-top: 10px;"/>
-            </a>
+        <a href="http://flattr.com/thing/628213/IrssiNotifier" target="_blank" >
+            <img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" style="margin-top: 2px;"/>
+        </a>
 
         </div>
 
@@ -315,17 +343,32 @@
 
         <h1>Help!</h1>
 
-        <div class="question">
-        Irssi script installation instructions
-        </div>
+{% if irssi_working %}
+
+        <h2>Irssi script upgrade instructions</h2>
 
         <div class="answer">
-        (to update the script, just follow steps 1-2): <br />
+            Don't worry, your settings won't get lost.<br >
+            <ol>
+                <li>Download Irssi script by copying and pasting the following command (as a single line) to your shell (don't mind any "File exists" -errors):
+                    <div class="code-block">mkdir -p ~/.irssi/scripts/autorun; wget --no-check-certificate https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
+                </li>
+                <li>Reload Irssi script by typing the following command to Irssi:
+                    <div class="code-block">/script load irssinotifier</div>
+                </li>
+            </ol>
+        </div>
+
+{% endif %}
+
+        <h2>Irssi script installation instructions</h2>
+
+        <div class="answer">
         <ol>
             <li>Download Irssi script by copying and pasting the following command (as a single line) to your shell (don't mind any "File exists" -errors):
             <div class="code-block">mkdir -p ~/.irssi/scripts/autorun; wget --no-check-certificate https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
             </li>
-            <li>Load Irssi script by typing the following command to Irssi
+            <li>Load Irssi script by typing the following command to Irssi:
             <div class="code-block">/script load irssinotifier</div>
             </li>
             <li>Set api token in Irssi
@@ -338,9 +381,7 @@
         </ol>
         </div>
 
-        <div class="question">
-        Android app installation instructions
-        </div>
+        <h2>Android app installation instructions</h2>
 
         <div class="answer">
         <ol>
@@ -355,7 +396,7 @@
             <p class="answer">You can clear any of these settings by using the following command:</p>
             <div class="code-block">/set -clear [setting]</div>
 
-            <p class="question">Do not notify when using Irssi</p>
+            <p class="question">Do not notify while using Irssi</p>
             <div class="code-block">/set irssinotifier_require_idle_seconds [second count]</div>
             <p class="answer">When set to more than 0, you will not be notified from events that occur between going idle (i.e. not pressing any keys) and the set second count after that.</p>
 
@@ -410,9 +451,6 @@
 
             <p class="question">I'm getting decryption errors on my Android device!</p>
             <p class="answer">Check that the Android device has the same encryption password as the Irssi script. Instructions to set the Irssi script encryption key are above. On Android, just go to the settings menu.</p>
-
-            <p class="question">Notifications appear multiple times on the Android device!</p>
-            <p class="answer">Android devices get added multiple times if you uninstall and reinstall the software quickly. To prevent multiple notifications, go to the device list at top of this page and disable duplicate devices from there. </p>
 
             <p class="question">Help!</p>
             <p class="answer">If you need more info, drop by #irssinotifier @ IRCnet or drop me a line at <a href="mailto:murgo@iki.fi">murgo@iki.fi</a>.</p>
