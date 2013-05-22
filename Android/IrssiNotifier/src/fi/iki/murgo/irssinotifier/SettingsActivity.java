@@ -113,6 +113,7 @@ public class SettingsActivity extends PreferenceActivity {
                 prefs.setAuthToken(null);
                 prefs.setAccountName(null);
                 prefs.setGcmRegistrationId(null);
+                prefs.setLicenseCount(0);
 
                 IrssiNotifierActivity.refreshIsNeeded();
                 finish();

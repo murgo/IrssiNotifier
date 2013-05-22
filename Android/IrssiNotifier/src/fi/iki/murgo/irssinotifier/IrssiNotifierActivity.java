@@ -172,12 +172,12 @@ public class IrssiNotifierActivity extends SherlockActivity {
                     // changes work correctly
                     public void doStuff(DataFetchResult param) {
                         backgroundOperationEnded();
+                        preferences.setLastFetchTime(now);
+
                         if (param.getException() != null) {
                             handleDataFetcherException(param.getException());
                             return;
                         }
-
-                        preferences.setLastFetchTime(now);
 
                         if (param.getResponse().getServerMessage() != null && param.getResponse().getServerMessage().length() > 0) {
                             MessageBox.Show(IrssiNotifierActivity.this, null, param.getResponse().getServerMessage(), null, true);
@@ -216,38 +216,42 @@ public class IrssiNotifierActivity extends SherlockActivity {
     }
 
     private void checkLicense() {
-        if (preferences.getLicenseCount() < 2) {
-            if (System.currentTimeMillis() - preferences.getLastLicenseTime() > 1000 * 60 * 30) {
-                // over half hour since last registration, register again to prevent 15 minute abuse
-                LicenseCheckingTask task = new LicenseCheckingTask(this);
-                task.setCallback(new Callback<LicenseCheckingTask.LicenseCheckingStatus>() {
-                    @Override
-                    public void doStuff(LicenseCheckingTask.LicenseCheckingStatus param) {
-                        backgroundOperationEnded();
-
-                        switch (param) {
-                            case Allow:
-                                // yay! do nothing
-                                break;
-                            case Disallow:
-                                preferences.setLicenseCount(0);
-                                MessageBox.Show(IrssiNotifierActivity.this, "IrssiNotifier+ is not licensed!", "Shame on you!", new Callback<Void>() {
-                                    @Override
-                                    public void doStuff(Void param) {
-                                        IrssiNotifierActivity.this.finish();
-                                    }
-                                });
-                                break;
-                            case Error:
-                                // do nothing, on next startup licensing will be retried
-                                break;
-                        }
-                    }
-                });
-                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                backgroundOperationStarted();
-            }
+        if (preferences.getLicenseCount() >= 2) {
+            return;
         }
+
+        if (System.currentTimeMillis() - preferences.getLastLicenseTime() <= 1000 * 60 * 30) {
+            return;
+        }
+
+        // over half hour since last registration, register again to prevent 15 minute return policy abuse
+        LicenseCheckingTask task = new LicenseCheckingTask(this);
+        task.setCallback(new Callback<LicenseCheckingTask.LicenseCheckingStatus>() {
+            @Override
+            public void doStuff(LicenseCheckingTask.LicenseCheckingStatus param) {
+                backgroundOperationEnded();
+
+                switch (param) {
+                    case Allow:
+                        // yay! do nothing
+                        break;
+                    case Disallow:
+                        preferences.setLicenseCount(0);
+                        MessageBox.Show(IrssiNotifierActivity.this, "IrssiNotifier+ is not licensed!", "Shame on you!", new Callback<Void>() {
+                            @Override
+                            public void doStuff(Void param) {
+                                IrssiNotifierActivity.this.finish();
+                            }
+                        });
+                        break;
+                    case Error:
+                        // do nothing, on next startup licensing will be retried
+                        break;
+                }
+            }
+        });
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        backgroundOperationStarted();
     }
 
     private void backgroundOperationEnded() {
