@@ -248,7 +248,7 @@ class WipeController(BaseController):
         if 'RegistrationId' in self.data:
             token = self.data['RegistrationId']
             logging.info('Removing GCM Token: %s' % token)
-            dao.remove_gcm_token(dao.get_gcm_token_for_id(token))
+            dao.remove_gcm_token(dao.get_gcm_token_for_id(self.irssi_user, token))
         else:
             dao.wipe_user(self.irssi_user)
 

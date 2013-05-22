@@ -17,8 +17,8 @@ def get_gcm_token_for_key(token_key):
     return token_key.get()
 
 
-def get_gcm_token_for_id(token_key):
-    query = GcmToken.query(GcmToken.gcm_token == token_key)
+def get_gcm_token_for_id(irssi_user, token_key):
+    query = GcmToken.query(GcmToken.gcm_token == token_key, ancestor=irssi_user.key)
     return query.get()
 
 
@@ -170,7 +170,7 @@ def clear_old_messages():
 # settings stuff
 
 def save_settings(user, token_id, enabled, name):
-    token = get_gcm_token_for_id(token_id)
+    token = get_gcm_token_for_id(user, token_id)
 
     if token is not None:
         logging.debug("Updating token: " + token_id)
@@ -218,6 +218,7 @@ def wipe_user(user):
 
     logging.info("Wiping user")
     user.key.delete()
+
 
 def get_new_nonce(user):
     query = Nonce.query(ancestor=user.key).order(-Nonce.issue_timestamp)
