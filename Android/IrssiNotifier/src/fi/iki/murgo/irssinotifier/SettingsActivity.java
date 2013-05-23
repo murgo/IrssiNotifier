@@ -36,11 +36,12 @@ public class SettingsActivity extends PreferenceActivity {
 
         final Context ctx = this;
 
-        CheckBoxPreference enabled = (CheckBoxPreference) findPreference("NotificationsEnabled");
+        final CheckBoxPreference enabled = (CheckBoxPreference) findPreference("NotificationsEnabled");
         enabled.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final boolean checked = (Boolean)newValue;
                 String s = "Disabling notifications...";
-                if ((Boolean)newValue) {
+                if (checked) {
                     s = "Enabling notifications...";
                 }
 
@@ -58,6 +59,7 @@ public class SettingsActivity extends PreferenceActivity {
                             } else {
                                 MessageBox.Show(ctx, null, "Unable to send settings to the server! Please try again later!", null);
                             }
+                            enabled.setChecked(!checked);
                         }
                     }
                 });
