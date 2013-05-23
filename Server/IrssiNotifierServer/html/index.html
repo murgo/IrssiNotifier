@@ -183,7 +183,7 @@
 
         <p class="question">Who?</p>
         <p class="answer">
-            This service was made by Lauri Härsilä, murgo @ IRCnet. If you have any questions, drop me a line by <a href="mailto:murgo@iki.fi">email</a> or join #irssinotifier at IRCnet. Huge thanks to everybody who have donated money or contributed source!
+            This service was made by Lauri Härsilä, murgo @ IRCnet. If you have any questions, drop me a line by <a href="mailto:murgo@iki.fi">email</a> or join #irssinotifier at IRCnet. Huge thanks to everybody who have donated money or contributed source! Thanks to <a href="http://heidifriman.fi">Heidi Friman</a> for icons.
         </p>
 
         <p class="question">How can I help?</p>
@@ -211,6 +211,29 @@
         <h1>What's new?</h1>
 
         <p class="answer">For latest developments, check project's <a href="https://github.com/murgo/irssinotifier">Github page</a>.<p>
+
+        <p class="question news">23.5.2013 IrssiNotifier 1.6 and IrssiNotifier+ released!</p>
+        <div class="answer news-content">
+            New version contains following improvements:
+            <ul>
+                <li>Fixed bug where account needed to be re-selected every now and then</li>
+                <li>Offline-mode. Simply disable notifications from the settings, and app is completely offline, no background data is being used</li>
+                <li>You can now choose notification LED color</li>
+                <li>Sound is now played even if the app is on top when new notification arrives</li>
+                <li>Fixed changing of Google accounts</li>
+                <li>Feed and channels now have date headers for increased readability, thanks <a href="https://github.com/qvr">qvr</a>!</li>
+                <li>Improved performance</li>
+                <li>Fixed notifications on Android 3.2</li>
+                <li>Channel names are no longer case sensitive</li>
+                <li>Lots of small bug fixes</li>
+            </ul>
+            Also, IrssiNotifier+ has been released. In addition to the above fixes, IrssiNotifier+ has the ability to pull the messages from the server on app startup, so you'll receive messages even if they don't get pushed through! This is useful when you are not online all the time, or if you have notifications disabled. You can support development of IrssiNotifier by buying it from <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier.plus">Google Play</a>. Thank you for your support.
+        </div>
+
+        <p class="question news">23.5.2013 Irssi script version 17 released</p>
+        <div class="answer news-content">
+            Irssi script now disregards idle timeout if you are not attached to your Screen, so you'll get notifications straight away after detaching. Also, the script should no longer send garbled notifications when using Twirssi or other 3rd party addon. Check the updated <a href="#help">upgrade instructions</a>.
+        </div>
 
         <p class="question news">5.4.2013 Server software updated</p>
         <div class="answer news-content">
@@ -364,6 +387,7 @@
         <h2>Irssi script installation instructions</h2>
 
         <div class="answer">
+        (To upgrade script, just follow steps 1 and 2).
         <ol>
             <li>Download Irssi script by copying and pasting the following command (as a single line) to your shell (don't mind any "File exists" -errors):
             <div class="code-block">mkdir -p ~/.irssi/scripts/autorun; wget --no-check-certificate https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
