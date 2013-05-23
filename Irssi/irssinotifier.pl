@@ -6,7 +6,7 @@ use POSIX;
 use Encode;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "16";
+$VERSION = "17";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -14,7 +14,7 @@ $VERSION = "16";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "https://irssinotifier.appspot.com",
-    changed     => "2013-05-17"
+    changed     => "2013-05-23"
 );
 
 my $lastMsg;
@@ -104,10 +104,8 @@ sub should_send_notification {
         return 0; # dcc is not enabled
     }
 
-    if (Irssi::settings_get_bool('irssinotifier_screen_detached_only') &&
-        $screen_socket_path && defined($ENV{STY})) {
-        my $socket = $screen_socket_path . "/" . $ENV{'STY'};
-        return 0 if (-e $socket && ((stat($socket))[2] & 00100) != 0); # screen is attached
+    if (Irssi::settings_get_bool('irssinotifier_screen_detached_only') && screen_attached()) {
+        return 0; # screen attached
     }
 
     if (Irssi::settings_get_bool("irssinotifier_ignore_active_window") && $dest->{window}->{refnum} == Irssi::active_win()->{refnum}) {
@@ -156,8 +154,7 @@ sub should_send_notification {
         }
     }
 
-    # If specified, require a pattern to be matched before highlighting public
-    # messages
+    # If specified, require a pattern to be matched before highlighting public messages
     my $required_public_highlight_pattern_string = Irssi::settings_get_str("irssinotifier_required_public_highlight_patterns");
     if ($required_public_highlight_pattern_string ne '' && ($dest->{level} & MSGLEVEL_PUBLIC)) {
         my @required_patterns = split(/ /, $required_public_highlight_pattern_string);
@@ -167,11 +164,22 @@ sub should_send_notification {
     }
 
     my $timeout = Irssi::settings_get_int('irssinotifier_require_idle_seconds');
-    if ($timeout > 0 && (time - $lastKeyboardActivity) <= $timeout) {
+    if ($timeout > 0 && (time - $lastKeyboardActivity) <= $timeout && screen_attached()) {
         return 0; # not enough idle seconds
     }
 
     return 1;
+}
+
+sub screen_attached {
+    if (!$screen_socket_path || !defined($ENV{STY})) {
+        return 1;
+    }
+    my $socket = $screen_socket_path . "/" . $ENV{'STY'};
+    if (-e $socket && ((stat($socket))[2] & 00100) != 0) {
+        return 1;
+    }
+    return 0;
 }
 
 sub is_dangerous_string {
