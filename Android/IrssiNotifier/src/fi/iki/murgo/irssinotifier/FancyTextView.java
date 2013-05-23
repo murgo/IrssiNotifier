@@ -8,12 +8,11 @@ import java.util.TimerTask;
 import android.app.Activity;
 import android.graphics.Typeface;
 import android.text.method.LinkMovementMethod;
-import android.text.util.Linkify;
 import android.widget.TextView;
 
 public class FancyTextView extends TextView {
 
-    private final String string;
+    private final CharSequence text;
     private final Timer timer;
     private static final Random rnd = new Random();
     private String currentText = "";
@@ -23,15 +22,13 @@ public class FancyTextView extends TextView {
     private final Activity activity;
     private final int delay = 33;
 
-    public FancyTextView(String fulltext, Activity activity) {
+    public FancyTextView(CharSequence fulltext, Activity activity) {
         super(activity);
 
-        this.string = fulltext;
+        this.text = fulltext;
         this.activity = activity;
 
         this.timer = new Timer();
-        setAutoLinkMask(Linkify.ALL);
-        setLinksClickable(true);
         setMovementMethod(LinkMovementMethod.getInstance());
         setPadding(0, 10, 0, 0);
         setTypeface(Typeface.MONOSPACE);
@@ -55,11 +52,11 @@ public class FancyTextView extends TextView {
                 }
 
                 if (currentIteration++ >= iterations) {
-                    currentText += string.charAt(index);
+                    currentText += text.charAt(index);
                     index++;
                 }
 
-                if (index >= string.length()) {
+                if (index >= text.length()) {
                     timer.cancel();
                 } else {
                     currentText += getRandomChar();
@@ -67,7 +64,11 @@ public class FancyTextView extends TextView {
 
                 activity.runOnUiThread(new Runnable() {
                     public void run() {
-                        setText(currentText);
+                        if (index >= text.length()) {
+                            setText(text);
+                        } else {
+                            setText(currentText);
+                        }
                     }
                 });
             }

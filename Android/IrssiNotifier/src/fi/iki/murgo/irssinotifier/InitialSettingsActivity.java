@@ -35,9 +35,9 @@ public class InitialSettingsActivity extends Activity {
 
         preferences = new Preferences(this);
 
-        if (LicenseHelper.isPaidVersion(this)) {
+        if (LicenseHelper.isPlusVersion(this)) {
             TextView tv = (TextView)findViewById(R.id.textViewWelcomeHelp);
-            tv.setText("Thanks for supporting IrssiNotifier! " + tv.getText());
+            tv.setText(getString(R.string.welcome_thanks_for_support) + " " + tv.getText());
         }
 
         UserHelper fetcher = new UserHelper();
@@ -59,7 +59,7 @@ public class InitialSettingsActivity extends Activity {
         });
 
         if (LicenseHelper.bothEditionsInstalled(this)) {
-            MessageBox.Show(this, "Not the greatest idea.", "You have both free and paid versions of IrssiNotifier installed. Uninstall either, or you'll get duplicate notifications.", null);
+            MessageBox.Show(this, null, getString(R.string.both_versions_installed), null);
         }
     }
 
@@ -81,7 +81,7 @@ public class InitialSettingsActivity extends Activity {
                 sendSettings();
                 break;
             case 2:
-                if (LicenseHelper.isPaidVersion(this)) {
+                if (LicenseHelper.isPlusVersion(this)) {
                     checkLicense();
                     break;
                 }
@@ -95,7 +95,7 @@ public class InitialSettingsActivity extends Activity {
     }
 
     private void checkLicense() {
-        LicenseCheckingTask task = new LicenseCheckingTask(this, "", "Verifying license...");
+        LicenseCheckingTask task = new LicenseCheckingTask(this, "", getString(R.string.verifying_license));
 
         task.setCallback(new Callback<LicenseCheckingTask.LicenseCheckingStatus>() {
             public void doStuff(LicenseCheckingTask.LicenseCheckingStatus result) {
@@ -105,11 +105,10 @@ public class InitialSettingsActivity extends Activity {
                         break;
                     case Disallow:
                         preferences.setLicenseCount(0);
-                        MessageBox.Show(InitialSettingsActivity.this, "IrssiNotifier+ is not licensed!", "Shame on you!", errorCallback);
+                        MessageBox.Show(InitialSettingsActivity.this, getString(R.string.not_licensed_title), getString(R.string.not_licensed), errorCallback);
                         break;
                     case Error:
-                        MessageBox.Show(InitialSettingsActivity.this, "Licensing error",
-                                "An error occurred while trying to check IrssiNotifier+ license validity, please try again after a short while. If problem persist, contact support at https://irssinotifier.appspot.com.", errorCallback, true);
+                        MessageBox.Show(InitialSettingsActivity.this, getText(R.string.licensing_error_title), getText(R.string.license_error), errorCallback);
                         break;
                 }
             }
@@ -120,11 +119,11 @@ public class InitialSettingsActivity extends Activity {
 
     private void startMainApp() {
         final Context ctx = this;
-        String msg = "Check https://irssinotifier.appspot.com for information about setting up your irssi script.";
-        String title = "Success";
-        if (LicenseHelper.isPaidVersion(this)) {
-            msg = "App licensed, thanks! Your account has been upgraded to Plus and pull notification system has been enabled. Check https://irssinotifier.appspot.com for information about setting up your irssi script.";
-            title = "Thank you for your support!";
+        CharSequence msg = getText(R.string.check_web_page);
+        String title = getString(R.string.success);
+        if (LicenseHelper.isPlusVersion(this)) {
+            msg = getText(R.string.app_licensed);
+            title = getString(R.string.thank_you_for_support);
         }
         MessageBox.Show(this, title, msg,
                         new Callback<Void>() {
@@ -133,32 +132,31 @@ public class InitialSettingsActivity extends Activity {
                                 startActivity(i);
                                 finish();
                             }
-                        }, true);
+                        });
     }
 
     private void sendSettings() {
-        SettingsSendingTask task = new SettingsSendingTask(this, "",
-                "Sending settings to server...");
+        SettingsSendingTask task = new SettingsSendingTask(this, "", getString(R.string.sending_settings_to_server));
 
         final Context ctx = this;
         task.setCallback(new Callback<ServerResponse>() {
             public void doStuff(ServerResponse result) {
                 if (result.getException() != null) {
                     if (result.getException() instanceof IOException) {
-                        MessageBox.Show(ctx, "Network error", "Ensure your internet connection works and try again.", errorCallback);
+                        MessageBox.Show(ctx, getString(R.string.network_error_title), getString(R.string.network_error), errorCallback);
                     } else if (result.getException() instanceof AuthenticationException) {
-                        MessageBox.Show(ctx, "Authentication error", "Unable to authenticate to server.", errorCallback);
+                        MessageBox.Show(ctx, getString(R.string.authentication_error_title), getString(R.string.authentication_error), errorCallback);
                     } else if (result.getException() instanceof ServerException) {
-                        MessageBox.Show(ctx, "Server error", "Mystical server error, check if updates are available", errorCallback);
+                        MessageBox.Show(ctx, getString(R.string.server_error_title), getString(R.string.server_error), errorCallback);
                     } else {
-                        MessageBox.Show(ctx, null, "Unable to send settings to the server! Please try again later!", errorCallback);
+                        MessageBox.Show(ctx, null, getString(R.string.unable_to_send_settings), errorCallback);
                     }
 
                     return;
                 }
 
                 if (!result.wasSuccesful()) {
-                    MessageBox.Show(ctx, null, "Unable to send settings to the server! Please try again later!", errorCallback);
+                    MessageBox.Show(ctx, null, getString(R.string.unable_to_send_settings), errorCallback);
 
                     return;
                 }
@@ -170,7 +168,7 @@ public class InitialSettingsActivity extends Activity {
     }
 
     private void registerToGcm() {
-        final GCMRegistrationTask task = new GCMRegistrationTask(this, "", "Registering to GCM..."); // TODO i18n
+        final GCMRegistrationTask task = new GCMRegistrationTask(this, "", getString(R.string.registering_to_gcm));
 
         final Context ctx = this;
         task.setCallback(new Callback<Boolean>() {
@@ -179,7 +177,7 @@ public class InitialSettingsActivity extends Activity {
                 boolean success = result;
 
                 if (!success) {
-                    MessageBox.Show(ctx, null, "Unable to register to GCM! Please try again later!", // TODO i18n
+                    MessageBox.Show(ctx, null, getString(R.string.unable_to_register_gcm),
                         new Callback<Void>() {
                             public void doStuff(Void param) {
                                 whatNext(-1);

@@ -31,23 +31,27 @@ public class AboutActivity extends Activity {
             return;
         }
 
-        ftvs.add(new FancyTextView("About IrssiNotifier, version " + pi.versionName + " ("
-                + pi.versionCode + ")", this));
+        CharSequence appName = getResources().getText(R.string.app_name);
+
+        ftvs.add(new FancyTextView("About " + appName + ", version " + pi.versionName + " (" + pi.versionCode + ")", this));
         ftvs.get(0).setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
 
-        ftvs.add(new FancyTextView("Made by Lauri Härsilä, murgo@iki.fi.", this));
-        ftvs.add(new FancyTextView(
-                "For instructions and help, please visit https://irssinotifier.appspot.com or join #IrssiNotifier @ IRCnet.",
-                this));
-        ftvs.add(new FancyTextView(
-                "IrssiNotifier was created entirely on my free time. If you have found IrssiNotifier useful, please consider donating at the web page (https://irssinotifier.appspot.com) to help keep project alive.",
-                this));
-        ftvs.add(new FancyTextView(
-                "Project is open source, see https://github.com/murgo/IrssiNotifier for more info.",
-                this));
-        ftvs.add(new FancyTextView(
-                "Thanks to everyone who has donated money or contributed source! Also thanks to everyone working on the Irssi team.",
-                this));
+        ftvs.add(new FancyTextView(getText(R.string.created_by), this));
+
+        boolean plus = LicenseHelper.isPlusVersion(this);
+
+        if (plus) {
+            ftvs.add(new FancyTextView(getText(R.string.thanks_for_support), this));
+        }
+
+        ftvs.add(new FancyTextView(getText(R.string.instructions), this));
+
+        if (!plus) {
+            ftvs.add(new FancyTextView(getText(R.string.donate), this));
+        }
+
+        ftvs.add(new FancyTextView(getText(R.string.open_source), this));
+        ftvs.add(new FancyTextView(getText(R.string.thanks_donators), this));
 
         for (FancyTextView ftv : ftvs) {
             base.addView(ftv);

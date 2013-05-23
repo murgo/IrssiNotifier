@@ -109,7 +109,7 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
         final Object[] licenseResponseData = new Object[3];
         try {
             Log.i(TAG, "Calling checkLicense");
-            service.checkLicense(nonce, LicenseHelper.PACKAGE_PAID, new ILicenseResultListener.Stub() {
+            service.checkLicense(nonce, LicenseHelper.PACKAGE_PLUS, new ILicenseResultListener.Stub() {
                         @Override
                         public void verifyLicense(int responseCode, String signedData, String signature) throws RemoteException {
                             licenseResponseData[0] = responseCode;

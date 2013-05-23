@@ -110,14 +110,14 @@ public class IrcNotificationManager {
 
             tickerText = titleText;
         } catch (CryptoException e) {
-            titleText = "IrssiNotifier error";
-            notificationMessage = "Unable to decrypt data. Perhaps encryption key is wrong?";
-            tickerText = "IrssiNotifier decryption error";
+            titleText = context.getString(R.string.irssinotifier_error_title);
+            notificationMessage = context.getString(R.string.decryption_error_notification);
+            tickerText = context.getString(R.string.decryption_error_ticker);
             notificationId = 1;
         } catch (JSONException e) {
-            titleText = "IrssiNotifier error";
-            notificationMessage = "Unable to parse data. Server error?";
-            tickerText = "IrssiNotifier parse error";
+            titleText = context.getString(R.string.irssinotifier_error_title);
+            notificationMessage = context.getString(R.string.parse_error_notification);
+            tickerText = context.getString(R.string.parse_error_ticker);
             notificationId = 1;
         }
 

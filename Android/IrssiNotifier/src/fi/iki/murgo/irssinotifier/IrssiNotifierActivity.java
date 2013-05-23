@@ -62,7 +62,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
         Preferences.setVersion(versionCode);
 
         // do initial settings
-        if (preferences.getAccountName() == null || preferences.getGcmRegistrationId() == null || preferences.getGcmRegistrationIdVersion() != versionCode || (LicenseHelper.isPaidVersion(this) && preferences.getLicenseCount() == 0)) {
+        if (preferences.getAccountName() == null || preferences.getGcmRegistrationId() == null || preferences.getGcmRegistrationIdVersion() != versionCode || (LicenseHelper.isPlusVersion(this) && preferences.getLicenseCount() == 0)) {
             Log.d(TAG, "Asking for initial settings");
             Intent i = new Intent(this, InitialSettingsActivity.class);
             startActivity(i);
@@ -180,7 +180,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
                         }
 
                         if (param.getResponse().getServerMessage() != null && param.getResponse().getServerMessage().length() > 0) {
-                            MessageBox.Show(IrssiNotifierActivity.this, null, param.getResponse().getServerMessage(), null, true);
+                            MessageBox.Show(IrssiNotifierActivity.this, null, param.getResponse().getServerMessage(), null);
                         }
 
                         if (param.getMessages().isEmpty()) {
@@ -199,7 +199,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
             public void run() {
                 refreshUi();
 
-                if (!uptodate && preferences.isPullMechanismInUse() && LicenseHelper.isPaidVersion(IrssiNotifierActivity.this)) {
+                if (!uptodate && preferences.isPullMechanismInUse() && LicenseHelper.isPlusVersion(IrssiNotifierActivity.this)) {
                     dataFetcherTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     backgroundOperationStarted();
                 }
@@ -208,7 +208,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
                 datask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 backgroundOperationStarted();
 
-                if (LicenseHelper.isPaidVersion(IrssiNotifierActivity.this)) {
+                if (LicenseHelper.isPlusVersion(IrssiNotifierActivity.this)) {
                     checkLicense();
                 }
             }
@@ -237,7 +237,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
                         break;
                     case Disallow:
                         preferences.setLicenseCount(0);
-                        MessageBox.Show(IrssiNotifierActivity.this, "IrssiNotifier+ is not licensed!", "Shame on you!", new Callback<Void>() {
+                        MessageBox.Show(IrssiNotifierActivity.this, getText(R.string.not_licensed_title), getText(R.string.not_licensed), new Callback<Void>() {
                             @Override
                             public void doStuff(Void param) {
                                 IrssiNotifierActivity.this.finish();
@@ -331,7 +331,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
     }
 
     private void sendSettings() {
-        SettingsSendingTask task = new SettingsSendingTask(this, "", "Sending settings to server...");
+        SettingsSendingTask task = new SettingsSendingTask(this, "", getString(R.string.sending_settings_to_server));
 
         final Context ctx = this;
         task.setCallback(new Callback<ServerResponse>() {
@@ -343,7 +343,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
                 }
 
                 if (!result.wasSuccesful()) {
-                    MessageBox.Show(ctx, null, "Unable to send settings to the server! Please try again later!", null);
+                    MessageBox.Show(ctx, null, getString(R.string.unable_to_send_settings), null);
                 }
             }
         });
@@ -435,18 +435,18 @@ public class IrssiNotifierActivity extends SherlockActivity {
 
     private void handleDataFetcherException(Exception exception) {
         if (exception instanceof AuthenticationException) {
-            MessageBox.Show(this, "Authentication error", "Unable to authenticate to server, please re-register your application.",
+            MessageBox.Show(this, getString(R.string.authentication_error_title), getString(R.string.authentication_error),
                     new Callback<Void>() {
                         public void doStuff(Void param) {
                             restart();
                         }
                     });
         } else if (exception instanceof ServerException) {
-            MessageBox.Show(this, "Server error", "Mystical server error, check if updates are available", null);
+            MessageBox.Show(this, getString(R.string.server_error_title), getString(R.string.server_error), null);
         } else if (exception instanceof CryptoException) {
-            MessageBox.Show(this, "Decryption error", "Unable to decrypt message, is your decryption password correct?", null);
+            MessageBox.Show(this, getString(R.string.decryption_error_title), getString(R.string.decryption_error), null);
         } else if (exception instanceof IOException) {
-            MessageBox.Show(this, "Network error", "Is your internet connection available?", null);
+            MessageBox.Show(this, getString(R.string.network_error_title), getString(R.string.network_error), null);
         } else {
             MessageBox.Show(this, "Error", "What happen", null);
         }
