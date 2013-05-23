@@ -168,14 +168,13 @@ public class IrssiNotifierActivity extends SherlockActivity {
 
         final DataFetcherTask dataFetcherTask = new DataFetcherTask(this, preferences.getEncryptionPassword(), preferences.getLastFetchTime(),
                 new Callback<DataFetchResult>() {
-                    // TODO: Move this into its own activity, so orientation
-                    // changes work correctly
+                    // TODO: Move this into its own activity, so orientation changes work correctly
                     public void doStuff(DataFetchResult param) {
                         backgroundOperationEnded();
                         preferences.setLastFetchTime(now);
 
                         if (param.getException() != null) {
-                            handleDataFetcherException(param.getException());
+                            handleNetworkException(param.getException());
                             return;
                         }
 
@@ -338,7 +337,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
             public void doStuff(ServerResponse result) {
                 backgroundOperationEnded();
                 if (result.getException() != null) {
-                    handleDataFetcherException(result.getException());
+                    handleNetworkException(result.getException());
                     return;
                 }
 
@@ -433,7 +432,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
         startMainApp(false);
     }
 
-    private void handleDataFetcherException(Exception exception) {
+    private void handleNetworkException(Exception exception) {
         if (exception instanceof AuthenticationException) {
             MessageBox.Show(this, getString(R.string.authentication_error_title), getString(R.string.authentication_error),
                     new Callback<Void>() {
@@ -446,7 +445,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
         } else if (exception instanceof CryptoException) {
             MessageBox.Show(this, getString(R.string.decryption_error_title), getString(R.string.decryption_error), null);
         } else if (exception instanceof IOException) {
-            MessageBox.Show(this, getString(R.string.network_error_title), getString(R.string.network_error), null);
+            return;
         } else {
             MessageBox.Show(this, "Error", "What happen", null);
         }
