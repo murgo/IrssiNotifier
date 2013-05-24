@@ -188,7 +188,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
 
                         DataAccessTask task = new DataAccessTask(IrssiNotifierActivity.this, dataAccessCallback);
                         List<IrcMessage> messages = param.getMessages();
-                        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, messages.toArray(new IrcMessage[messages.size()]));
+                        TaskExecutor.executeOnThreadPoolIfPossible(task, messages.toArray(new IrcMessage[messages.size()]));
                         backgroundOperationStarted();
                     }
                 });
@@ -199,12 +199,12 @@ public class IrssiNotifierActivity extends SherlockActivity {
                 refreshUi();
 
                 if (!uptodate && preferences.isPullMechanismInUse() && LicenseHelper.isPlusVersion(IrssiNotifierActivity.this)) {
-                    dataFetcherTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    TaskExecutor.executeOnThreadPoolIfPossible(dataFetcherTask);
                     backgroundOperationStarted();
                 }
 
                 DataAccessTask datask = new DataAccessTask(IrssiNotifierActivity.this, dataAccessCallback);
-                datask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                TaskExecutor.executeOnThreadPoolIfPossible(datask);
                 backgroundOperationStarted();
 
                 if (LicenseHelper.isPlusVersion(IrssiNotifierActivity.this)) {
@@ -249,7 +249,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
                 }
             }
         });
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        TaskExecutor.executeOnThreadPoolIfPossible(task);
         backgroundOperationStarted();
     }
 
@@ -347,7 +347,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
             }
         });
 
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        TaskExecutor.executeOnThreadPoolIfPossible(task);
         backgroundOperationStarted();
     }
 
