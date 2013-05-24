@@ -20,8 +20,8 @@ class Licensing(object):
             Licensing.public_key = RSA.importKey(base64.standard_b64decode(Licensing.public_key_base64))
 
     def check_license(self, irssi_user, signed_data, signature):
-        signed_data = signed_data.replace('%3D', '=')
-        signature = signature.replace('%3D', '=')
+        signed_data = signed_data.replace('%3D', '=').replace('%26', '&').replace('%2F', '/').replace('%2B', '+')
+        signature = signature.replace('%3D', '=').replace('%26', '&').replace('%2F', '/').replace('%2B', '+')
 
         try:
             split = signed_data.split(':')

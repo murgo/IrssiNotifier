@@ -286,7 +286,7 @@ class NonceController(BaseController):
 
 class LicensingController(BaseController):
     def post(self):
-        val = self.initController("LicensingController.get()", ['SignedData', 'Signature'])
+        val = self.initController("LicensingController.post()", ['SignedData', 'Signature'])
         if not val:
             return self.response
 
