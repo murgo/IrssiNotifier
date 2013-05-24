@@ -4,6 +4,7 @@ package fi.iki.murgo.irssinotifier;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -160,6 +161,7 @@ public class SettingsActivity extends PreferenceActivity {
                 builder.setOngoing(false);
                 builder.setContentText("Wait for the screen to turn off to see selected light color in action");
                 builder.setContentTitle("Preview light color");
+                builder.setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, new Intent(), 0));
                 builder.setLights(color, 300, 5000);
 
                 final Notification notification = builder.build();
