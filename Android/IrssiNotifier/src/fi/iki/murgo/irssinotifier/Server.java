@@ -178,7 +178,7 @@ public class Server {
         String responseString = EntityUtils.toString(response.getEntity());
 
         ServerResponse serverResponse;
-        serverResponse = new ServerResponse(statusCode == 200, responseString);
+        serverResponse = new ServerResponse(statusCode, responseString);
 
         if (serverResponse.wasSuccesful()) {
             Log.i(TAG, "Settings sent to server");
@@ -200,9 +200,9 @@ public class Server {
 
         ServerResponse serverResponse;
         if (target == ServerTarget.Message)
-            serverResponse = new MessageServerResponse(statusCode == 200, responseString);
+            serverResponse = new MessageServerResponse(statusCode, responseString);
         else
-            serverResponse = new ServerResponse(statusCode == 200, responseString);
+            serverResponse = new ServerResponse(statusCode, responseString);
         
         if (serverResponse.wasSuccesful()) {
             Log.i(TAG, "Data fetched from server, target type " + target);

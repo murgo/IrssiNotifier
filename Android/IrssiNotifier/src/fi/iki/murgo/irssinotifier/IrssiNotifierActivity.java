@@ -225,12 +225,12 @@ public class IrssiNotifierActivity extends SherlockActivity {
 
         // over half hour since last registration, register again to prevent 15 minute return policy abuse
         LicenseCheckingTask task = new LicenseCheckingTask(this);
-        task.setCallback(new Callback<LicenseCheckingTask.LicenseCheckingStatus>() {
+        task.setCallback(new Callback<LicenseCheckingTask.LicenseCheckingMessage>() {
             @Override
-            public void doStuff(LicenseCheckingTask.LicenseCheckingStatus param) {
+            public void doStuff(LicenseCheckingTask.LicenseCheckingMessage param) {
                 backgroundOperationEnded();
 
-                switch (param) {
+                switch (param.licenseCheckingStatus) {
                     case Allow:
                         // yay! do nothing
                         break;

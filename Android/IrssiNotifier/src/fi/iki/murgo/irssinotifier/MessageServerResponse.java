@@ -13,8 +13,8 @@ public class MessageServerResponse extends ServerResponse {
     private String serverMessage;
     private JSONObject responseJson;
 
-    public MessageServerResponse(boolean success, String responseString) {
-        super(success, responseString);
+    public MessageServerResponse(int statusCode, String responseString) {
+        super(statusCode, responseString);
 
         if (!wasSuccesful() || getResponseString() == null || getResponseString().length() == 0)
             return;

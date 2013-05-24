@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="fi.iki.murgo.irssinotifier"
     android:versionCode="11"
-    android:versionName="1.6" >
+    android:versionName="1.6.12" >
     
     <!-- Only this application can receive the messages and registration result -->
     <permission

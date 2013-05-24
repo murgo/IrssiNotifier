@@ -12,7 +12,7 @@
     <string name="thanks_donators">Thanks to everyone who has donated money or contributed source! Also thanks to everyone working on the Irssi team.</string>
     <string name="check_web_page">Check <a href="https://irssinotifier.appspot.com">IrssiNotifier web site</a> for information about setting up your irssi script.</string>
     <string name="license_error">An error occurred while trying to check IrssiNotifier+ license validity, please try
-        again after a short while. If problem persist, contact support at <a href="https://irssinotifier.appspot.com">IrssiNotifier web site</a>.
+        again after a short while. If problem persist, contact support at <a href="https://irssinotifier.appspot.com">IrssiNotifier web site</a>. Error:
     </string>
     <string name="licensing_error_title">Licensing error</string>
     <string name="not_licensed_title">IrssiNotifier+ is not licensed!</string>

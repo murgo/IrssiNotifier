@@ -1,6 +1,8 @@
 
 package fi.iki.murgo.irssinotifier;
 
+import android.text.SpannableStringBuilder;
+
 import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
@@ -97,9 +99,9 @@ public class InitialSettingsActivity extends Activity {
     private void checkLicense() {
         LicenseCheckingTask task = new LicenseCheckingTask(this, "", getString(R.string.verifying_license));
 
-        task.setCallback(new Callback<LicenseCheckingTask.LicenseCheckingStatus>() {
-            public void doStuff(LicenseCheckingTask.LicenseCheckingStatus result) {
-                switch (result) {
+        task.setCallback(new Callback<LicenseCheckingTask.LicenseCheckingMessage>() {
+            public void doStuff(LicenseCheckingTask.LicenseCheckingMessage result) {
+                switch (result.licenseCheckingStatus) {
                     case Allow:
                         whatNext(3);
                         break;
@@ -108,7 +110,7 @@ public class InitialSettingsActivity extends Activity {
                         MessageBox.Show(InitialSettingsActivity.this, getString(R.string.not_licensed_title), getString(R.string.not_licensed), errorCallback);
                         break;
                     case Error:
-                        MessageBox.Show(InitialSettingsActivity.this, getText(R.string.licensing_error_title), getText(R.string.license_error), errorCallback);
+                        MessageBox.Show(InitialSettingsActivity.this, getText(R.string.licensing_error_title), new SpannableStringBuilder().append(getText(R.string.license_error)).append(result.errorMessage), errorCallback);
                         break;
                 }
             }

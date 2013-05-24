@@ -33,7 +33,7 @@ public class AboutActivity extends Activity {
 
         CharSequence appName = getResources().getText(R.string.app_name);
 
-        ftvs.add(new FancyTextView("About " + appName + ", version " + pi.versionName + "." + pi.versionCode, this));
+        ftvs.add(new FancyTextView("About " + appName + ", version " + pi.versionName, this));
         ftvs.get(0).setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
 
         ftvs.add(new FancyTextView(getText(R.string.created_by), this));

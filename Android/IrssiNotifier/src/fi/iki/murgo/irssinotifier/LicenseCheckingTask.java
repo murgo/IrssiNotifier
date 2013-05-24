@@ -14,7 +14,7 @@ import com.android.vending.licensing.ILicensingService;
 import java.io.IOException;
 import java.util.HashMap;
 
-public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, LicenseCheckingTask.LicenseCheckingStatus> {
+public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, LicenseCheckingTask.LicenseCheckingMessage> {
 
     private static final String TAG = LicenseCheckingTask.class.getSimpleName();
     private ILicensingService service;
@@ -38,8 +38,22 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
         Error,
     }
 
+    public static class LicenseCheckingMessage {
+        public LicenseCheckingStatus licenseCheckingStatus;
+        public String errorMessage;
+
+        public LicenseCheckingMessage(LicenseCheckingStatus status) {
+            licenseCheckingStatus = status;
+        }
+
+        public LicenseCheckingMessage(String error) {
+            licenseCheckingStatus = LicenseCheckingStatus.Error;
+            errorMessage = error;
+        }
+    }
+
     @Override
-    protected LicenseCheckingStatus doInBackground(Void... params) {
+    protected LicenseCheckingMessage doInBackground(Void... params) {
         server = new Server(activity);
         boolean authenticated = false;
 
@@ -51,7 +65,7 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
 
         if (!authenticated) {
             Log.e(TAG, "Unable to authenticate to server");
-            return LicenseCheckingStatus.Error;
+            return new LicenseCheckingMessage("Unable to authenticate to server");
         }
 
         ServerResponse response;
@@ -61,16 +75,16 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
             nonce = Integer.parseInt(response.getResponseString());
         } catch (IOException e) {
             e.printStackTrace();
-            return LicenseCheckingStatus.Error;
+            return new LicenseCheckingMessage("IOException while connecting to server");
         } catch (NumberFormatException e) {
             e.printStackTrace();
-            return LicenseCheckingStatus.Error;
+            return new LicenseCheckingMessage("Cannot parse nonce");
         }
 
         return checkLicense(nonce);
     }
 
-    private LicenseCheckingStatus checkLicense(int nonce) {
+    private LicenseCheckingMessage checkLicense(int nonce) {
         boolean bindResult = activity.bindService(new Intent("com.android.vending.licensing.ILicensingService"),
                 new ServiceConnection() {
                     @Override
@@ -88,7 +102,7 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
 
         if (!bindResult) {
             Log.e(TAG, "Could not bind to service.");
-            return LicenseCheckingStatus.Error;
+            return new LicenseCheckingMessage("Unable to bind to licensing service");
         }
 
         long startTime = System.currentTimeMillis();
@@ -97,13 +111,13 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
                 Thread.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                return LicenseCheckingStatus.Error;
+                return new LicenseCheckingMessage("Interrupted while connecting to licensing service");
             }
         }
 
         if (service == null) {
             Log.e(TAG, "Could not connect to service in time");
-            return LicenseCheckingStatus.Error;
+            return new LicenseCheckingMessage("Could not connect to service in time");
         }
 
         final Object[] licenseResponseData = new Object[3];
@@ -119,7 +133,7 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
                     });
         } catch (RemoteException e) {
             Log.w(TAG, "RemoteException in checkLicense call.", e);
-            return LicenseCheckingStatus.Error;
+            return new LicenseCheckingMessage("RemoteException in checking license call.");
         }
 
         startTime = System.currentTimeMillis();
@@ -130,13 +144,13 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
                 Thread.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                return LicenseCheckingStatus.Error;
+                return new LicenseCheckingMessage("Interrupted while calling licensing service");
             }
         }
 
         if (signedDataObject == null) {
-            Log.e(TAG, "Could not connect to service in time");
-            return LicenseCheckingStatus.Error;
+            Log.e(TAG, "Could not check license from licensing service in time");
+            return new LicenseCheckingMessage("Could not check license from licensing service in time");
         }
 
         /* Response codes:
@@ -160,14 +174,14 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
             case LICENSED_OLD_KEY:
                 return verifyResponseData(signedData, signature);
             case NOT_LICENSED:
-                return LicenseCheckingStatus.Disallow;
+                return new LicenseCheckingMessage(LicenseCheckingStatus.Disallow);
             default:
                 Log.e(TAG, "Some error: " + responseCode);
-                return LicenseCheckingStatus.Error;
+                return new LicenseCheckingMessage("Invalid response code: " + responseCode);
         }
     }
 
-    private LicenseCheckingStatus verifyResponseData(String signedData, String signature) {
+    private LicenseCheckingMessage verifyResponseData(String signedData, String signature) {
         HashMap<String, String> map = new HashMap<String, String>();
         map.put("SignedData", makeBase64UrlSafe(signedData));
         map.put("Signature", makeBase64UrlSafe(signature));
@@ -177,12 +191,27 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
             response = server.post(new MessageToServer(map), Server.ServerTarget.License);
         } catch (IOException e) {
             e.printStackTrace();
-            return LicenseCheckingStatus.Error;
+            return new LicenseCheckingMessage("IOException while posting to server");
         }
 
-        if (response == null || !response.wasSuccesful() || response.getResponseString() == null) {
-            Log.w(TAG, "Licensing: Invalid response");
-            return LicenseCheckingStatus.Error;
+        if (response == null) {
+            Log.w(TAG, "Licensing: null response");
+            return new LicenseCheckingMessage("Invalid response from server: null");
+        }
+
+        if (response.getException() != null) {
+            Log.w(TAG, "Licensing: Exception: " + response.getException());
+            return new LicenseCheckingMessage("Exception while posting to server: " + response.getException().getMessage());
+        }
+
+        if (response.getStatusCode() != 200) {
+            Log.w(TAG, "Licensing: Invalid response status code: " + response.getStatusCode());
+            return new LicenseCheckingMessage("Invalid response status code: " + response.getStatusCode());
+        }
+
+        if (response.getResponseString() == null) {
+            Log.w(TAG, "Licensing: null response string");
+            return new LicenseCheckingMessage("Null response body from server");
         }
 
         if (response.getResponseString().equals("OK")) {
@@ -191,14 +220,14 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
             prefs.setLastLicenseTime(System.currentTimeMillis());
             prefs.setLicenseCount(prefs.getLicenseCount() + 1);
 
-            return LicenseCheckingStatus.Allow;
+            return new LicenseCheckingMessage(LicenseCheckingStatus.Allow);
         }
 
         Log.w(TAG, "Licensing: Disallowing, server said: " + response.getResponseString());
-        return LicenseCheckingStatus.Disallow;
+        return new LicenseCheckingMessage(LicenseCheckingStatus.Disallow);
     }
 
     private String makeBase64UrlSafe(String data) {
-        return data.replace("=", "%3D");
+        return data.replace("=", "%3D").replace("&", "%26").replace("/", "%2F").replace("+", "%2B");
     }
 }
