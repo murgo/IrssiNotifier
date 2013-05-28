@@ -44,22 +44,19 @@ class Message(ndb.Model):
              'id': self.key.integer_id()})
 
     def to_gcm_json(self):
-        m = json.dumps(
-            {'server_timestamp': '%f' % self.server_timestamp,
-             'message': self.message,
-             'channel': self.channel,
-             'nick': self.nick,
-             'id': self.key.integer_id()})
+        values = {'server_timestamp': '%f' % self.server_timestamp,
+                  'message': self.message,
+                  'channel': self.channel,
+                  'nick': self.nick }
+        if self.key.integer_id() is not None:
+            values['id'] = self.key.integer_id()
+        m = json.dumps(values)
         if len(m) < 3072:
             return m
 
         logging.warn("too big message %s, shortening" % len(m))
-        return json.dumps(
-            {'server_timestamp': '%f' % self.server_timestamp,
-             'message': 'toolong',
-             'channel': self.channel,
-             'nick': self.nick,
-             'id': self.key.integer_id()})
+        values['message'] = 'toolong'
+        return json.dumps(values)
 
 
 class Nonce(ndb.Model):
