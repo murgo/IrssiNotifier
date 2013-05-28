@@ -47,9 +47,10 @@ class Message(ndb.Model):
         values = {'server_timestamp': '%f' % self.server_timestamp,
                   'message': self.message,
                   'channel': self.channel,
-                  'nick': self.nick }
-        if self.key.integer_id() is not None:
-            values['id'] = self.key.integer_id()
+                  'nick': self.nick,
+                  'id': self.key.integer_id()}
+        #if self.key.integer_id() is not None:
+        #    values['id'] = self.key.integer_id() #this breaks free apps prior to version 13
         m = json.dumps(values)
         if len(m) < 3072:
             return m
