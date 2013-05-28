@@ -25,7 +25,7 @@ import java.io.IOException;
 
 @SuppressWarnings("deprecation")
 public class SettingsActivity extends PreferenceActivity {
-    private static final String TAG = SettingsActivity.class.getSimpleName();
+    private static final String TAG = SettingsActivity.class.getName();
     protected static final int ICB_HOST_REQUEST_CODE = 666;
 
     @Override

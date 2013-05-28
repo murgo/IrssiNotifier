@@ -25,7 +25,7 @@ import org.apache.http.util.EntityUtils;
 import android.util.Log;
 
 public class Server {
-    private static final String TAG = Server.class.getSimpleName();
+    private static final String TAG = Server.class.getName();
 
     private final Preferences preferences;
     private final Activity activity;

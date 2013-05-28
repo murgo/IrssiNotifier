@@ -9,7 +9,7 @@ import android.util.Base64;
 import android.util.Log;
 
 public class Crypto {
-    private static final String TAG = Crypto.class.getSimpleName();
+    private static final String TAG = Crypto.class.getName();
 
     public static String decrypt(String key, String payload) throws CryptoException {
         try {

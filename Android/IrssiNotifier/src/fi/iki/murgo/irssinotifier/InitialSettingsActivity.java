@@ -21,7 +21,7 @@ import java.io.IOException;
 
 public class InitialSettingsActivity extends Activity {
 
-    private static final String TAG = InitialSettingsActivity.class.getSimpleName();
+    private static final String TAG = InitialSettingsActivity.class.getName();
     private Preferences preferences;
 
     private Callback<Void> errorCallback = new Callback<Void>() {

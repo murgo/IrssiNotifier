@@ -5,7 +5,7 @@ import android.util.Log;
 
 
 public class TaskExecutor {
-    private static final String TAG = TaskExecutor.class.getSimpleName();
+    private static final String TAG = TaskExecutor.class.getName();
 
     private static boolean threadPoolExecutorAvailable;
 

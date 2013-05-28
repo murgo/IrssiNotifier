@@ -7,7 +7,7 @@ import org.apache.http.auth.AuthenticationException;
 
 public class SettingsSendingTask extends BackgroundAsyncTask<Void, Void, ServerResponse> {
 
-    private static final String TAG = SettingsSendingTask.class.getSimpleName();
+    private static final String TAG = SettingsSendingTask.class.getName();
 
     public SettingsSendingTask(Activity activity, String titleText, String text) {
         super(activity, titleText, text);

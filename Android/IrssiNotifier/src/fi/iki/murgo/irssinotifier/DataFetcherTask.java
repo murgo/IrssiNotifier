@@ -13,7 +13,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 public class DataFetcherTask extends AsyncTask<Void, Void, DataFetchResult> {
-    private static final String TAG = DataFetcherTask.class.getSimpleName();
+    private static final String TAG = DataFetcherTask.class.getName();
 
     private final Callback<DataFetchResult> callback;
     private final String encryptionKey;

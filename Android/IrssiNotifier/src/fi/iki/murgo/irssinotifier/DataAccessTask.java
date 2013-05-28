@@ -8,7 +8,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 public class DataAccessTask extends AsyncTask<IrcMessage, Void, List<Channel>> {
-    private static final String TAG = DataAccessTask.class.getSimpleName();
+    private static final String TAG = DataAccessTask.class.getName();
 
     private final Context context;
     private Callback<List<Channel>> callback;

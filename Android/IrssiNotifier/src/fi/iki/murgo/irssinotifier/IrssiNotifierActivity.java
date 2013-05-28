@@ -7,7 +7,6 @@ import java.util.List;
 
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Vibrator;
 import org.apache.http.auth.AuthenticationException;
 
@@ -28,7 +27,7 @@ import android.util.Log;
 public class IrssiNotifierActivity extends SherlockActivity {
     public static final String FEED = "------------------------FEED";
 
-    private static final String TAG = IrssiNotifierActivity.class.getSimpleName();
+    private static final String TAG = IrssiNotifierActivity.class.getName();
     private Preferences preferences;
     // private final String googleAnalyticsCode = "UA-29385499-1";
     private MessagePagerAdapter adapter;

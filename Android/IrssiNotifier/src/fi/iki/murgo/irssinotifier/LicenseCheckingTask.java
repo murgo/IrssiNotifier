@@ -16,7 +16,7 @@ import java.util.HashMap;
 
 public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, LicenseCheckingTask.LicenseCheckingMessage> {
 
-    private static final String TAG = LicenseCheckingTask.class.getSimpleName();
+    private static final String TAG = LicenseCheckingTask.class.getName();
     private ILicensingService service;
 
     private static final int LICENSED = 0x0;
