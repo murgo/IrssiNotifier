@@ -82,17 +82,19 @@ public class DataAccess extends SQLiteOpenHelper {
                 database = getWritableDatabase();
                 boolean isNew = true;
 
-                Cursor cur = database.query("IrcMessage", new String[] { "externalId", "message" },
-                        "externalId = ?", new String[] { message.getExternalId() }, null, null, null, "1");
-                if (cur.moveToFirst()) {
-                    isNew = false;
-                    int messageIndex = cur.getColumnIndex("message");
-                    if (cur.getString(messageIndex).equals(message.getMessage())) {
-                        cur.close();
-                        return false;
+                if (message.getExternalId() != null) {
+                    Cursor cur = database.query("IrcMessage", new String[] { "externalId", "message" },
+                            "externalId = ?", new String[] { message.getExternalId() }, null, null, null, "1");
+                    if (cur.moveToFirst()) {
+                        isNew = false;
+                        int messageIndex = cur.getColumnIndex("message");
+                        if (cur.getString(messageIndex).equals(message.getMessage())) {
+                            cur.close();
+                            return false;
+                        }
                     }
+                    cur.close();
                 }
-                cur.close();
 
                 String channelName = message.getLogicalChannel();
                 List<Channel> channels = getChannels(database);

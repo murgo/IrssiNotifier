@@ -32,11 +32,18 @@ public class IrcMessage {
             setChannel(obj.getString("channel"));
             setNick(obj.getString("nick"));
             setServerTimestamp((long) (Double.parseDouble(obj.getString("server_timestamp")) * 1000));
-            setExternalId(obj.getString("id"));
+            if (obj.has("id")) {
+                String externalId = obj.getString("id");
+                try {
+                    Integer.parseInt(externalId);
+                    setExternalId(externalId);
+                } catch (NumberFormatException e) {
+                    // don't do anything with it if it's not a number
+                }
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
     }
 
     public String getMessage() {
