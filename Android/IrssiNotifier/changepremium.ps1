@@ -35,6 +35,7 @@ Function Change-Premium()
     Replace-File "src\fi\iki\murgo\irssinotifier\ChannelSettingsActivity.java" $regexImport $import
     Replace-File "src\fi\iki\murgo\irssinotifier\IrcNotificationManager.java" $regexImport $import
     Replace-File "src\fi\iki\murgo\irssinotifier\IrssiNotifierActivity.java" $regexImport $import
+    Replace-File "src\fi\iki\murgo\irssinotifier\CommandManager.java" $regexImport $import
 }
 
 Function Change-Free()
@@ -54,6 +55,7 @@ Function Change-Free()
     Replace-File "src\fi\iki\murgo\irssinotifier\ChannelSettingsActivity.java" $regexImport ''
     Replace-File "src\fi\iki\murgo\irssinotifier\IrcNotificationManager.java" $regexImport ''
     Replace-File "src\fi\iki\murgo\irssinotifier\IrssiNotifierActivity.java" $regexImport ''
+    Replace-File "src\fi\iki\murgo\irssinotifier\CommandManager.java" $regexImport ''
 }
 
 If (($premium -and $free) -or (!$premium -and !$free))
