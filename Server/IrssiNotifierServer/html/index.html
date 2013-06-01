@@ -212,6 +212,14 @@
 
         <p class="answer">For latest developments, check project's <a href="https://github.com/murgo/irssinotifier">Github page</a>.<p>
 
+        <p class="question news">2.6.2013 IrssiNotifier/IrssiNotifier+ 1.7 with Irssi script 18 released!</p>
+        <div class="answer news-content">
+            New script option: irssinotifier_clear_notifications_when_viewed.
+            When this command is turned on, notifications on the phone are cleared automatically when you change away from the last window that had hilights.
+            <br /> <br />
+            Pretty handy! Thanks to <a href="https://github.com/qvr">qvr</a> for implementing this!
+        </div>
+
         <p class="question news">28.5.2013 IrssiNotifier/IrssiNotifier+ 1.6.13 released!</p>
         <div class="answer news-content">
             App should no longer forget old messages when receiving new ones. Sorry about that, thanks for everybody who reported the bug.
@@ -477,6 +485,10 @@
             <p class="question">Enable or disable DCC chats</p>
             <div class="code-block">/set irssinotifier_enable_dcc [ON or OFF]</div>
             <p class="answer">If set to OFF, notifications from DCC chats are not sent.</p>
+
+            <p class="question">Automatically clear notifications from phone when they are read</p>
+            <div class="code-block">/set irssinotifier_clear_notifications_when_viewed [ON or OFF]</div>
+            <p class="answer">If set to ON, notifications on the phone are cleared automatically when you change away from the last window that had hilights.</p>
         </div>
 
         <h2>Troubleshooting</h2>
