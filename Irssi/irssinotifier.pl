@@ -404,6 +404,8 @@ sub are_settings_valid {
         return 0;
     }
 
+    $notifications_sent = 0 unless (Irssi::settings_get_bool('irssinotifier_clear_notifications_when_viewed'));
+
     return 1;
 }
 
