@@ -42,14 +42,14 @@ public class GCMIntentService extends GCMBaseIntentService {
 
         // peek into payload to see if it's a message or a command
         try {
-          JSONObject payload = new JSONObject(message);
-          if (payload.has("command")) {
-            CommandManager manager = CommandManager.getInstance();
-            manager.handle(context, payload);
-            return;
-          }
+            JSONObject payload = new JSONObject(message);
+            if (payload.has("command")) {
+                CommandManager manager = CommandManager.getInstance();
+                manager.handle(context, payload.getString("command"));
+                return;
+            }
         } catch (JSONException e) {
-          // malformed payload, do nothing, ircnotificationmanager will notify user
+            // malformed payload, do nothing, ircnotificationmanager will notify user
         }
 
         IrcNotificationManager manager = IrcNotificationManager.getInstance();

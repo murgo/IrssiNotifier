@@ -318,9 +318,8 @@ sub read_pipe {
         #Irssi::print($IRSSI{name} . ": Error: send failed: $output");
     }
 
-    if (Irssi::settings_get_bool('irssinotifier_clear_notifications_when_viewed')
-        && $target->{type} eq 'notification') {
-      $notifications_sent++;
+    if (Irssi::settings_get_bool('irssinotifier_clear_notifications_when_viewed') && $target->{type} eq 'notification') {
+        $notifications_sent++;
     }
 
     check_delayQueue();
@@ -357,7 +356,7 @@ sub encrypt {
     my $result = readline $out;
     waitpid $pid, 0;
     waitpid $password_pid, 0;
-    
+
     $result =~ tr[+/][-_];
     $result =~ s/=//g;
     return $result;
