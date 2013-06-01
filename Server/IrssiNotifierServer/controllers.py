@@ -239,6 +239,21 @@ class MessageController(BaseController):
         self.response.out.write(response_json)
 
 
+class CommandController(BaseController):
+    def post(self):
+        success = self.initController("CommandController.post()", ["command"])
+        if not success:
+            return self.response
+
+        try:
+            gcmhelper.send_gcm_to_user_deferred(self.irssi_user, json.dumps({"command": self.data['command']}))
+        except:
+            self.response.status = '400 Bad Request'
+            return self.response
+
+        self.response.out.write("")
+
+
 class WipeController(BaseController):
     def post(self):
         success = self.initController("WipeController.post()", [])
