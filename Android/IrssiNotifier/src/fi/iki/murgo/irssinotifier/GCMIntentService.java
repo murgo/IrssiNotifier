@@ -7,6 +7,9 @@ import android.util.Log;
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class GCMIntentService extends GCMBaseIntentService {
 
     private static final String GCM_DATA_ACTION = "action";
@@ -36,6 +39,18 @@ public class GCMIntentService extends GCMBaseIntentService {
         String action = intent.getStringExtra(GCM_DATA_ACTION);
         String message = intent.getStringExtra(GCM_DATA_MESSAGE);
         Log.d(TAG, "Action: " + action + " Message: " + message);
+
+        // peek into payload to see if it's a message or a command
+        try {
+          JSONObject payload = new JSONObject(message);
+          if (payload.has("command")) {
+            CommandManager manager = CommandManager.getInstance();
+            manager.handle(context, payload);
+            return;
+          }
+        } catch (JSONException e) {
+          // malformed payload, do nothing, ircnotificationmanager will notify user
+        }
 
         IrcNotificationManager manager = IrcNotificationManager.getInstance();
         manager.handle(context, message);
