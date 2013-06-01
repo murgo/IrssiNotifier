@@ -25,6 +25,7 @@ my $lastWindow;
 my $lastKeyboardActivity = time;
 my $forked;
 my $lastDcc = 0;
+my $notifications_sent = 0;
 my @delayQueue = ();
 
 my $screen_socket_path;
@@ -201,6 +202,22 @@ sub send_notification {
         }
         return 0;
     }
+    send_to_api();
+}
+
+sub send_command {
+    my $cmd = shift || return;
+    return if ($forked); # no need to queue commands?
+    send_to_api("cmd", $cmd);
+}
+
+sub send_to_api {
+    my $type = shift || "notification";
+
+    my $command;
+    if ($type eq "cmd") {
+        $command = shift || return;
+    }
 
     my ($readHandle,$writeHandle);
     pipe $readHandle, $writeHandle;
@@ -216,26 +233,38 @@ sub send_notification {
     if ($pid > 0) {
         close $writeHandle;
         Irssi::pidwait_add($pid);
-        my $target = {fh => $$readHandle, tag => undef};
+        my $target = {fh => $$readHandle, tag => undef, type => $type};
         $target->{tag} = Irssi::input_add(fileno($readHandle), INPUT_READ, \&read_pipe, $target);
     } else {
         eval {
             my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
             my $proxy     = Irssi::settings_get_str('irssinotifier_https_proxy');
 
-            $lastMsg = Irssi::strip_codes($lastMsg);
-
-            encode_utf();
-            $lastMsg    = encrypt($lastMsg);
-            $lastNick   = encrypt($lastNick);
-            $lastTarget = encrypt($lastTarget);
-
             if($proxy) {
                 $ENV{https_proxy} = $proxy;
             }
 
-            my $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
-            my $result = `wget --tries=2 --timeout=10 --no-check-certificate -qO- /dev/null $data https://irssinotifier.appspot.com/API/Message`;
+            my $wget_cmd = "wget --tries=2 --timeout=10 --no-check-certificate -qO- /dev/null";
+            my $api_url;
+            my $data;
+
+            if ($type eq 'notification') {
+                $lastMsg = Irssi::strip_codes($lastMsg);
+
+                encode_utf();
+                $lastMsg    = encrypt($lastMsg);
+                $lastNick   = encrypt($lastNick);
+                $lastTarget = encrypt($lastTarget);
+
+                $data = "--post-data=apiToken=$api_token\\&message=$lastMsg\\&channel=$lastTarget\\&nick=$lastNick\\&version=$VERSION";
+                $api_url = "https://irssinotifier.appspot.com/API/Message";
+            } elsif ($type eq 'cmd') {
+                $command = encrypt($command);
+                $data    = "--post-data=apiToken=$api_token\\&command=$command";
+                $api_url = "https://irssinotifier.appspot.com/API/Command";
+            }
+
+            my $result =  `$wget_cmd $data $api_url`;
             if (($? >> 8) != 0) {
                 # Something went wrong, might be network error or authorization issue. Probably no need to alert user, though.
                 print $writeHandle "0 FAIL\n";
@@ -279,21 +308,22 @@ sub read_pipe {
     Irssi::input_remove($target->{tag});
     $forked = 0;
 
-    check_delayQueue();
-
     $output =~ /^(-?\d+) (.*)$/;
     my $ret = $1;
     $output = $2;
 
     if ($ret < 0) {
         Irssi::print($IRSSI{name} . ": Error: send crashed: $output");
-        return 0;
+    } elsif (!$ret) {
+        #Irssi::print($IRSSI{name} . ": Error: send failed: $output");
     }
 
-    if (!$ret) {
-        #Irssi::print($IRSSI{name} . ": Error: send failed: $output");
-        return 0;
+    if (Irssi::settings_get_bool('irssinotifier_clear_notifications_when_viewed')
+        && $target->{type} eq 'notification') {
+      $notifications_sent++;
     }
+
+    check_delayQueue();
 }
 
 sub encrypt {
@@ -394,6 +424,23 @@ sub check_delayQueue {
     return 1;
 }
 
+sub check_window_activity {
+    return if (!$notifications_sent);
+
+    my $act = 0;
+    foreach (Irssi::windows()) {
+        # data_level 3 means window has unseen hilight
+        if ($_->{data_level} == 3) {
+            $act++; last;
+        }
+    }
+
+    if (!$act) {
+        send_command("clearNotifications");
+        $notifications_sent = 0;
+    }
+}
+
 sub event_key_pressed {
     $lastKeyboardActivity = time;
 }
@@ -418,6 +465,7 @@ Irssi::settings_add_str('irssinotifier', 'irssinotifier_required_public_highligh
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_ignore_active_window', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_away_only', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_screen_detached_only', 0);
+Irssi::settings_add_bool('irssinotifier', 'irssinotifier_clear_notifications_when_viewed', 0);
 Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_enable_dcc', 1);
 
@@ -433,3 +481,4 @@ Irssi::signal_add('message dcc',        'dcc');
 Irssi::signal_add('message dcc action', 'dcc');
 Irssi::signal_add('print text',         'print_text');
 Irssi::signal_add('setup changed',      'are_settings_valid');
+Irssi::signal_add('window changed',     'check_window_activity');

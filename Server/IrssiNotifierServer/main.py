@@ -14,6 +14,7 @@ app = webapp2.WSGIApplication(
     [('/', WebController),
      ('/API/Settings', SettingsController),
      ('/API/Message', MessageController),
+     ('/API/Command', CommandController),
      ('/API/Wipe', WipeController),
      ('/API/Nonce', NonceController),
      ('/API/License', LicensingController),
