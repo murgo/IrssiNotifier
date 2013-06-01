@@ -6,7 +6,7 @@ use POSIX;
 use Encode;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "17";
+$VERSION = "18";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -14,7 +14,7 @@ $VERSION = "17";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "https://irssinotifier.appspot.com",
-    changed     => "2013-05-23"
+    changed     => "2013-06-02"
 );
 
 my $lastMsg;

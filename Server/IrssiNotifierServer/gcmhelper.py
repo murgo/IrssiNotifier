@@ -14,7 +14,7 @@ def send_gcm_to_user_deferred(irssiuser, message):
     key = irssiuser.key
     try:
         deferred.defer(_send_gcm_to_user, key, message, _queue=QueueName)
-    except TransientError as e:
+    except TransientError:
         logging.warn("Transient error: %s" % traceback.format_exc())
 
 
@@ -29,7 +29,7 @@ def send_gcm_to_token_deferred(token, message):
     key = token.key
     try:
         deferred.defer(_send_gcm_to_token, key, message, _queue=QueueName)
-    except TransientError as e:
+    except TransientError:
         logging.warn("Transient error: %s" % traceback.format_exc())
 
 
