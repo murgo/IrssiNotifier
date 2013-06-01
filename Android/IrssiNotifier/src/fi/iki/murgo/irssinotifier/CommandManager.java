@@ -1,8 +1,5 @@
 package fi.iki.murgo.irssinotifier;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.util.Log;
 
 import android.app.Notification;
@@ -26,14 +23,13 @@ public class CommandManager {
     private CommandManager() {
     }
 
-    public void handle(Context context, JSONObject payload) {
+    public void handle(Context context, String encryptedCommand) {
         Preferences prefs = new Preferences(context);
 
         String command;
 
         try {
-            command = payload.getString("command");
-            command = Crypto.decrypt(prefs.getEncryptionPassword(), command);
+            command = Crypto.decrypt(prefs.getEncryptionPassword(), encryptedCommand);
         } catch (CryptoException e) {
             final int color = prefs.getCustomLightColor();
 
@@ -50,9 +46,6 @@ public class CommandManager {
             final Notification notification = builder.build();
             final NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             notificationManager.notify(666, notification);
-            return;
-        } catch (JSONException e) {
-            // shouldnt happen, JSON payload syntax has already been verified in gcmintentservice
             return;
         }
 

@@ -1,9 +1,6 @@
 package fi.iki.murgo.irssinotifier;
 
 import android.content.Context;
-import org.json.JSONObject;
-
-import java.util.HashMap;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -75,15 +72,15 @@ public class MessageGenerator extends TimerTask {
             String channel = getRandomString(5, 10);
             for (int j = 0; j < messagesPerChannel; j++) {
                 System.out.println("Notification: Faking message " + j + " of " + messagesPerChannel + " for channel " + i + " of " + channelCount);
-                HashMap<String, String> map = new HashMap<String, String>();
-                map.put("channel", channel);
-                map.put("message", getRandomString(2, 30));
-                map.put("nick", getRandomString(4, 10));
-                map.put("server_timestamp", Double.toString((System.currentTimeMillis() - nextLong(1000L * 60 * 60 * 24 * 30)) / 1000.0));
-                map.put("id", getRandomString(6, 6));
-                JSONObject object = new JSONObject(map);
 
-                manager.handle(context, object.toString());
+                IrcMessage message = new IrcMessage();
+                message.setChannel(channel);
+                message.setMessage(getRandomString(2, 30));
+                message.setNick(getRandomString(4, 10));
+                message.setServerTimestamp(System.currentTimeMillis() - nextLong(1000L * 60 * 60 * 24 * 30));
+                message.setExternalId(getRandomString(6, 6));
+
+                manager.handle(context, message);
             }
         }
     }

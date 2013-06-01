@@ -41,6 +41,7 @@ public class GCMIntentService extends GCMBaseIntentService {
         Log.d(TAG, "Action: " + action + " Message: " + message);
 
         // peek into payload to see if it's a message or a command
+        IrcMessage msg;
         try {
             JSONObject payload = new JSONObject(message);
             if (payload.has("command")) {
@@ -48,12 +49,16 @@ public class GCMIntentService extends GCMBaseIntentService {
                 manager.handle(context, payload.getString("command"));
                 return;
             }
+
+            msg = new IrcMessage();
+            msg.deserialize(payload);
         } catch (JSONException e) {
-            // malformed payload, do nothing, ircnotificationmanager will notify user
+            // malformed payload, probably server error or something, who cares
+            return;
         }
 
         IrcNotificationManager manager = IrcNotificationManager.getInstance();
-        manager.handle(context, message);
+        manager.handle(context, msg);
     }
 
     @Override

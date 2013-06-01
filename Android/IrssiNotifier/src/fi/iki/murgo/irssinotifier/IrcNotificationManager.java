@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONException;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -74,7 +72,7 @@ public class IrcNotificationManager {
         msgs.add(msg);
     }
 
-    public void handle(Context context, String message) {
+    public void handle(Context context, IrcMessage msg) {
         Preferences prefs = new Preferences(context);
         NotificationMode mode = prefs.getNotificationMode();
 
@@ -83,12 +81,10 @@ public class IrcNotificationManager {
         String titleText;
         int notificationId;
         long when = new Date().getTime();
-        IrcMessage msg = new IrcMessage();
         int currentUnreadCount = 1;
         List<String> messageLines = null;
 
         try {
-            msg.deserialize(message);
             msg.decrypt(prefs.getEncryptionPassword());
 
             if (da == null)
@@ -113,11 +109,6 @@ public class IrcNotificationManager {
             titleText = context.getString(R.string.irssinotifier_error_title);
             notificationMessage = context.getString(R.string.decryption_error_notification);
             tickerText = context.getString(R.string.decryption_error_ticker);
-            notificationId = 1;
-        } catch (JSONException e) {
-            titleText = context.getString(R.string.irssinotifier_error_title);
-            notificationMessage = context.getString(R.string.parse_error_notification);
-            tickerText = context.getString(R.string.parse_error_ticker);
             notificationId = 1;
         }
 

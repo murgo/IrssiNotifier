@@ -22,27 +22,19 @@ public class IrcMessage {
     private boolean clearedFromFeed;
     private long id;
 
-    public void deserialize(String payload) throws JSONException {
-        deserialize(new JSONObject(payload));
-    }
-
-    public void deserialize(JSONObject obj) {
-        try {
-            setMessage(obj.getString("message"));
-            setChannel(obj.getString("channel"));
-            setNick(obj.getString("nick"));
-            setServerTimestamp((long) (Double.parseDouble(obj.getString("server_timestamp")) * 1000));
-            if (obj.has("id")) {
-                String externalId = obj.getString("id");
-                try {
-                    Integer.parseInt(externalId);
-                    setExternalId(externalId);
-                } catch (NumberFormatException e) {
-                    // don't do anything with it if it's not a number
-                }
+    public void deserialize(JSONObject obj) throws JSONException {
+        setMessage(obj.getString("message"));
+        setChannel(obj.getString("channel"));
+        setNick(obj.getString("nick"));
+        setServerTimestamp((long) (Double.parseDouble(obj.getString("server_timestamp")) * 1000));
+        if (obj.has("id")) {
+            String externalId = obj.getString("id");
+            try {
+                Integer.parseInt(externalId);
+                setExternalId(externalId);
+            } catch (NumberFormatException e) {
+                // don't do anything with it if it's not a number
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
     }
 
