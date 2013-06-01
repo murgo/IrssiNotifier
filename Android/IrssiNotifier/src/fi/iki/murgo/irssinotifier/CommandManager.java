@@ -28,7 +28,6 @@ public class CommandManager {
 
     public void handle(Context context, JSONObject payload) {
         Preferences prefs = new Preferences(context);
-        IrcNotificationManager manager = IrcNotificationManager.getInstance();
 
         String command;
 
@@ -41,11 +40,11 @@ public class CommandManager {
             NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
             builder.setSmallIcon(R.drawable.notification_icon);
             builder.setTicker(context.getString(R.string.decryption_error_ticker));
-            builder.setAutoCancel(false);
+            builder.setAutoCancel(true);
             builder.setOngoing(false);
             builder.setContentText(context.getString(R.string.decryption_error));
             builder.setContentTitle(context.getString(R.string.decryption_error_title));
-            builder.setContentIntent(PendingIntent.getActivity(context, 0, new Intent(), 0));
+            builder.setContentIntent(PendingIntent.getActivity(context, 0, new Intent(context, IrssiNotifierActivity.class), PendingIntent.FLAG_UPDATE_CURRENT));
             builder.setLights(color, 300, 5000);
 
             final Notification notification = builder.build();
