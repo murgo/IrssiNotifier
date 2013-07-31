@@ -183,6 +183,9 @@ sub attached {
 }
 
 sub tmux_attached {
+  if (!defined($ENV{'TMUX_PANE'})){
+    return 0;
+  }
   chomp(my $session_attached = `tmux display-message -p -t$ENV{'TMUX_PANE'} '#{session_attached}' 2> /dev/null`);
   chomp(my $window_active    = `tmux display-message -p -t$ENV{'TMUX_PANE'} '#{window_active}' 2> /dev/null`);
   return $session_attached && $window_active;
