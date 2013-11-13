@@ -363,6 +363,8 @@ sub encrypt {
 }
 
 sub are_settings_valid {
+    $SIG{CHLD}='DEFAULT';
+
     Irssi::signal_remove( 'gui key pressed', 'event_key_pressed' );
     if (Irssi::settings_get_int('irssinotifier_require_idle_seconds') > 0) {
         Irssi::signal_add( 'gui key pressed', 'event_key_pressed' );
@@ -375,7 +377,7 @@ sub are_settings_valid {
 
     `openssl version`;
     if ($? != 0) {
-        Irssi::print("IrssiNotifier: openssl not found.");
+        Irssi::print("IrssiNotifier: openssl not found: $!");
         return 0;
     }
 
