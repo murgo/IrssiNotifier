@@ -1,0 +1,10 @@
+queue:
+- name: gcmqueue
+  rate: 10/s
+  bucket_size: 20
+  retry_parameters:
+    min_backoff_seconds: 1
+    max_backoff_seconds: 60
+    max_doublings: 2
+    task_age_limit: 1h
+

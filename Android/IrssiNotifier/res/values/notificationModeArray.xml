@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string-array name="notification_modes">
-        <item>Single</item>  
+        <item>Single</item>
         <item>Per channel</item>
         <item>Per message</item>
     </string-array>
-    
+
 </resources>

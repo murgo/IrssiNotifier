@@ -1,5 +1,5 @@
 application: irssinotifier
-version: 2
+version: 8
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -21,7 +21,18 @@ handlers:
 - url: /.*
   script: main.app
   secure: always
+- url: /tasks/gcm
+  script: gcmqueuehandler.app
+  login: admin
   
 libraries:
 - name: jinja2
   version: latest
+- name: pycrypto
+  version: latest
+- name: yaml
+  version: latest
+
+builtins:
+- deferred: on
+- appstats: on

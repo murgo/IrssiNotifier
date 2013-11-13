@@ -1,21 +1,36 @@
+
 package fi.iki.murgo.irssinotifier;
 
 public class ServerResponse {
-	//private static final String TAG = ServerResponse.class.getSimpleName();
-	protected boolean success;
-	private final String responseString;
+    protected boolean success;
+    private String responseString;
+    private Exception exception;
+    private int statusCode;
 
-	public ServerResponse(boolean success, String responseString) {
-		this.success = success;
-		this.responseString = responseString;
-	}
+    public ServerResponse(Exception e) {
+        exception = e;
+    }
 
-	public boolean wasSuccesful() {
-		return success;
-	}
+    public ServerResponse(int statusCode, String responseString) {
+        this.statusCode = statusCode;
+        this.success = statusCode == 200;
+        this.responseString = responseString;
+    }
 
-	public String getResponseString() {
-		return responseString;
-	}
+    public Exception getException() {
+        return exception;
+    }
+
+    public boolean wasSuccesful() {
+        return exception == null && success;
+    }
+
+    public String getResponseString() {
+        return responseString;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
 
 }

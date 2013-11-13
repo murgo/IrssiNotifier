@@ -13,11 +13,12 @@ h2 {
 	margin-bottom: 1em;
 }
 
-.questions {
+.content {
 	margin-top: 3em;
-	width: 480px;
+	width: 543px;
 	margin-left: auto;
 	margin-right: auto;
+	text-align: left;
 }
 
 .center {
@@ -33,12 +34,16 @@ h2 {
 .broken {
 	color: #f03030;
 }
+.oldversion {
+	color: #f0f030;
+}
 
 .debug {
 	display:none;
 }
 
-.block {
+.code-block {
+	font-size: 0.75em;
 	margin: 1em;
 	background-color: #444444;
 }
@@ -65,12 +70,91 @@ a:active {
 
 body {
 	font-family:Consolas,Courier;
-	background-color: #000000;
+	background-color: #072F5E; /* #084285; */
 	color: #e0e0e0;
+	text-align: center; 
 }
 
 img.center {
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
+}
+
+.navibutton {
+	display: inline-block;
+	width: 150px;
+	padding: 10px 1px;
+	margin: 15px 5px;
+	background-color: #1153a0;
+	cursor: pointer;
+	font-size: 20px;
+}
+
+.navi-selected {
+	background-color: #072F5E;
+}
+
+.navibutton:hover {
+	background-color: #1068ce;
+}
+
+.navibutton a:link{
+	color: #fafafa;
+	text-decoration: none;
+}
+
+.navibutton a:visited{
+	color: #fafafa;
+	text-decoration: none;
+}
+
+.navibutton a:hover{
+	color: #fafafa;
+	text-decoration: none;
+}
+
+.hidden {
+	display: none;
+}
+
+.banner {
+	cursor: pointer;
+}
+
+.box {
+	background-color: #181818;
+	padding: 10px;
+	margin-left: auto;
+	margin-right: auto;
+	display: inline-block;
+	border-radius: 4px;
+	box-shadow: 2px 2px 33px black;
+}
+
+.google-play {
+	/* margin-top: 44px; */
+}
+
+.googleplus {
+	margin-top: 25px;
+}
+
+.news {
+	color: #fefefe;
+	margin-top: 65px;
+}
+
+.news-content {
+	margin-top: 10px;
+}
+
+table {
+	border-collapse:collapse;
+	width:100%
+}
+
+table, th, td {
+	border: 1px dashed #454545;
+	padding-left:2px padding-right:2px
 }
