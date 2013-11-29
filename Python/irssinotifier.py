@@ -28,10 +28,13 @@ class IrssiNotifier:
 
         @param api_token: the API token you got from the site.
         @param enc_password: the encryption password you set on your
-                             device.
+                             device. Type str or bytes.
         @type api_token: C{str}
         @type enc_password: C{str}
         """
+        if type(enc_password) != bytes:
+            enc_password = enc_password.encode('utf-8')
+
         self._api_base = 'https://irssinotifier.appspot.com/API'
         self._api_token = api_token
         self._enc_password = enc_password
