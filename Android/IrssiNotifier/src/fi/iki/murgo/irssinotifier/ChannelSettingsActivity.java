@@ -62,7 +62,7 @@ public class ChannelSettingsActivity extends ListActivity {
             int order = -1;
             int i = 0;
             for (String n : names) {
-                if (n.equals(ch.getName())) {
+                if (n.equalsIgnoreCase(ch.getName())) {
                     order = i;
                     break;
                 }
@@ -99,16 +99,15 @@ public class ChannelSettingsActivity extends ListActivity {
     private OnItemLongClickListener getOnItemLongClickListener() {
         return new OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> arg0, final View arg1, final int arg2,
-                    long arg3) {
+            public boolean onItemLongClick(AdapterView<?> parent, final View view, final int position,
+                    long id) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
-                final int index = arg2;
                 builder.setMessage(
-                        "Are you sure you want to remove channel " + adapter.getItem(index))
+                        "Are you sure you want to remove channel " + adapter.getItem(position))
                         .setCancelable(false)
                         .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                String item = adapter.getItem(index);
+                                String item = adapter.getItem(position);
                                 adapter.remove(item);
                             }
                         })

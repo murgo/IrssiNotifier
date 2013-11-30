@@ -7,14 +7,14 @@ import org.json.JSONObject;
 import android.util.Log;
 
 public class MessageServerResponse extends ServerResponse {
-    private static final String TAG = MessageServerResponse.class.getSimpleName();
+    private static final String TAG = MessageServerResponse.class.getName();
     private static final String MESSAGE = "servermessage";
 
     private String serverMessage;
     private JSONObject responseJson;
 
-    public MessageServerResponse(boolean success, String responseString) {
-        super(success, responseString);
+    public MessageServerResponse(int statusCode, String responseString) {
+        super(statusCode, responseString);
 
         if (!wasSuccesful() || getResponseString() == null || getResponseString().length() == 0)
             return;

@@ -9,7 +9,7 @@
      >
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/textViewWelcomeText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="30dp"
@@ -18,7 +18,7 @@
         android:textSize="40sp" />
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/textViewWelcomeHelp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="30dp"

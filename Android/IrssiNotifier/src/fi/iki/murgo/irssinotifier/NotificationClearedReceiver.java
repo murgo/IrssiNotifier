@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.util.Log;
 
 public class NotificationClearedReceiver extends BroadcastReceiver {
-    private static final String TAG = NotificationClearedReceiver.class.getSimpleName();
+    private static final String TAG = NotificationClearedReceiver.class.getName();
 
     public static final String NOTIFICATION_CLEARED_INTENT = "fi.iki.murgo.irssinotifier.NOTIFICATION_CLEARED";
 

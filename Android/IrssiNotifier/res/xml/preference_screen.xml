@@ -1,78 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory android:title="Encryption settings" >
+    <PreferenceCategory android:title="General settings" >
         <EditTextPreference
             android:defaultValue="password"
             android:key="EncryptionPassword"
-            android:summary="This must be the same as the one in the Irssi script"
+            android:summary="Must be the same as the one set in Irssi"
             android:title="Encryption password" />
+        <CheckBoxPreference
+            android:key="UsePullMechanism"
+            android:title="Check for new messages"
+            android:summary="Pull unreceived messages from server on app startup"
+            android:defaultValue="true"
+            />
     </PreferenceCategory>
-    <PreferenceCategory android:title="Notification settings" >
+
+    <PreferenceCategory android:title="Notifications" >
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="NotificationsEnabled"
             android:title="Enable notifications" />
-
         <ListPreference
             android:defaultValue="Single"
             android:entries="@array/notification_modes"
             android:entryValues="@array/notification_modes"
             android:key="notificationModeString"
-            android:summary="How many notifications you want"
+            android:summary="How many different notifications are shown"
             android:title="Notification mode" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="SoundEnabled"
-            android:title="Enable sound" />
-
-        <RingtonePreference
-            android:defaultValue="content://settings/system/notification_sound"
-            android:key="NotificationSound"
-            android:ringtoneType="notification"
-            android:showDefault="true"
-            android:showSilent="false"
-            android:summary="Select the sound to play when notifying"
-            android:title="Select notification sound" />
-
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="VibrationEnabled"
-            android:title="Enable vibration" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="LightsEnabled"
-            android:summary="Flashes LEDs when notifying (where applicable)"
-            android:title="Enable flashing lights" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="SpamFilterEnabled"
-            android:summary="Only plays one notification sound per minute"
-            android:title="Enable spam filtering" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="FeedViewDefault"
-            android:summary="If turned off, channel with activity will be the tab to open"
-            android:title="Feed view as default tab" />
+            android:summary="If turned off, channel with activity will be the tab to show when opening notifications"
+            android:title="Feed view as the default tab" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="SpamFilterEnabled"
+            android:summary="Do not play sounds or vibrate more than once per minute"
+            android:title="Enable spam filtering" />
+        <PreferenceScreen
+            android:title="Notification style"
+            android:summary="Select sound, vibration, lights etc." >
+            <PreferenceCategory android:title="Sound" >
+                <CheckBoxPreference
+                    android:defaultValue="true"
+                    android:key="SoundEnabled"
+                    android:title="Enable sound" />
+                <RingtonePreference
+                    android:defaultValue="content://settings/system/notification_sound"
+                    android:key="NotificationSound"
+                    android:ringtoneType="notification"
+                    android:showDefault="true"
+                    android:showSilent="false"
+                    android:summary="Select the sound to play when notifying"
+                    android:title="Select notification sound"
+                    android:dependency="SoundEnabled" />
+            </PreferenceCategory>
+            <PreferenceCategory android:title="Vibration" >
+                <CheckBoxPreference
+                    android:defaultValue="true"
+                    android:key="VibrationEnabled"
+                    android:title="Enable vibration" />
+            </PreferenceCategory>
+            <PreferenceCategory android:title="Lights" >
+                <CheckBoxPreference
+                    android:defaultValue="true"
+                    android:key="LightsEnabled"
+                    android:summary="Flashes LED when notifying (where applicable)"
+                    android:title="Enable notification lights" />
+                <CheckBoxPreference
+                    android:defaultValue="true"
+                    android:key="UseDefaultLightColor"
+                    android:disableDependentsState="true"
+                    android:title="Use default light color"
+                    android:dependency="LightsEnabled" />
+                <Preference
+                    android:key="PickCustomLightColor"
+                    android:title="Pick custom light color"
+                    android:dependency="UseDefaultLightColor" />
+            </PreferenceCategory>
+        </PreferenceScreen>
     </PreferenceCategory>
     
     <PreferenceCategory android:title="Irssi ConnectBot integration" android:key="IcbCategory" >
-
         <CheckBoxPreference
             android:key="IcbEnabled"
             android:defaultValue="true"
             android:title="Show ICB icon"
-            android:summary="Show Irssi ConnectBot icon in the action bar"
-             />
-
+            android:summary="Show Irssi ConnectBot icon in the action bar" />
         <Preference
             android:key="IcbHost"
             android:title="Select ICB host"
             android:summary=""
-            android:dependency="IcbEnabled"
-             />
-        
+            android:dependency="IcbEnabled" />
     </PreferenceCategory>
     
     <PreferenceCategory android:title="Misc" >
@@ -90,8 +109,7 @@
         <Preference
             android:key="redoInitialSettings"
             android:title="Redo initial settings"
-            android:summary="Clears your authentication data and allows you to pick your Google Account again"
-             />
+            android:summary="Clears your authentication data and allows you to pick your Google account again" />
     </PreferenceCategory>
 
 </PreferenceScreen>

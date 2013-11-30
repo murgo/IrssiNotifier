@@ -131,7 +131,10 @@ class EmailLoggingHandler(logging.Handler):
                 return
     
             formatted_record = self.format(record)
-                
+
+            if "NOMAIL" in formatted_record:
+                return
+
             try:
                 for jid, params in self.recipients.items():
                     if record.levelno < params['level']:

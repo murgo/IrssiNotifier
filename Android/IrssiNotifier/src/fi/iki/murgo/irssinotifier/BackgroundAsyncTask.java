@@ -12,23 +12,39 @@ public abstract class BackgroundAsyncTask<A, B, C> extends AsyncTask<A, B, C> {
     private final String titleText;
     private final String text;
     private Callback<C> callback;
+    private final boolean showDialog;
 
+    /**
+     * This constructor doesn't show dialog
+     */
+    public BackgroundAsyncTask(Activity activity) {
+        this.activity = activity;
+        titleText = null;
+        text = null;
+        showDialog = false;
+    }
+
+    /**
+     * Shows dialog with indeterminate progress bar
+     */
     public BackgroundAsyncTask(Activity activity, String titleText, String text) {
         this.activity = activity;
         this.titleText = titleText;
         this.text = text;
+        this.showDialog = true;
     }
 
     @Override
     protected void onPreExecute() {
-        if (dialog == null)
+        if (showDialog && dialog == null)
             setDialog(ProgressDialog.show(activity, titleText, text, true));
     }
 
     @Override
     protected void onPostExecute(C result) {
         try {
-            getDialog().dismiss();
+            if (dialog != null)
+                dialog.dismiss();
         } catch (Exception e) {
             // nothing
         }
@@ -52,5 +68,5 @@ public abstract class BackgroundAsyncTask<A, B, C> extends AsyncTask<A, B, C> {
 
     public void setDialog(ProgressDialog dialog) {
         this.dialog = dialog;
-    };
+    }
 }

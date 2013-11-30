@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Vibrator;
 import org.apache.http.auth.AuthenticationException;
 
 import com.actionbarsherlock.app.SherlockActivity;
@@ -13,7 +16,6 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.Window;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -23,18 +25,19 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.Log;
 
 public class IrssiNotifierActivity extends SherlockActivity {
-    private static final String TAG = IrssiNotifierActivity.class.getSimpleName();
+    public static final String FEED = "------------------------FEED";
+
+    private static final String TAG = IrssiNotifierActivity.class.getName();
     private Preferences preferences;
     // private final String googleAnalyticsCode = "UA-29385499-1";
     private MessagePagerAdapter adapter;
-    private ViewPager pager;
     private boolean progressBarVisibility;
     private static IrssiNotifierActivity instance;
     private static boolean needsRefresh;
     private String channelToView;
     private List<Channel> channels;
-    private Object channelsLock = new Object();
-    private static final String FEED = "------------------------FEED";
+    private final Object channelsLock = new Object();
+    private int backgroundOperations = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,7 +61,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
         Preferences.setVersion(versionCode);
 
         // do initial settings
-        if (preferences.getAuthToken() == null || preferences.getGcmRegistrationId() == null || preferences.getGcmRegistrationIdVersion() != versionCode) {
+        if (preferences.getAccountName() == null || preferences.getGcmRegistrationId() == null || preferences.getGcmRegistrationIdVersion() != versionCode || (LicenseHelper.isPlusVersion(this) && preferences.getLicenseCount() == 0)) {
             Log.d(TAG, "Asking for initial settings");
             Intent i = new Intent(this, InitialSettingsActivity.class);
             startActivity(i);
@@ -114,7 +117,9 @@ public class IrssiNotifierActivity extends SherlockActivity {
         super.onResume();
         instance = this;
 
-        if (needsRefresh) {
+        boolean hadMessages = IrcNotificationManager.getInstance().mainActivityOpened(this);
+
+        if (hadMessages || needsRefresh) {
             Log.v(TAG, "onResume needs refreshing");
             needsRefresh = false;
             restart();
@@ -148,81 +153,116 @@ public class IrssiNotifierActivity extends SherlockActivity {
             sendSettings();
         }
 
-        final Activity ctx = this;
-
         final long now = new Date().getTime();
-        final DataFetcherTask dataFetcherTask = new DataFetcherTask(preferences.getAuthToken(),
-                preferences.getEncryptionPassword(), preferences.getLastFetchTime(),
+
+        final Callback<List<Channel>> dataAccessCallback = new Callback<List<Channel>>() {
+            public void doStuff(List<Channel> param) {
+                backgroundOperationEnded();
+                synchronized (channelsLock) {
+                    channels = param;
+                    refreshUi();
+                }
+            }
+        };
+
+        final DataFetcherTask dataFetcherTask = new DataFetcherTask(this, preferences.getEncryptionPassword(), preferences.getLastFetchTime(),
                 new Callback<DataFetchResult>() {
-                    // TODO: Move this into its own activity, so orientation
-                    // changes work correctly
+                    // TODO: Move this into its own activity, so orientation changes work correctly
                     public void doStuff(DataFetchResult param) {
-                        setIndeterminateProgressBarVisibility(false);
+                        backgroundOperationEnded();
+                        preferences.setLastFetchTime(now);
+
                         if (param.getException() != null) {
-                            if (param.getException() instanceof AuthenticationException) {
-                                MessageBox.Show(ctx, "Authentication error", "Unable to authenticate to server, please re-register your application.", 
-                                    new Callback<Void>() {
-                                        public void doStuff(Void param) {
-                                            preferences.setAuthToken(null);
-                                            restart();
-                                        }
-                                    });
-                            } else if (param.getException() instanceof ServerException) {
-                                MessageBox.Show(ctx, "Server error", "Mystical server error, check if updates are available", null);
-                            } else if (param.getException() instanceof CryptoException) {
-                                MessageBox.Show(ctx, "Decryption error", "Unable to decrypt message, is your decryption password correct?", null);
-                                preferences.setLastFetchTime(now);
-                            } else if (param.getException() instanceof IOException) {
-                                MessageBox.Show(ctx, "Network error", "Is your internet connection available?", null);
-                                preferences.setLastFetchTime(now);
-                            } else {
-                                MessageBox.Show(ctx, "Error", "What happen", null);
-                            }
+                            handleNetworkException(param.getException());
                             return;
                         }
 
-                        preferences.setLastFetchTime(now);
-
-                        if (param.getResponse().getServerMessage() != null
-                                && param.getResponse().getServerMessage().length() > 0) {
-                            MessageBox.Show(ctx, null, param.getResponse().getServerMessage(),
-                                    null, true);
+                        if (param.getResponse().getServerMessage() != null && param.getResponse().getServerMessage().length() > 0) {
+                            MessageBox.Show(IrssiNotifierActivity.this, null, param.getResponse().getServerMessage(), null);
                         }
 
                         if (param.getMessages().isEmpty()) {
                             return;
                         }
 
-                        DataAccessTask task = new DataAccessTask(ctx,
-                                new Callback<List<Channel>>() {
-                                    public void doStuff(List<Channel> param) {
-                                        synchronized (channelsLock) {
-                                            channels = param;
-                                            refreshUi();
-                                        }
-                                    }
-                                });
-                        task.execute(param.getMessages().toArray(new IrcMessage[0]));
+                        DataAccessTask task = new DataAccessTask(IrssiNotifierActivity.this, dataAccessCallback);
+                        List<IrcMessage> messages = param.getMessages();
+                        TaskExecutor.executeOnThreadPoolIfPossible(task, messages.toArray(new IrcMessage[messages.size()]));
+                        backgroundOperationStarted();
                     }
                 });
 
-        final Callback<List<Channel>> dataAccessCallback = new Callback<List<Channel>>() {
-            public void doStuff(List<Channel> param) {
-                synchronized (channelsLock) {
-                    channels = param;
-                    refreshUi();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                refreshUi();
+
+                if (!uptodate && preferences.isPullMechanismInUse() && LicenseHelper.isPlusVersion(IrssiNotifierActivity.this)) {
+                    TaskExecutor.executeOnThreadPoolIfPossible(dataFetcherTask);
+                    backgroundOperationStarted();
                 }
 
-                if (!uptodate) {
-                    setIndeterminateProgressBarVisibility(true);
+                DataAccessTask datask = new DataAccessTask(IrssiNotifierActivity.this, dataAccessCallback);
+                TaskExecutor.executeOnThreadPoolIfPossible(datask);
+                backgroundOperationStarted();
 
-                    dataFetcherTask.execute();
+                if (LicenseHelper.isPlusVersion(IrssiNotifierActivity.this)) {
+                    checkLicense();
                 }
             }
-        };
+        });
+    }
 
-        DataAccessTask datask = new DataAccessTask(ctx, dataAccessCallback);
-        datask.execute();
+    private void checkLicense() {
+        if (preferences.getLicenseCount() >= 2) {
+            return;
+        }
+
+        if (System.currentTimeMillis() - preferences.getLastLicenseTime() <= 1000 * 60 * 30) {
+            return;
+        }
+
+        // over half hour since last registration, register again to prevent 15 minute return policy abuse
+        LicenseCheckingTask task = new LicenseCheckingTask(this);
+        task.setCallback(new Callback<LicenseCheckingTask.LicenseCheckingMessage>() {
+            @Override
+            public void doStuff(LicenseCheckingTask.LicenseCheckingMessage param) {
+                backgroundOperationEnded();
+
+                switch (param.licenseCheckingStatus) {
+                    case Allow:
+                        // yay! do nothing
+                        break;
+                    case Disallow:
+                        preferences.setLicenseCount(0);
+                        MessageBox.Show(IrssiNotifierActivity.this, getText(R.string.not_licensed_title), getText(R.string.not_licensed), new Callback<Void>() {
+                            @Override
+                            public void doStuff(Void param) {
+                                IrssiNotifierActivity.this.finish();
+                            }
+                        });
+                        break;
+                    case Error:
+                        // do nothing, on next startup licensing will be retried
+                        break;
+                }
+            }
+        });
+        TaskExecutor.executeOnThreadPoolIfPossible(task);
+        backgroundOperationStarted();
+    }
+
+    private void backgroundOperationEnded() {
+        backgroundOperations--;
+        if (backgroundOperations <= 0) {
+            backgroundOperations = 0;
+            setIndeterminateProgressBarVisibility(false);
+        }
+    }
+
+    private void backgroundOperationStarted() {
+        backgroundOperations++;
+        setIndeterminateProgressBarVisibility(true);
     }
 
     private void refreshUi() {
@@ -232,7 +272,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
             setIndeterminateProgressBarVisibility(!progressBarVisibility); // hack
             setIndeterminateProgressBarVisibility(!progressBarVisibility);
 
-            pager = (ViewPager) findViewById(R.id.pager);
+            ViewPager pager = (ViewPager) findViewById(R.id.pager);
 
             if (adapter == null) {
                 adapter = new MessagePagerAdapter(getLayoutInflater());
@@ -249,14 +289,9 @@ public class IrssiNotifierActivity extends SherlockActivity {
             titleIndicator.setOnPageChangeListener(new OnPageChangeListener() {
                 public void onPageSelected(int arg0) {
                     if (channels != null) {
-                        if (arg0 == 0) {
-                            // feed
-                            channelToView = FEED;
-                        } else {
-                            Channel ch = channels.get(arg0 - 1);
-                            if (ch != null) {
-                                channelToView = ch.getName();
-                            }
+                        Channel ch = channels.get(arg0);
+                        if (ch != null) {
+                            channelToView = ch.getName();
                         }
                     }
                 }
@@ -269,14 +304,10 @@ public class IrssiNotifierActivity extends SherlockActivity {
             });
 
             if (channelToView != null && channels != null) {
-                if (channelToView.equals(FEED)) {
-                    pager.setCurrentItem(0);
-                } else {
-                    for (int i = 0; i < channels.size(); i++) {
-                        if (channels.get(i).getName().equals(channelToView)) {
-                            pager.setCurrentItem(i + 1);
-                            break;
-                        }
+                for (int i = 0; i < channels.size(); i++) {
+                    if (channels.get(i).getName().equalsIgnoreCase(channelToView)) {
+                        pager.setCurrentItem(i);
+                        break;
                     }
                 }
             }
@@ -287,31 +318,36 @@ public class IrssiNotifierActivity extends SherlockActivity {
         }
     }
 
-    private void setIndeterminateProgressBarVisibility(boolean state) {
-        setSupportProgressBarIndeterminateVisibility(state);
+    private void setIndeterminateProgressBarVisibility(final boolean state) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                setSupportProgressBarIndeterminateVisibility(state);
+            }
+        });
         progressBarVisibility = state;
     }
 
     private void sendSettings() {
-        SettingsSendingTask task = new SettingsSendingTask(this, "", "Sending settings to server...");
+        SettingsSendingTask task = new SettingsSendingTask(this, "", getString(R.string.sending_settings_to_server));
 
         final Context ctx = this;
         task.setCallback(new Callback<ServerResponse>() {
             public void doStuff(ServerResponse result) {
-                if (result != null && result.wasSuccesful()) {
+                backgroundOperationEnded();
+                if (result.getException() != null) {
+                    handleNetworkException(result.getException());
                     return;
                 }
 
-                MessageBox.Show(ctx, null,"Unable to register to GCM! Please try again later!",
-                    new Callback<Void>() {
-                        public void doStuff(Void param) {
-                            finish();
-                        }
-                    });
+                if (!result.wasSuccesful()) {
+                    MessageBox.Show(ctx, null, getString(R.string.unable_to_send_settings), null);
+                }
             }
         });
 
-        task.execute();
+        TaskExecutor.executeOnThreadPoolIfPossible(task);
+        backgroundOperationStarted();
     }
 
     @Override
@@ -319,7 +355,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
         super.onCreateOptionsMenu(menu);
         getSupportMenuInflater().inflate(R.menu.mainmenu, menu);
 
-        if (!preferences.getIcbEnabled() || !IntentSniffer.isIntentAvailable(this, IrssiConnectbotLauncher.INTENT_IRSSICONNECTBOT)) {
+        if (!preferences.getIcbEnabled() || !IntentSniffer.isPackageAvailable(this, IrssiConnectbotLauncher.PACKAGE_IRSSICONNECTBOT)) {
             menu.findItem(R.id.menu_irssi_connectbot).setVisible(false);
             menu.findItem(R.id.menu_irssi_connectbot).setEnabled(false);
         }
@@ -331,6 +367,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_irssi_connectbot) {
             IrssiConnectbotLauncher.launchIrssiConnectbot(this);
+            //MessageGenerator.Flood(this);
         } else if (item.getItemId() == R.id.menu_settings) {
             Intent settingsActivity = new Intent(this, SettingsActivity.class);
             startActivity(settingsActivity);
@@ -349,7 +386,7 @@ public class IrssiNotifierActivity extends SherlockActivity {
             }
 
             for (Channel ch : channels) {
-                if (ch.getName().equals(channelToView)) {
+                if (ch.getName().equalsIgnoreCase(channelToView)) {
                     channelToClear = ch;
                     break;
                 }
@@ -367,12 +404,50 @@ public class IrssiNotifierActivity extends SherlockActivity {
     }
 
     public void newMessage(IrcMessage msg) {
+        if ((!preferences.isSpamFilterEnabled() || new Date().getTime() > IrcNotificationManager.getInstance().getLastSoundDate() + 60000L)) {
+            Uri sound = preferences.getNotificationSound();
+            if (sound != null) {
+                MediaPlayer mp = MediaPlayer.create(this, sound);
+                if (mp != null) {
+                    mp.start();
+                }
+            }
+
+            if (preferences.isVibrationEnabled()) {
+                Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                if (v != null) {
+                    v.vibrate(500);
+                }
+            }
+
+            IrcNotificationManager.getInstance().setLastSoundDate(new Date().getTime());
+        }
+
         if (preferences.isFeedViewDefault()) {
             channelToView = FEED;
         } else {
             channelToView = msg.getLogicalChannel();
         }
         startMainApp(false);
+    }
+
+    private void handleNetworkException(Exception exception) {
+        if (exception instanceof AuthenticationException) {
+            MessageBox.Show(this, getString(R.string.authentication_error_title), getString(R.string.authentication_error),
+                    new Callback<Void>() {
+                        public void doStuff(Void param) {
+                            restart();
+                        }
+                    });
+        } else if (exception instanceof ServerException) {
+            MessageBox.Show(this, getString(R.string.server_error_title), getString(R.string.server_error), null);
+        } else if (exception instanceof CryptoException) {
+            MessageBox.Show(this, getString(R.string.decryption_error_title), getString(R.string.decryption_error), null);
+        } else if (exception instanceof IOException) {
+            return;
+        } else {
+            MessageBox.Show(this, "Error", "What happen", null);
+        }
     }
 
     /*

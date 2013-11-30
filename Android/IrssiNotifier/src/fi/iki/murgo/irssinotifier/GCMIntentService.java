@@ -7,6 +7,9 @@ import android.util.Log;
 import com.google.android.gcm.GCMBaseIntentService;
 import com.google.android.gcm.GCMRegistrar;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class GCMIntentService extends GCMBaseIntentService {
 
     private static final String GCM_DATA_ACTION = "action";
@@ -15,6 +18,10 @@ public class GCMIntentService extends GCMBaseIntentService {
     private static final String SENDER_ID = "710677821747";
 
     public static Callback<Boolean> callback;
+
+    public GCMIntentService() {
+        super(SENDER_ID);
+    }
 
     public static void setRegistrationCallback(Callback<Boolean> callback) {
         GCMIntentService.callback = callback;
@@ -33,8 +40,25 @@ public class GCMIntentService extends GCMBaseIntentService {
         String message = intent.getStringExtra(GCM_DATA_MESSAGE);
         Log.d(TAG, "Action: " + action + " Message: " + message);
 
+        // peek into payload to see if it's a message or a command
+        IrcMessage msg;
+        try {
+            JSONObject payload = new JSONObject(message);
+            if (payload.has("command")) {
+                CommandManager manager = CommandManager.getInstance();
+                manager.handle(context, payload.getString("command"));
+                return;
+            }
+
+            msg = new IrcMessage();
+            msg.deserialize(payload);
+        } catch (JSONException e) {
+            // malformed payload, probably server error or something, who cares
+            return;
+        }
+
         IrcNotificationManager manager = IrcNotificationManager.getInstance();
-        manager.handle(context, message);
+        manager.handle(context, msg);
     }
 
     @Override

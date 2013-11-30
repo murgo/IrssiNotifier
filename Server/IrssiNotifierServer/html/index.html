@@ -1,440 +1,621 @@
 <!DOCTYPE html>
 
-<!-- IrssiNotifier v4 -->
+<!-- IrssiNotifier, last updated 2013-05-28 -->
 
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	 
-	<link rel="stylesheet" type="text/css" href="static/style.css" />
-	<link rel="icon" type="image/png" href="static/icon.png" />
-	<link rel="canonical" href="https://irssinotifier.appspot.com" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 
-	<title>IrssiNotifier</title>
+    <link rel="stylesheet" type="text/css" href="static/style.css" />
+    <link rel="icon" type="image/png" href="static/icon.png" />
+    <link rel="canonical" href="https://irssinotifier.appspot.com" />
 
-	<!-- Google Analytics -->
-	<script type="text/javascript">
-		var _gaq = _gaq || [];
-		_gaq.push(['_setAccount', 'UA-29331277-1']);
-		_gaq.push(['_trackPageview']);
-		(function() {
-			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-		})();
-	</script>
-	
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
-	
-	<!-- Google Analytics -->
-	<script type="text/javascript">
-		var currentView = "";
-		var lock = false;
-	
-		function switchView(button, view) {
-			if (lock) return;
-			$(".navi-selected").removeClass('navi-selected');
-			
-			if (button != null) {
-				$(button).addClass('navi-selected');
-			}
+    <title>IrssiNotifier</title>
 
-			if (view == currentView) return;
-			
-			if (currentView == "") {
-				$(view).fadeIn();
-			} else {
-				lock = true;
-				$(currentView).fadeOut(function() { lock = false; $(view).fadeIn(); });
-			}
+    <!-- Google Analytics -->
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-29331277-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
 
-			currentView = view;
-		}
-		
-		function hashChanged() {
-			var hash = window.location.hash.substring(1);
-			
-			if (hash == "new") switchView(".navi-new", "#content-new");
-			else if (hash == "help") switchView(".navi-help", "#content-help");
-			else if (hash == "profile") switchView(".navi-profile", "#content-profile");
-			else if (hash == "privacy") switchView(null, "#content-privacy");
-			else switchView(".navi-main", "#content-main");
-		}
-		
-		$(function() {
-			replaceDateTimes();
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
 
-			$(".navi-main").click(function() 	{ parent.location.hash = "main"; hashChanged(); });
-			$(".navi-new").click(function() 	{ parent.location.hash = "new"; hashChanged(); });
-			$(".navi-help").click(function() 	{ parent.location.hash = "help"; hashChanged(); });
-			$(".navi-profile").click(function() { parent.location.hash = "profile"; hashChanged(); });
-			$(".banner").click(function() { $(".navi-main").click(); });
+    <!-- Google Analytics -->
+    <script type="text/javascript">
+        var currentView = "";
+        var lock = false;
 
-			$(window).bind('hashchange', hashChanged);
-			hashChanged();
-		});
-		
-	function wipe() {
-		var answer = confirm("Wipe all user data?");
-		if (answer) {
-			$.post("/API/Wipe", { }, function(data) {
-				window.location.replace('{{ logout_url }}');
-			});
-		}
-	}
+        function switchView(button, view) {
+            if (lock) return;
+            $(".navi-selected").removeClass('navi-selected');
 
-	function update(checkbox, name, token) {
-		var enabled = checkbox.checked ? 1 : 0;
-		$.post("/API/Settings", { "Name": name, "RegistrationId": token, "Enabled": enabled }, function(data) {
-			alert("Device " + name + (checkbox.checked ? " enabled." : " disabled."));
-		});
-	}
-	
-	function replaceDateTimes() {
-		$(".datetime").each(function(index, element) {
-			var text = $(element).html();
-			if (!isNaN(text)) {
-				var utcSeconds = text;
-				var epoch = new Date(0);
-				epoch.setUTCSeconds(utcSeconds);
+            if (button != null) {
+                $(button).addClass('navi-selected');
+            }
 
-				$(element).html(epoch.toLocaleString());
-			}
-		});
-	}
-	</script>
-	
+            if (view == currentView) return;
+
+            if (currentView == "") {
+                $(view).fadeIn();
+            } else {
+                lock = true;
+                $(currentView).fadeOut(function() { lock = false; $(view).fadeIn(); });
+            }
+
+            currentView = view;
+        }
+
+        function hashChanged() {
+            var hash = window.location.hash.substring(1);
+
+            if (hash == "new") switchView(".navi-new", "#content-new");
+            else if (hash == "help") switchView(".navi-help", "#content-help");
+            else if (hash == "profile") switchView(".navi-profile", "#content-profile");
+            else if (hash == "privacy") switchView(null, "#content-privacy");
+            else switchView(".navi-main", "#content-main");
+        }
+
+        $(function() {
+            replaceDateTimes();
+
+            $(".navi-main").click(function()     { parent.location.hash = "main"; hashChanged(); });
+            $(".navi-new").click(function()     { parent.location.hash = "new"; hashChanged(); });
+            $(".navi-help").click(function()     { parent.location.hash = "help"; hashChanged(); });
+            $(".navi-profile").click(function() { parent.location.hash = "profile"; hashChanged(); });
+            $(".banner").click(function() { $(".navi-main").click(); });
+
+            $(window).bind('hashchange', hashChanged);
+            hashChanged();
+        });
+
+        function wipe() {
+            var answer = confirm("Wipe all user data?");
+            if (answer) {
+                $.post("/API/Wipe", { }, function(data) {
+                    window.location.replace('{{ logout_url }}');
+                });
+            }
+        }
+
+        function update(checkbox, name, token) {
+            var enabled = checkbox.checked ? 1 : 0;
+            $.post("/API/Settings", { "Name": name, "RegistrationId": token, "Enabled": enabled }, function(data) {
+                alert("Device " + name + (checkbox.checked ? " enabled." : " disabled."));
+            });
+        }
+
+        function remove_device(name, token) {
+            var answer = confirm("Remove device " + name + "?");
+            if (answer) {
+                $.post("/API/Wipe", { "RegistrationId": token }, function(data) {
+                    location.reload();
+                });
+            }
+        }
+
+        function replaceDateTimes() {
+            $(".datetime").each(function(index, element) {
+                var text = $(element).html();
+                if (!isNaN(text)) {
+                    var utcSeconds = text;
+                    var epoch = new Date(0);
+                    epoch.setUTCSeconds(utcSeconds);
+
+                    $(element).html(epoch.toLocaleString());
+                }
+            });
+        }
+    </script>
+
 </head>
 <body>
-	<a href="https://github.com/murgo/irssinotifier"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
-	
-	<div class="box">
-	
-	<img class="center banner" src="static/banner.png" alt="IrssiNotifier" />
+    <a href="https://github.com/murgo/irssinotifier"><img style="position: absolute; top: 0; right: 0; border: 0;" src="//s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"></a>
 
-	<div id="navi" class="center">
-		<div class="navibutton navi-main"><a href="#main">Main</a></div>
-		<div class="navibutton navi-new"><a href="#new">What's new</a></div>
-		<div class="navibutton navi-help"><a href="#help">Help</a></div>
-		<div class="navibutton navi-profile"><a href="#profile">My profile</a></div>
-	</div>
-	
-	<div id="content-main" class="hidden content">
+    <div class="box">
 
-		<h1>IrssiNotifier</h1>
+{% if license_type == 'Plus' %}
+    <img class="center banner" src="static/banner_plus.png" alt="IrssiNotifier" />
+{% else %}
+    <img class="center banner" src="static/banner.png" alt="IrssiNotifier" />
+{% endif %}
+    <div id="navi" class="center">
+        <div class="navibutton navi-main"><a href="#main">Main</a></div>
+        <div class="navibutton navi-new"><a href="#new">What's new</a></div>
+        <div class="navibutton navi-help"><a href="#help">Help</a></div>
+        <div class="navibutton navi-profile"><a href="#profile">My profile</a></div>
+    </div>
 
-		<div class="google-play">
-			<a href="http://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">
-			<img alt="Android app on Google Play" src="http://www.android.com/images/brand/android_app_on_play_logo_large.png" />
-			</a>
-		</div>
-		
-		<div class="questions">
-		<p class="question">What?</p>
-		<p class="answer">Get notifications from IRC hilights and private messages straight to your Android device! Project is open source, see <a href="https://github.com/murgo/IrssiNotifier">GitHub project page</a>. Check <a href="http://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">Google Play</a> for screenshots.</p>
+    <div id="content-main" class="hidden content">
 
-		<p class="question">How?</p>
-		<p class="answer">IrssiNotifier uses Irssi script to send IRC messages to server, and Google's Cloud to Device Messaging framework to send notifications to Android device. This minimizes the battery usage of your device, and enables notifications to be sent near real time.</p>
+        <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">
+            <img src="static/phone.png" alt="IrssiNotifier screenshot" style="float:right;" />
+        </a>
 
-		<p class="question">Where?</p>
-		<p class="answer">First download IrssiNotifier Android app from <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">Google Play</a>. After that, follow instructions about setting up the Irssi script in the <a href="#help">help page</a>.</p>
+        <h1>IrssiNotifier</h1>
 
-		<p class="question">What do I need?</p>
-		<p class="answer">You'll need Irssi running on Linux server or similar. You'll also need an Android device (phone or tablet, or both) with Android version 2.2 (froyo) or later.</p>
+        <div class="google-play">
+            <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">
+                <img alt="Android app on Google Play" src="//developer.android.com/images/brand/en_app_rgb_wo_60.png" />
+            </a>
+        </div>
 
-		<p class="question">Privacy?</p>
-		<p class="answer">All data is end-to-end encrypted with the encryption password of your choice. Password is never sent to the server. You'll have to login with your Google account, but no password or other sensitive data is collected. Check <a href="#privacy">privacy page</a> for details.</p>
+        <h2>IrssiNotifier+</h2>
 
-		<p class="question">Who?</p>
-		<p class="answer">This service was made by Lauri Härsilä, murgo @ IRCnet. If you have any questions, drop me a line by <a href="mailto:murgo@iki.fi">email</a> or join #IrssiNotifier at IRCnet. Huge thanks to everybody who have donated money or contributed source! </p>
+        <div class="google-play">
+            <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier.plus">
+                <img alt="Android app on Google Play" src="//developer.android.com/images/brand/en_app_rgb_wo_45.png" />
+            </a>
+        </div>
 
-		<p class="question">How can I help?</p>
-		<p class="answer"> IrssiNotifier was created entirely on my free time. If you have found IrssiNotifier useful and want to help keep project alive, please consider donating through PayPal or straight to my bank account (IBAN: FI0810455000756308). PayPal takes 0,35€ per transaction. Flattr donations are now also available.</p>
-		
-			<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-				<input type="hidden" name="cmd" value="_s-xclick">
-				<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----">
-				<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" name="submit" alt="PayPal - The safer, easier way to pay online!">
-				<img alt="" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-			</form>
+        <br >
 
-			<a href="http://flattr.com/thing/628213/IrssiNotifier" target="_blank">
-				<img src="http://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" style="margin-top: 10px;"/>
-			</a>
+        <div class="questions">
+        <p class="question">What?</p>
+        <p class="answer">
+            Get notifications from IRC hilights and private messages straight to your Android™ device! Project is open source, see <a href="https://github.com/murgo/IrssiNotifier">GitHub project page</a> for details. Check <a href="http://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">Google Play™</a> for screenshots. There are also unofficial support for <a href="http://www.weechat.org/files/scripts/irssinotifier.py">WeeChat</a> and <a href="https://github.com/evgeni/IrssiNotifier/tree/python/Python">Python</a>.
+        </p>
 
-		</div>
+        <p class="question">How?</p>
+        <p class="answer">
+            IrssiNotifier uses Irssi script to send IRC messages to server, and Google's Cloud to Device Messaging framework to send notifications to Android device. This minimizes the battery usage of your device, and enables notifications to be sent near real time.
+        </p>
 
-	</div>
+        <p class="question">Where?</p>
+        <p class="answer">
+            First download IrssiNotifier Android app from <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">Google Play</a>. After that, follow instructions about setting up the Irssi script in the <a href="#help">help page</a>.
+        </p>
 
-	<div class="hidden content" id="content-new">
+        <p class="question">What do I need?</p>
+        <p class="answer">
+            You'll need Irssi running on Linux server or similar. You'll also need an Android device (phone or tablet, or both) with Android version 2.2 (froyo) or later.
+        </p>
 
-		<h1>What's new?</h1>
-		
-		<p class="answer">For latest developments, check project's <a href="https://github.com/murgo/irssinotifier">Github page</a>.<p>
+        <p class="question">Privacy?</p>
+        <p class="answer">
+            All data is end-to-end encrypted with the encryption password of your choice. Password is never sent to the server. You'll have to login with your Google account, but no password or other sensitive data is collected. Check <a href="#privacy">privacy page</a> for details.
+        </p>
 
-		<p class="question news">27.10.2012 Irssi script version 13 released</p>
-		<p class="answer news-content">
-			Yesterday's <a href="http://googleappengine.blogspot.fi/2012/10/about-todays-app-engine-outage.html">Google App Engine blackout</a> caused some IrssiNotifier users to receive duplicate messages, Irssi freezes and/or other hassle. Sorry for that!
-			<br /><br />
-			Now, to prevent this from happening in the future, newest Irssi script now times out before freezing up. <a href="#help">Updating</a> is very much recommended.
-		</p>
+        <p class="question">Who?</p>
+        <p class="answer">
+            This service was made by Lauri Härsilä, murgo @ IRCnet. If you have any questions, drop me a line by <a href="mailto:murgo@iki.fi">email</a> or join #irssinotifier at IRCnet. Huge thanks to everybody who have donated money or contributed source! Thanks to <a href="http://heidifriman.fi">Heidi Friman</a> for icons.
+        </p>
 
-		<p class="question news">11.10.2012 Irssi script was broken yesterday</p>
-		<p class="answer news-content">
-			I accidentally deployed a broken work-in-progress version of the Irssi script yesterday, so if you installed or updated the script recently and are having problems, please update the script to the latest official version using these <a href="#help">instructions</a>.
-		</p>
+        <p class="question">How can I help?</p>
+        <p class="answer">
+            IrssiNotifier was created entirely on my free time. If you have found IrssiNotifier useful and want to help keep project alive, please consider buying the <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier.plus">IrssiNotifier+</a> and/or donating through PayPal or Flattr.
+        </p>
 
-		<p class="question news">10.10.2012 IrssiNotifier 1.5 released</p>
-		<p class="answer news-content">
-			New features:
-			<ul>
-				<li>Fixed bug that caused app sometimes to freeze when clearing notifications. Hopefully actually got it this time!</li>
-			</ul>
-		</p>
+        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" style="float:left">
+            <input type="hidden" name="cmd" value="_s-xclick">
+            <input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----">
+            <input type="image" src="//www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+            <img alt="" border="0" src="//www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+        </form>
 
-		<p class="question news">1.10.2012 IrssiNotifier 1.4 released</p>
-		<p class="answer news-content">
-			New features:
-			<ul>
-				<li>Added "legacy"-settings option that disables user interface theme</li>
-				<li>Fixed bug that caused app sometimes to freeze when clearing notifications</li>
-				<li>Fixed bug that caused app to crash when switching notification sound</li>
-				<li>Fixed settings colors behaving strangely on some devices</li>
-			</ul>
-		</p>
+        <a href="http://flattr.com/thing/628213/IrssiNotifier" target="_blank" >
+            <img src="//api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" style="margin-top: 2px;"/>
+        </a>
 
-		<p class="question news">15.9.2012 Irssi script version 12 released</p>
-		<p class="answer news-content">
-			Fixed small bug with hard coded paths, if your Irssi complains about "cannot find wget" or OpenSSL, try updating the script.
-		</p>
+        </div>
 
-		<p class="question news">12.9.2012 IrssiNotifier 1.3 released!</p>
-		<p class="answer news-content">
-			This is a major release. Older versions of Android app won't work any more, since server side has been changed a lot.
-			<br /> <br />
-			New features:
-			<ul>
-				<li>New UI! Colors! Yay!</li>
-				<li>Jelly Bean (Android 4.1) expandable notifications!</li>
-				<li>Irssi ConnectBot host can now be picked in settings</li>
-				<li>Improved tablet layout</li>
-				<li>Improved web page with additional statistics</li>
-				<li>Migration from C2DM to GCM</li>
-				<li>Threaded server should provide more performance</li>
-				<li>Added <a href="#privacy">privacy policy</a></li>
-			</ul>
+    </div>
 
-			<br />
-			Bug fixes:
-			<ul>
-				<li>Account selection screen no longer should appear after registering</li>
-				<li>ICB icon shows up in correct size with Jelly Bean</li>
-				<li>Miscellaneous crash fixes</li>
-				<li>Android registration shouldn't get added many times when uninstalling and reinstalling</li>
-				<li>Improved tablet layout</li>
-			</ul>
-			
-			Whew!
-		</p>
+    <div class="hidden content" id="content-new">
 
-		<p class="question news">12.9.2012 New version of Irssi script: 11.</p>
-		<p class="answer news-content">
-			Fixed bug where Irssi script sometimes caused other scripts like mail.pl to crash.
-		</p>
+        <h1>What's new?</h1>
 
-		<p class="question news">6.9.2012 New web page!</p>
-		<p class="answer news-content">
-			New web page layout! Feedback is welcomed. Enjoy.
-		</p>
+        <p class="answer">For latest developments, check project's <a href="https://github.com/murgo/irssinotifier">Github page</a>.<p>
 
-		<p class="question news">6.9.2012 New version of Irssi script: 9.</p>
-		<div class="answer news-content">
-			New version of Irssi script is released! The script is nearly completely re-written.
-			New features include new commands such as 
-			<div class="code-block">/set irssinotifier_ignored_channels [channel names]</div>
-			and
-			<div class="code-block">/set irssinotifier_ignored_servers [server names]</div>
-			Release also contain bugfixes like stripping broken color codes from notifications and various small other things. Check the <a href="#help">help page</a> for upgrade instructions.
-		</div>
-	</div>
-	
-	<div class="hidden content" id="content-help">
-	
-		<h1>Help!</h1>
+        <p class="question news">2.6.2013 IrssiNotifier/IrssiNotifier+ 1.7 with Irssi script 18 released!</p>
+        <div class="answer news-content">
+            New script option: irssinotifier_clear_notifications_when_viewed.
+            When this command is turned on, notifications on the phone are cleared automatically when you change away from the last window that had hilights.
+            <br /> <br />
+            Pretty handy! Thanks to <a href="https://github.com/qvr">qvr</a> for implementing this!
+        </div>
 
-		<div class="question">
-		Irssi script installation instructions
-		</div>
+        <p class="question news">28.5.2013 IrssiNotifier/IrssiNotifier+ 1.6.13 released!</p>
+        <div class="answer news-content">
+            App should no longer forget old messages when receiving new ones. Sorry about that, thanks for everybody who reported the bug.
+        </div>
 
-		<div class="answer" id="instructions">
-		(to update the script, just follow steps 1-2): <br />
-		<ol>
-			<li>Download Irssi script by copying and pasting the following command (as a single line) to your shell (don't mind any "File exists" -errors):
-			<div class="code-block">mkdir -p ~/.irssi/scripts/autorun; wget --no-check-certificate https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
-			</li>
-			<li>Load Irssi script by typing the following command to Irssi
-			<div class="code-block">/script load irssinotifier</div>
-			</li>
-			<li>Set api token in Irssi
-			<div class="code-block">{% if logged_in %}/set irssinotifier_api_token {{ user.api_token }}{% else %}<a href="{{ login_url }}">Log in to see instructions</a>{% endif %}</div>
-			</li>
-			<li>Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too. Password can be anything you like (forbidden characters: ", \, `). Do not use your Google account password (or any other existing password) for security reasons.
-			<div class="code-block">/set irssinotifier_encryption_password password</div>
-			</li>
-			<li>Query yourself and check <a href="#profile">profile page</a> to see if it works.</li>
-		</ol>
-		</div>
+        <p class="question news">24.5.2013 IrssiNotifier/IrssiNotifier+ 1.6.12 released!</p>
+        <div class="answer news-content">
+            Yesterday's release contained couple of critical bugs that are now fixed:
+            <ul>
+                <li>Fixed app not working at all on Android 2.x</li>
+                <li>IrssiNotifier+: Fixed error preventing licensing and app from starting</li>
+            </ul>
+        </div>
 
-		<div class="question">
-		Android app installation instructions
-		</div>
+        <p class="question news">23.5.2013 IrssiNotifier 1.6 and IrssiNotifier+ released!</p>
+        <div class="answer news-content">
+            New version contains following improvements:
+            <ul>
+                <li>Fixed bug where account needed to be re-selected every now and then</li>
+                <li>Offline-mode. Simply disable notifications from the settings, and app is completely offline, no background data is being used</li>
+                <li>You can now choose notification LED color</li>
+                <li>Sound is now played even if the app is on top when new notification arrives</li>
+                <li>Fixed changing of Google accounts</li>
+                <li>Feed and channels now have date headers for increased readability, thanks <a href="https://github.com/qvr">qvr</a>!</li>
+                <li>Improved performance</li>
+                <li>Fixed notifications on Android 3.2</li>
+                <li>Channel names are no longer case sensitive</li>
+                <li>Lots of small bug fixes</li>
+            </ul>
+            Also, IrssiNotifier+ has been released. In addition to the above fixes, IrssiNotifier+ has the ability to pull the messages from the server on app startup, so you'll receive messages even if they don't get pushed through! This is useful when you are not online all the time, or if you have notifications disabled. You can support development of IrssiNotifier by buying it from <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier.plus">Google Play</a>. Thank you for your support.
+        </div>
 
-		<div class="answer" id="instructions">
-		<ol>
-			<li>Download Android app from <a href="http://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">Google Play</a> store.</li>
-			<li>Run the app, select the Google account you want to use. Account must be the same as the one you signed to this website with.</li>
-			<li>Go to settings and set your encryption password. Encryption password must be the same as the one you've set in Irssi script.</li>
-		</ol>
-		</div>
+        <p class="question news">23.5.2013 Irssi script version 17 released</p>
+        <div class="answer news-content">
+            Irssi script now disregards idle timeout if you are not attached to your Screen, so you'll get notifications straight away after detaching. Also, the script should no longer send garbled notifications when using Twirssi or other 3rd party addon. Check the updated <a href="#help">upgrade instructions</a>.
+        </div>
 
-		<h2>Additional Irssi commands</h2>
-		<div id="commands">
-			<p class="answer">You can clear any of these settings by using the following command:</p>
-			<div class="code-block">/set -clear [setting]</div>
+        <p class="question news">5.4.2013 Server software updated</p>
+        <div class="answer news-content">
+            New server software is up! Lots of changes and bugfixes under the hood (improved perfomance, improved error handling etc.). Also, now you can remove devices from the <a href="#profile">profile page</a> in addition to disabling them.
+            <br /> <br />
+            As usual, if you run into some glitches or other oddities, please inform me through IRC or mail.
+        </div>
 
-			<p class="question">Do not notify when using Irssi</p>
-			<div class="code-block">/set irssinotifier_require_idle_seconds [second count]</div>
-			<p class="answer">When set to more than 0, you will not be notified from events that occur between going idle (i.e. not pressing any keys) and the set second count after that.</p>
+        <p class="question news">2.4.2013 Irssi script version 15 released</p>
+        <div class="answer news-content">
+            I slightly botched up the version 14 release, so version 15 contains some hotfixes.
+        </div>
 
-			<p class="question">Only receive notifications while away</p>
-			<div class="code-block">/set irssinotifier_away_only [ON or OFF]</div>
-			<p class="answer">When set to ON, notifications will only be sent if you are away. Useful in combination with <a href="http://scripts.irssi.org/scripts/screen_away.pl">screen_away script</a>.
+        <p class="question news">1.4.2013 Irssi script version 14 released</p>
+        <div class="answer news-content">
+            No, this is not an April Fools joke, I am actually releasing something. Lots of fixes and new features for the script, thanks to many people who have sent pull requests to me! Just follow the two simple steps on top of <a href="#help">help page</a> to update.
+            <br /><br />
+            New features and fixes:
+            <ul>
+                <li>Added optional support for DCC chats</li>
+                <li>Added support for /hilight -level JOINS somebody</li>
+                <li>Added support for non-UTF-8 encodings. Thanks, <a href="https://github.com/qvr">qvr</a>!</li>
+                <li>Added built-in <a href="http://en.wikipedia.org/wiki/GNU_Screen">Screen</a> integration. Thanks, <a href="https://github.com/qvr">qvr</a>!</li>
+                <li>Sending notifications should no longer freeze Irssi for a sec. Thanks, <a href="https://github.com/qvr">qvr</a>!</li>
+                <li>Added support for nick blacklisting. Thanks, <a href="https://github.com/turmoni">turmoni</a>!</li>
+                <li>Added support for pattern blacklisting. Thanks, <a href="https://github.com/turmoni">turmoni</a>!</li>
+                <li>Added support for pattern whitelisting. Thanks, <a href="https://github.com/turmoni">turmoni</a>!</li>
+                <li>Added support for https-proxy. Thanks, <a href="https://github.com/rsdy">rsdy</a>!</li>
+                <li>Fixed rarely occurring bug with encryption (reading environment variables didn't work on all systems)</li>
+            </ul>
+            <br />
+            Following new commands have been added, check <a href="#help">help page</a> for more details:
+            <ul>
+                <li>irssinotifier_enable_dcc</li>
+                <li>irssinotifier_https_proxy</li>
+                <li>irssinotifier_ignored_nicks</li>
+                <li>irssinotifier_ignored_highlight_patterns</li>
+                <li>irssinotifier_required_public_highlight_patterns</li>
+                <li>irssinotifier_screen_detached_only</li>
+            </ul>
+        </div>
 
-			<p class="question">Don't receive notifications from currently open window</p>
-			<div class="code-block">/set irssinotifier_ignore_active_window [ON or OFF]</div>
-			<p class="answer">When set to ON, notifications will NOT be sent from the Irssi window currently open. Be aware that if you forget window open while detaching your screen, you will not get notifications from that channel.</p>
+        <p class="question news">27.10.2012 Irssi script version 13 released</p>
+        <div class="answer news-content">
+            Yesterday's <a href="http://googleappengine.blogspot.fi/2012/10/about-todays-app-engine-outage.html">Google App Engine blackout</a> caused some IrssiNotifier users to receive duplicate messages, Irssi freezes and/or other hassle. Sorry for that!
+            <br /><br />
+            Now, to prevent this from happening in the future, newest Irssi script now times out before freezing up. <a href="#help">Updating</a> is very much recommended.
+        </div>
 
-			<p class="question">Don't receive notifications from certain channels</p>
-			<div class="code-block">/set irssinotifier_ignored_channels [channel names]</div>
-			<p class="answer">When one or more channels are set, you will not be notified about hilights from those channels. You can also block query windows (private messages) with this command. Use space as a separator (e.g. /set irssinotifier_ignored_channels #channel query).</p>
+        <p class="question news">11.10.2012 Irssi script was broken yesterday</p>
+        <div class="answer news-content">
+            I accidentally deployed a broken work-in-progress version of the Irssi script yesterday, so if you installed or updated the script recently and are having problems, please update the script to the latest official version using these <a href="#help">instructions</a>.
+        </div>
 
-			<p class="question">Don't receive notifications from certain servers</p>
-			<div class="code-block">/set irssinotifier_ignored_servers [server names]</div>
-			<p class="answer">When one or more servers are set, you will not be notified about hilights from those servers. Useful for blocking bitlbee etc. Use space as a separator (e.g. /set irssinotifier_ignored_servers IRCnet quakenet).</p>
-		</div>
+        <p class="question news">10.10.2012 IrssiNotifier 1.5 released</p>
+        <div class="answer news-content">
+            New features:
+            <ul>
+                <li>Fixed bug that caused app sometimes to freeze when clearing notifications. Hopefully actually got it this time!</li>
+            </ul>
+        </div>
 
-		<h2>Troubleshooting</h2>
-		<div id="troubleshooting">
-			<p class="question">I'm not getting any notifications!</p>
-			<p class="answer">Follow the installation instructions to the letter. Check the <a href="#profile">profile page</a> to see if the installation works (or at least it has been working). Ensure the script is loaded in your Irssi. If you have restored the Android app from backup, clear its data. Notifications might also be blocked by firewall if you use wi-fi. If you need more support, please visit #irssinotifier @ IRCnet or contact me by mail at <a href="mailto:murgo@iki.fi">murgo@iki.fi</a>.</p>
+        <p class="question news">1.10.2012 IrssiNotifier 1.4 released</p>
+        <div class="answer news-content">
+            New features:
+            <ul>
+                <li>Added "legacy"-settings option that disables user interface theme</li>
+                <li>Fixed bug that caused app sometimes to freeze when clearing notifications</li>
+                <li>Fixed bug that caused app to crash when switching notification sound</li>
+                <li>Fixed settings colors behaving strangely on some devices</li>
+            </ul>
+        </div>
 
-			<p class="question">Notifications work only every now and then!</p>
-			<p class="answer">Every device added to the system has certain limits for the amount of push notifications they can receive (about 20 per hour), which are reset gradually. Use above Irssi commands to reduce amount of wasteful messages sent to you. Furthermore, sometimes Android push notifications have unexpected delays, and some messages may even get lost.</p>
+        <p class="question news">15.9.2012 Irssi script version 12 released</p>
+        <div class="answer news-content">
+            Fixed small bug with hard coded paths, if your Irssi complains about "cannot find wget" or OpenSSL, try updating the script.
+        </div>
 
-			<p class="question">I'm getting decryption errors on my Android device!</p>
-			<p class="answer">Check that the Android device has the same encryption password as the Irssi script. Instructions to set the Irssi script encryption key are above. On Android, just go to the settings menu.</p>
+        <p class="question news">12.9.2012 IrssiNotifier 1.3 released!</p>
+        <div class="answer news-content">
+            This is a major release. Older versions of Android app won't work any more, since server side has been changed a lot.
+            <br /> <br />
+            New features:
+            <ul>
+                <li>New UI! Colors! Yay!</li>
+                <li>Jelly Bean (Android 4.1) expandable notifications!</li>
+                <li>Irssi ConnectBot host can now be picked in settings</li>
+                <li>Improved tablet layout</li>
+                <li>Improved web page with additional statistics</li>
+                <li>Migration from C2DM to GCM</li>
+                <li>Threaded server should provide more performance</li>
+                <li>Added <a href="#privacy">privacy policy</a></li>
+            </ul>
 
-			<p class="question">Notifications appear multiple times on the Android device!</p>
-			<p class="answer">Android devices get added multiple times if you uninstall and reinstall the software quickly. To prevent multiple notifications, go to the device list at top of this page and disable duplicate devices from there. </p>
+            <br />
+            Bug fixes:
+            <ul>
+                <li>Account selection screen no longer should appear after registering</li>
+                <li>ICB icon shows up in correct size with Jelly Bean</li>
+                <li>Miscellaneous crash fixes</li>
+                <li>Android registration shouldn't get added many times when uninstalling and reinstalling</li>
+                <li>Improved tablet layout</li>
+            </ul>
 
-			<p class="question">Help!</p>
-			<p class="answer">If you need more info, drop by #irssinotifier @ IRCnet or drop me a line at <a href="mailto:murgo@iki.fi">murgo@iki.fi</a>.</p>
-		</div>
-	
-	</div>
+            Whew!
+        </div>
 
-	<div class="hidden content" id="content-profile">
-	
-	{% if not logged_in %}
-	
-		<p class="center">Please <a href="{{ login_url }}">log in</a> using your Google account.</p>
+        <p class="question news">12.9.2012 New version of Irssi script: 11.</p>
+        <div class="answer news-content">
+            Fixed bug where Irssi script sometimes caused other scripts like mail.pl to crash.
+        </div>
 
-	{% else %}
-		
-		<h2>Logged in as {{ user.email }}</h2>
-		<p><a href="{{ logout_url }}">Log out</a>.</p>
-		
-		<h2>Your details</h2>
-		<p>Registered since: <span class="datetime">{{ registration_date }}</span></p>
-		<p>API token: {{ user.api_token }}</p>
-		<p>Notification count (since 2012-09-11): {{ notification_count }}</p>
-		<p>Last notification time: <span class="datetime">{{ last_notification_time }}</span></p>
+        <p class="question news">6.9.2012 New web page!</p>
+        <div class="answer news-content">
+            New web page layout! Feedback is welcomed. Enjoy.
+        </div>
 
-		<h2>Android client status</h2>
+        <p class="question news">6.9.2012 New version of Irssi script: 9.</p>
+        <div class="answer news-content">
+            New version of Irssi script is released! The script is nearly completely re-written.
+            New features include new commands such as
+            <div class="code-block">/set irssinotifier_ignored_channels [channel names]</div>
+            and
+            <div class="code-block">/set irssinotifier_ignored_servers [server names]</div>
+            Release also contain bugfixes like stripping broken color codes from notifications and various small other things. Check the <a href="#help">help page</a> for upgrade instructions.
+        </div>
+    </div>
 
-		{% if token_count != 0 %}
+    <div class="hidden content" id="content-help">
 
-			<p>Android device(s) <span class="working">confirmed as working.</span></p>
-		
-			<div id="devices">
-			<h3>Registered devices:</h3>
-			<ul>
-		{% for token in tokens %}
-				<li><input type="checkbox" {% if token.enabled %}checked="checked"{% endif %} onclick="update(this, '{{ token.name }}', '{{ token.gcm_token }}');" />{{ token.name }} (Registered <span class="datetime">{{ token.registration_date_string }}</span>)</li>
-		{% endfor %}
-			</ul>
-			</div>
-			
-		{% else %}
-			<p>Android device <span class="broken">not confirmed as working.</span></p>
-		{% endif %}
-			<h2>Irssi script status</h2>
-			
-		{% if irssi_working %}
-			<p>Irssi script <span class="working">confirmed as working</span>
-			{% if irssi_latest %}
-			and is at <span class="working">latest version</span>.
-			{% else %}
-			but is at <span class="oldversion">old version</span>. Check <a href="#help">help page</a> for upgrade instructions.
-			{% endif %}
-			</p>
-		{% else %}
-			<p>Irssi script <span class="broken">not confirmed as working.</span> Check <a href="#help">help page</a> for installation instructions.</p>
-		{% endif %}
-		
-		<h2>Operations</h2>
-		<p><a onclick="wipe();" href="javascript:void(0)">Wipe your account and all data!</a></p>
+        <h1>Help!</h1>
 
-	{% endif %}	
+{% if irssi_working %}
 
-	</div>
-	
-	<div class="hidden content" id="content-privacy">
-		
-		<h1>Privacy policy</h1>
+        <h2>Irssi script upgrade instructions</h2>
 
-		<p>User details are saved in Google App Engine data store. No user passwords (Google password, encryption password etc.) are saved at any time. Following personal information is saved from every user:</p>
+        <div class="answer">
+            Don't worry, your settings won't get lost.<br >
+            <ol>
+                <li>Download Irssi script by copying and pasting the following command (as a single line) to your shell (don't mind any "File exists" -errors):
+                    <div class="code-block">mkdir -p ~/.irssi/scripts/autorun; wget --no-check-certificate https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
+                </li>
+                <li>Reload Irssi script by typing the following command to Irssi:
+                    <div class="code-block">/script load irssinotifier</div>
+                </li>
+            </ol>
+        </div>
 
-		<ul>
-			<li>User name</li>
-			<li>Email address</li>
-			<li>Registration date</li>
-			<li>Total notification count</li>
-			<li>Last notification time</li>
-			<li>Irssi script version</li>
-		</ul>
-		
-		<p>Messages are stored in the server for seven days. Messages are encrypted by user's own encryption password (be sure to change yours).</p>
-		
-		<p>User can wipe out his/her account from the <a href="#profile">profile page</a>. This will remove all information regarding the user (including messages).</p>
-		
-		<p>Anonymous statistics (analytics) will be gathered from users visiting this web site. Anonymous and statistical usage is also collected from Android app users (how many users, from which countries are they from etc.).</p>
-		
-	</div>
-	
-	<div class="googleplus">
-		<div class="g-plusone" data-size="medium"></div>
-		<!-- Google +1 -->
-		<script type="text/javascript">
-		  (function() {
-			var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
-			po.src = 'https://apis.google.com/js/plusone.js';
-			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
-		  })();
-		</script>
-	</div>
+{% endif %}
 
-	</div>
+        <h2>Irssi script installation instructions</h2>
+
+        <div class="answer">
+        (To upgrade script, just follow steps 1 and 2).
+        <ol>
+            <li>Download Irssi script by copying and pasting the following command (as a single line) to your shell (don't mind any "File exists" -errors):
+            <div class="code-block">mkdir -p ~/.irssi/scripts/autorun; wget --no-check-certificate https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
+            </li>
+            <li>Load Irssi script by typing the following command to Irssi:
+            <div class="code-block">/script load irssinotifier</div>
+            </li>
+            <li>Set api token in Irssi
+            <div class="code-block">{% if logged_in %}/set irssinotifier_api_token {{ user.api_token }}{% else %}<a href="{{ login_url }}">Log in to see instructions</a>{% endif %}</div>
+            </li>
+            <li>Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too. Password can be anything you like (forbidden characters: ", \, `). Do not use your Google account password (or any other existing password) for security reasons.
+            <div class="code-block">/set irssinotifier_encryption_password password</div>
+            </li>
+            <li>Query yourself and check <a href="#profile">profile page</a> to see if it works.</li>
+        </ol>
+        </div>
+
+        <h2>Android app installation instructions</h2>
+
+        <div class="answer">
+        <ol>
+            <li>Download Android app from <a href="http://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">Google Play</a> store.</li>
+            <li>Run the app, select the Google account you want to use. Account must be the same as the one you signed to this website with.</li>
+            <li>Go to settings and set your encryption password. Encryption password must be the same as the one you've set in Irssi script.</li>
+        </ol>
+        </div>
+
+        <h2>Additional Irssi commands</h2>
+        <div id="commands">
+            <p class="answer">You can clear any of these settings by using the following command:</p>
+            <div class="code-block">/set -clear [setting]</div>
+
+            <p class="question">Do not notify while using Irssi</p>
+            <div class="code-block">/set irssinotifier_require_idle_seconds [second count]</div>
+            <p class="answer">When set to more than 0, you will not be notified from events that occur between going idle (i.e. not pressing any keys) and the set second count after that.</p>
+
+            <p class="question">Only receive notifications while away</p>
+            <div class="code-block">/set irssinotifier_away_only [ON or OFF]</div>
+            <p class="answer">When set to ON, notifications will only be sent if you are away. Useful in combination with <a href="http://scripts.irssi.org/scripts/screen_away.pl">screen_away script</a>.
+
+            <p class="question">Don't receive notifications if attached to screen</p>
+            <div class="code-block">/set irssinotifier_screen_detached_only [ON or OFF]</div>
+            <p class="answer">If on, you don't get notifications when you are attached to the screen in which Irssi is running.</p>
+
+            <p class="question">Don't receive notifications from currently open window</p>
+            <div class="code-block">/set irssinotifier_ignore_active_window [ON or OFF]</div>
+            <p class="answer">When set to ON, notifications will NOT be sent from the Irssi window currently open. Be aware that if you forget window open while detaching your screen, you will not get notifications from that channel.</p>
+
+            <p class="question">Don't receive notifications from certain channels</p>
+            <div class="code-block">/set irssinotifier_ignored_channels [channel names]</div>
+            <p class="answer">When one or more channels are set, you will not be notified about hilights from those channels. You can also block query windows (private messages) with this command. Use space as a separator (e.g. /set irssinotifier_ignored_channels #channel query).</p>
+
+            <p class="question">Don't receive notifications from certain servers</p>
+            <div class="code-block">/set irssinotifier_ignored_servers [server names]</div>
+            <p class="answer">When one or more servers are set, you will not be notified about hilights from those servers. Useful for blocking bitlbee etc. Use space as a separator (e.g. /set irssinotifier_ignored_servers IRCnet quakenet).</p>
+
+            <p class="question">Don't receive notifications from certain nicks</p>
+            <div class="code-block">/set irssinotifier_ignored_nicks [nicks]</div>
+            <p class="answer">When one or more nicks are set, you will not be notified about hilights from those nicks (users). Use space as a separator (e.g. /set irssinotifier_ignored_nicks mom murgo).</p>
+
+            <p class="question">Don't receive notifications that contain certain patterns (regular expressions)</p>
+            <div class="code-block">/set irssinotifier_ignored_highlight_patterns [patterns]</div>
+            <p class="answer">Notifications about messages that contain the given regex-pattern are not sent. Uses <a href="http://perldoc.perl.org/perlop.html#Regexp-Quote-Like-Operators">perl regex</a>. Use space as a separator (e.g. /set irssinotifier_ignored_highlight_patterns slap [lL][oO]+[lL]).</p>
+
+            <p class="question">Don't receive notifications that DOESN'T contain certain patterns (regular expressions)</p>
+            <div class="code-block">/set irssinotifier_required_public_highlight_patterns [patterns]</div>
+            <p class="answer">Notifications about messages that doesn't contain the given regex-pattern are not sent. Only applies to public messages. Disabled if empty. Uses <a href="http://perldoc.perl.org/perlop.html#Regexp-Quote-Like-Operators">perl regex</a>. Use space as a separator (e.g. /set irssinotifier_required_public_highlight_patterns slap [lL][oO]+[lL]).</p>
+
+            <p class="question">Use proxy for HTTPS</p>
+            <div class="code-block">/set irssinotifier_https_proxy [proxy address]</div>
+            <p class="answer">The given proxy is used for the notification sending. Pretty self-explanatory.</p>
+
+            <p class="question">Enable or disable DCC chats</p>
+            <div class="code-block">/set irssinotifier_enable_dcc [ON or OFF]</div>
+            <p class="answer">If set to OFF, notifications from DCC chats are not sent.</p>
+
+            <p class="question">Automatically clear notifications from phone when they are read</p>
+            <div class="code-block">/set irssinotifier_clear_notifications_when_viewed [ON or OFF]</div>
+            <p class="answer">If set to ON, notifications on the phone are cleared automatically when you change away from the last window that had hilights.</p>
+        </div>
+
+        <h2>Troubleshooting</h2>
+        <div id="troubleshooting">
+            <p class="question">I'm not getting any notifications!</p>
+            <p class="answer">Follow the installation instructions to the letter. Check the <a href="#profile">profile page</a> to see if the installation works (or at least it has been working). Ensure the script is loaded in your Irssi. If you have restored the Android app from backup, clear its data. Notifications might also be blocked by firewall if you use wi-fi. If you need more support, please visit #irssinotifier @ IRCnet or contact me by mail at <a href="mailto:murgo@iki.fi">murgo@iki.fi</a>.</p>
+
+            <p class="question">Notifications work only every now and then!</p>
+            <p class="answer">Every device added to the system has certain limits for the amount of push notifications they can receive (about 20 per hour), which are reset gradually. Use above Irssi commands to reduce amount of wasteful messages sent to you. Furthermore, sometimes Android push notifications have unexpected delays, and some messages may even get lost.</p>
+
+            <p class="question">I'm getting decryption errors on my Android device!</p>
+            <p class="answer">Check that the Android device has the same encryption password as the Irssi script. Instructions to set the Irssi script encryption key are above. On Android, just go to the settings menu.</p>
+
+            <p class="question">Help!</p>
+            <p class="answer">If you need more info, drop by #irssinotifier @ IRCnet or drop me a line at <a href="mailto:murgo@iki.fi">murgo@iki.fi</a>.</p>
+        </div>
+
+    </div>
+
+    <div class="hidden content" id="content-profile">
+
+{% if not logged_in %}
+
+        <p class="center">Please <a href="{{ login_url }}">log in</a> using your Google account.</p>
+
+{% else %}
+
+        <h2>Logged in as {{ user.email }}</h2>
+        <p><a href="{{ logout_url }}">Log out</a>.</p>
+
+        <h2>Your details</h2>
+        <p>Registered on: <span class="datetime">{{ registration_date }}</span></p>
+        <p>API token: {{ user.api_token }}</p>
+{% if license_type == 'Plus' %}
+        <p>License type: <span class="working">{{ license_type }}</span> (upgraded on <span class="datetime">{{ license_timestamp }}</span>)</p>
+{% else %}
+        <p>License type: {{ license_type }}</p>
+{% endif %}
+        <p>Notification count (since Plus): {{ notification_count_since_licensed }}</p>
+        <p>Last notification time: <span class="datetime">{{ last_notification_time }}</span></p>
+
+        <h2>Android client status</h2>
+
+{% if token_count != 0 %}
+
+            <p>Android device(s) <span class="working">confirmed as working.</span></p>
+
+            <div id="devices">
+            <h3>Registered devices:</h3>
+            <table>
+                <tr>
+                    <th>Device</th>
+                    <th>Registered</th>
+                    <th>Enabled</th>
+                    <th>Remove</th>
+                </tr>
+{% for token in tokens %}
+                <tr>
+                    <td>{{ token.name }}</td>
+                    <td><span class="datetime">{{ token.registration_date_string }}</span></td>
+                    <td class="center"><input type="checkbox" {% if token.enabled %}checked="checked"{% endif %} onclick="update(this, '{{ token.name }}', '{{ token.gcm_token }}');" /></td>
+                    <td><a href="#" onclick="remove_device('{{ token.name }}', '{{ token.gcm_token }}'); return false;">remove</a></td>
+                </tr>
+{% endfor %}
+            </table>
+            </div>
+
+{% else %}
+            <p>Android device <span class="broken">not confirmed as working.</span></p>
+{% endif %}
+            <h2>Irssi script status</h2>
+
+{% if irssi_working %}
+            <p>Irssi script <span class="working">confirmed as working</span>
+{% if irssi_latest %}
+            and is at <span class="working">latest version</span>.
+{% else %}
+            but is at <span class="oldversion">old version</span>. Check <a href="#help">help page</a> for upgrade instructions.
+{% endif %}
+            </p>
+{% else %}
+            <p>Irssi script <span class="broken">not confirmed as working.</span> Check <a href="#help">help page</a> for installation instructions.</p>
+{% endif %}
+
+        <h2>Operations</h2>
+        <p><a onclick="wipe();" href="javascript:void(0)">Wipe your account and all data!</a></p>
+
+{% endif %}
+
+    </div>
+
+    <div class="hidden content" id="content-privacy">
+
+        <h1>Privacy policy</h1>
+
+        <p>User details are saved in Google App Engine data store. No user passwords (Google password, encryption password etc.) are saved at any time. Following personal information is saved from every user:</p>
+
+        <ul>
+            <li>User name</li>
+            <li>Email address</li>
+            <li>Registration date</li>
+            <li>Total notification count</li>
+            <li>Last notification time</li>
+            <li>Irssi script version</li>
+        </ul>
+
+        <p>Messages are stored in the server for seven days. Messages are encrypted by user's own encryption password (be sure to change yours).</p>
+
+        <p>User can wipe out his/her account from the <a href="#profile">profile page</a>. This will remove all information regarding the user (including messages).</p>
+
+        <p>Anonymous statistics (analytics) will be gathered from users visiting this web site. Anonymous and statistical usage is also collected from Android app users (how many users, from which countries are they from etc.).</p>
+
+    </div>
+
+    <div class="googleplus">
+        <div class="g-plusone" data-size="medium"></div>
+        <!-- Google +1 -->
+        <script type="text/javascript">
+          (function() {
+            var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+            po.src = 'https://apis.google.com/js/plusone.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+          })();
+        </script>
+    </div>
+
+    </div>
 
 </body>
 </html>

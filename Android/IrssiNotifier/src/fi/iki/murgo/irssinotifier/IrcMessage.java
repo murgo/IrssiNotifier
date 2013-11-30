@@ -22,21 +22,20 @@ public class IrcMessage {
     private boolean clearedFromFeed;
     private long id;
 
-    public void Deserialize(String payload) throws JSONException {
-        Deserialize(new JSONObject(payload));
-    }
-
-    public void Deserialize(JSONObject obj) {
-        try {
-            setMessage(obj.getString("message"));
-            setChannel(obj.getString("channel"));
-            setNick(obj.getString("nick"));
-            setServerTimestamp((long) (Double.parseDouble(obj.getString("server_timestamp")) * 1000));
-            setExternalId(obj.getString("id"));
-        } catch (JSONException e) {
-            e.printStackTrace();
+    public void deserialize(JSONObject obj) throws JSONException {
+        setMessage(obj.getString("message"));
+        setChannel(obj.getString("channel"));
+        setNick(obj.getString("nick"));
+        setServerTimestamp((long) (Double.parseDouble(obj.getString("server_timestamp")) * 1000));
+        if (obj.has("id")) {
+            String externalId = obj.getString("id");
+            try {
+                Integer.parseInt(externalId);
+                setExternalId(externalId);
+            } catch (NumberFormatException e) {
+                // don't do anything with it if it's not a number
+            }
         }
-
     }
 
     public String getMessage() {
@@ -110,7 +109,7 @@ public class IrcMessage {
         return dateFormat.format(serverTimestamp);
     }
 
-    public void Decrypt(String encryptionKey) throws CryptoException {
+    public void decrypt(String encryptionKey) throws CryptoException {
         if (message.equals(TOOLONG))
             message = "Message too long";
         else
@@ -118,9 +117,9 @@ public class IrcMessage {
         channel = Crypto.decrypt(encryptionKey, channel);
         nick = Crypto.decrypt(encryptionKey, nick);
 
-        message = message.replace('´', '\'');
-        channel = channel.replace('´', '\'');
-        nick = nick.replace('´', '\'');
+        message = message.replace('Â´', '\'');
+        channel = channel.replace('Â´', '\'');
+        nick = nick.replace('Â´', '\'');
     }
 
     public boolean isPrivate() {

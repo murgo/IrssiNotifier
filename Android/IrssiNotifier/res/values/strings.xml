@@ -2,7 +2,50 @@
 <resources>
 
     <string name="app_name">IrssiNotifier</string>
-    <string name="welcome">Welcome</string>
+    <string name="welcome">Welcome!</string>
     <string name="selectaccount">To start using IrssiNotifier, select the Google account you want to use:</string>
+    <string name="created_by">Created by Lauri Härsilä, <a href="mailto:murgo@iki.fi">murgo@iki.fi</a>.</string>
+    <string name="thanks_for_support">Thank you for supporting IrssiNotifier! &lt;3</string>
+    <string name="instructions">For instructions and help, please visit <a href="https://irssinotifier.appspot.com">IrssiNotifier web page</a> or join #irssinotifier @ IRCnet.</string>
+    <string name="donate">IrssiNotifier was created entirely on my free time. If you have found IrssiNotifier useful, please consider buying <a href="https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier.plus">IrssiNotifier+</a> or donating at the <a href="https://irssinotifier.appspot.com">IrssiNotifier web page</a> to help keep project alive.</string>
+    <string name="open_source">Project is open source, see <a href="https://github.com/murgo/IrssiNotifier">GitHub page</a> for more info.</string>
+    <string name="thanks_donators">Thanks to everyone who has donated money or contributed source! Also thanks to everyone working on the Irssi team.</string>
+    <string name="check_web_page">Check <a href="https://irssinotifier.appspot.com">IrssiNotifier web site</a> for information about setting up your irssi script.</string>
+    <string name="license_error">An error occurred while trying to check IrssiNotifier+ license validity, please try
+        again after a short while. If problem persist, contact support at <a href="https://irssinotifier.appspot.com">IrssiNotifier web site</a>. Error:
+    </string>
+    <string name="licensing_error_title">Licensing error</string>
+    <string name="not_licensed_title">IrssiNotifier+ is not licensed!</string>
+    <string name="not_licensed">Shame on you!</string>
+    <string name="verifying_license">Verifying license...</string>
+    <string name="both_versions_installed">You have both IrssiNotifier and IrssiNotifier+ installed. Uninstall either,
+        or you\'ll get duplicate notifications.
+    </string>
+    <string name="app_licensed">App licensed, thanks! Your account has been upgraded to Plus and pull notification
+        system has been enabled. Check <a href="https://irssinotifier.appspot.com">IrssiNotifier web site</a> for information about setting up your irssi
+        script.
+    </string>
+    <string name="thank_you_for_support">Thank you for your support!</string>
+    <string name="sending_settings_to_server">Sending settings to server...</string>
+    <string name="network_error_title">Network error</string>
+    <string name="network_error">Ensure your internet connection works and try again.</string>
+    <string name="authentication_error_title">Authentication error</string>
+    <string name="authentication_error">Unable to authenticate to server.</string>
+    <string name="server_error_title">Server error</string>
+    <string name="server_error">Mystical server error, check if updates are available</string>
+    <string name="unable_to_send_settings">Unable to send settings to the server! Please try again later!</string>
+    <string name="registering_to_gcm">Registering to GCM...</string>
+    <string name="unable_to_register_gcm">Unable to register to GCM! Please try again later!</string>
+    <string name="success">Success</string>
+    <string name="decryption_error_title">Decryption error</string>
+    <string name="decryption_error">Unable to decrypt message, is your decryption password correct?</string>
+    <string name="irssinotifier_error_title">IrssiNotifier error</string>
+    <string name="decryption_error_ticker">IrssiNotifier decryption error</string>
+    <string name="decryption_error_notification">Unable to decrypt data. Perhaps encryption key is
+        wrong?
+    </string>
+    <string name="parse_error_notification">Unable to parse data. Server error?</string>
+    <string name="parse_error_ticker">IrssiNotifier parse error</string>
+    <string name="welcome_thanks_for_support">Thank you for your support!</string>
 
 </resources>

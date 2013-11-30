@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 
-import org.apache.http.auth.AuthenticationException;
-
 import fi.iki.murgo.irssinotifier.Server.ServerTarget;
 
 import android.content.Context;
@@ -19,9 +17,6 @@ import android.provider.Settings;
  * Default settings are actually stored in preference_screen.xml :(
  */
 public class Preferences {
-    public static final String PREFERENCES_NAME = "IrssiNotifierPreferences";
-    public static final int PREFERENCES_MODE = Context.MODE_PRIVATE;
-
     private static final String AUTH_TOKEN_KEY = "AuthToken";
     private static final String GCM_REGISTRATION_ID_KEY = "GcmRegistrationId";
     private static final String GCM_REGISTRATION_ID_VERSION_KEY = "GcmRegistrationIdVersion";
@@ -43,13 +38,17 @@ public class Preferences {
     private static final String ICB_HOST_NAME = "IcbHostName";
     private static final String ICB_ENABLED = "IcbEnabled";
     private static final String THEME_DISABLED = "ThemeDisabled";
+    private static final String ACCOUNT_NAME = "AccountName";
+    private static final String CUSTOM_LIGHT_COLOR = "CustomLightColor";
+    private static final String USE_DEFAULT_LIGHT_COLOR = "UseDefaultLightColor";
+    private static final String LAST_LICENSE_TIME = "LastLicenseTime";
+    private static final String LICENSE_COUNT = "LicenseCount";
+    private static final String USE_PULL_MECHANISM = "UsePullMechanism";
 
     private SharedPreferences sharedPreferences;
     private static int versionCode;
 
     public Preferences(Context context) {
-        // sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME,
-        // PREFERENCES_MODE);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
@@ -85,39 +84,35 @@ public class Preferences {
         return editor.commit();
     }
 
-    public void clear() {
-        sharedPreferences.edit().clear().commit();
-    }
-
     public boolean settingsNeedSending() {
         return !sharedPreferences.getBoolean(SETTINGS_SENT_KEY, false);
     }
 
-    public ServerResponse sendSettings() throws IOException, AuthenticationException {
+    public ServerResponse sendSettings(Server server) throws IOException {
         HashMap<String, String> map = new HashMap<String, String>();
-        map.put("RegistrationId", getGcmRegistrationId());
-        map.put(DEVICE_NAME_KEY, android.os.Build.MODEL);
-        map.put(ENABLED_KEY, "1");
-        MessageToServer msg = new MessageToServer(map);
 
-        Server server = new Server();
-        boolean authenticated = server.authenticate(getAuthToken());
-        if (!authenticated) {
-            setAuthToken(null);
-            throw new AuthenticationException();
+        if (getGcmRegistrationId() == null) {
+            throw new IllegalStateException();
         }
 
-        ServerResponse response = server.send(msg, ServerTarget.SaveSettings);
+        map.put("RegistrationId", getGcmRegistrationId());
+        ServerTarget target;
+
+        if (isNotificationsEnabled()) {
+            map.put(DEVICE_NAME_KEY, android.os.Build.MODEL);
+            map.put(ENABLED_KEY, "1");
+            target = ServerTarget.SaveSettings;
+        } else {
+            target = ServerTarget.WipeSettings;
+        }
+
+        MessageToServer msg = new MessageToServer(map);
+
+        ServerResponse response = server.post(msg, target);
         if (response.wasSuccesful()) {
             sharedPreferences.edit().putBoolean(SETTINGS_SENT_KEY, true).commit();
         }
         return response;
-    }
-
-    public boolean setEncryptionPassword(String encryptionPassword) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(ENCRYPTION_PASSWORD, encryptionPassword);
-        return editor.commit();
     }
 
     public String getEncryptionPassword() {
@@ -172,12 +167,6 @@ public class Preferences {
         return sharedPreferences.getBoolean(FEED_VIEW_DEFAULT, true);
     }
 
-    public boolean setFeedViewDefault(boolean b) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(FEED_VIEW_DEFAULT, b);
-        return editor.commit();
-    }
-
     public boolean setIcbHost(String hostName, String hostUri) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(ICB_HOST_NAME, hostName);
@@ -185,12 +174,6 @@ public class Preferences {
         return editor.commit();
     }
     
-    public boolean setIcbEnabled(boolean b) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(ICB_ENABLED, b);
-        return editor.commit();
-    }
-
     public String getIcbHostName() {
         return sharedPreferences.getString(ICB_HOST_NAME, null);
     }
@@ -205,5 +188,59 @@ public class Preferences {
 
     public boolean isThemeDisabled() {
         return sharedPreferences.getBoolean(THEME_DISABLED, false);
+    }
+
+    public boolean setAccountName(String name) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(ACCOUNT_NAME, name);
+        return editor.commit();
+    }
+
+    public String getAccountName() {
+        return sharedPreferences.getString(ACCOUNT_NAME, null);
+    }
+
+    public boolean setNotificationsEnabled(boolean b) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean(NOTIFICATIONS_ENABLED, b);
+        return editor.commit();
+    }
+
+    public int getCustomLightColor() {
+        return sharedPreferences.getInt(CUSTOM_LIGHT_COLOR, 0xff0000ff);
+    }
+
+    public boolean setCustomLightColor(int color) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(CUSTOM_LIGHT_COLOR, color);
+        return editor.commit();
+    }
+
+    public boolean getUseDefaultLightColor() {
+        return sharedPreferences.getBoolean(USE_DEFAULT_LIGHT_COLOR, true);
+    }
+
+    public boolean setLastLicenseTime(long l) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putLong(LAST_LICENSE_TIME, l);
+        return editor.commit();
+    }
+
+    public long getLastLicenseTime() {
+        return sharedPreferences.getLong(LAST_LICENSE_TIME, 0);
+    }
+
+    public boolean setLicenseCount(int i) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(LICENSE_COUNT, i);
+        return editor.commit();
+    }
+
+    public int getLicenseCount() {
+        return sharedPreferences.getInt(LICENSE_COUNT, 0);
+    }
+
+    public boolean isPullMechanismInUse() {
+        return sharedPreferences.getBoolean(USE_PULL_MECHANISM, true);
     }
 }

@@ -1,7 +1,7 @@
 
 package fi.iki.murgo.irssinotifier;
 
-import java.io.IOException;
+import android.text.SpannableStringBuilder;
 
 import android.accounts.Account;
 import android.app.Activity;
@@ -14,15 +14,33 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
+import org.apache.http.auth.AuthenticationException;
+
+import java.io.IOException;
 
 public class InitialSettingsActivity extends Activity {
 
-    private static final String TAG = InitialSettingsActivity.class.getSimpleName();
+    private static final String TAG = InitialSettingsActivity.class.getName();
+    private Preferences preferences;
+
+    private Callback<Void> errorCallback = new Callback<Void>() {
+        public void doStuff(Void param) {
+            whatNext(-1);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.initialsettings);
+
+        preferences = new Preferences(this);
+
+        if (LicenseHelper.isPlusVersion(this)) {
+            TextView tv = (TextView)findViewById(R.id.textViewWelcomeHelp);
+            tv.setText(getString(R.string.welcome_thanks_for_support) + " " + tv.getText());
+        }
 
         UserHelper fetcher = new UserHelper();
         final Account[] accounts = fetcher.getAccounts(this);
@@ -36,29 +54,41 @@ public class InitialSettingsActivity extends Activity {
         listView.setOnItemClickListener(new OnItemClickListener() {
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 Account account = accounts[arg2];
-                whatNext(0, account);
+                preferences.setAccountName(account.name);
+                preferences.setNotificationsEnabled(true);
+                whatNext(0);
             }
         });
+
+        if (LicenseHelper.bothEditionsInstalled(this)) {
+            MessageBox.Show(this, null, getString(R.string.both_versions_installed), null);
+        }
     }
 
     // stupid state machine
-    private void whatNext(int i, Object state) {
+    private void whatNext(int i) {
         Log.d(TAG, "Changing state: " + i);
         switch (i) {
             default:
             case -1:
-                Preferences prefs = new Preferences(this);
-                prefs.clear();
+                preferences.setAccountName(null);
+                preferences.setAuthToken(null);
+                preferences.setGcmRegistrationId(null);
                 finish();
                 break;
             case 0:
-                generateToken((Account) state);
+                registerToGcm();
                 break;
             case 1:
-                registerToGcm((String) state);
+                sendSettings();
                 break;
             case 2:
-                sendSettings();
+                if (LicenseHelper.isPlusVersion(this)) {
+                    checkLicense();
+                    break;
+                }
+
+                startMainApp();
                 break;
             case 3:
                 startMainApp();
@@ -66,77 +96,81 @@ public class InitialSettingsActivity extends Activity {
         }
     }
 
-    private void startMainApp() {
-        final Context ctx = this;
-        MessageBox
-                .Show(this,
-                        "Success",
-                        "Check http://irssinotifier.appspot.com for information about setting up your irssi script.",
-                        new Callback<Void>() {
-                            public void doStuff(Void param) {
-                                Intent i = new Intent(ctx, IrssiNotifierActivity.class);
-                                startActivity(i);
-                                finish();
-                            }
-                        }, true);
-    }
+    private void checkLicense() {
+        LicenseCheckingTask task = new LicenseCheckingTask(this, "", getString(R.string.verifying_license));
 
-    private void sendSettings() {
-        SettingsSendingTask task = new SettingsSendingTask(this, "",
-                "Sending settings to server...");
-
-        final Context ctx = this;
-        task.setCallback(new Callback<ServerResponse>() {
-            public void doStuff(ServerResponse result) {
-                if (result == null || !result.wasSuccesful()) {
-                    MessageBox.Show(ctx, null, "Unable to send settings to the server! Please try again later!",
-                        new Callback<Void>() { // TODO i18n
-                            public void doStuff(Void param) {
-                                whatNext(-1, null);
-                            }
-                        });
-
-                    return;
+        task.setCallback(new Callback<LicenseCheckingTask.LicenseCheckingMessage>() {
+            public void doStuff(LicenseCheckingTask.LicenseCheckingMessage result) {
+                switch (result.licenseCheckingStatus) {
+                    case Allow:
+                        whatNext(3);
+                        break;
+                    case Disallow:
+                        preferences.setLicenseCount(0);
+                        MessageBox.Show(InitialSettingsActivity.this, getString(R.string.not_licensed_title), getString(R.string.not_licensed), errorCallback);
+                        break;
+                    case Error:
+                        MessageBox.Show(InitialSettingsActivity.this, getText(R.string.licensing_error_title), new SpannableStringBuilder().append(getText(R.string.license_error)).append(result.errorMessage), errorCallback);
+                        break;
                 }
-                whatNext(3, null);
             }
         });
 
         task.execute();
     }
 
-    private void generateToken(Account account) {
-        TokenGenerationTask task = new TokenGenerationTask(this, "",
-                "Generating authentication token...");
+    private void startMainApp() {
+        final Context ctx = this;
+        CharSequence msg = getText(R.string.check_web_page);
+        String title = getString(R.string.success);
+        if (LicenseHelper.isPlusVersion(this)) {
+            msg = getText(R.string.app_licensed);
+            title = getString(R.string.thank_you_for_support);
+        }
+        MessageBox.Show(this, title, msg,
+                        new Callback<Void>() {
+                            public void doStuff(Void param) {
+                                Intent i = new Intent(ctx, IrssiNotifierActivity.class);
+                                startActivity(i);
+                                finish();
+                            }
+                        });
+    }
+
+    private void sendSettings() {
+        SettingsSendingTask task = new SettingsSendingTask(this, "", getString(R.string.sending_settings_to_server));
 
         final Context ctx = this;
-        task.setCallback(new Callback<StringOrException>() {
-            public void doStuff(StringOrException result) {
+        task.setCallback(new Callback<ServerResponse>() {
+            public void doStuff(ServerResponse result) {
                 if (result.getException() != null) {
-                    Callback<Void> callback = new Callback<Void>() {
-                        public void doStuff(Void param) {
-                            whatNext(-1, null);
-                        }
-                    };
-                    
                     if (result.getException() instanceof IOException) {
-                        MessageBox.Show(ctx, "Network error", "Ensure your internet connection works and try again.", callback); // TODO i18n
+                        MessageBox.Show(ctx, getString(R.string.network_error_title), getString(R.string.network_error), errorCallback);
+                    } else if (result.getException() instanceof AuthenticationException) {
+                        MessageBox.Show(ctx, getString(R.string.authentication_error_title), getString(R.string.authentication_error), errorCallback);
+                    } else if (result.getException() instanceof ServerException) {
+                        MessageBox.Show(ctx, getString(R.string.server_error_title), getString(R.string.server_error), errorCallback);
                     } else {
-                        MessageBox.Show(ctx, null, "Unable to generate authentication token for account! Please try again later!", callback); // TODO i18n
+                        MessageBox.Show(ctx, null, getString(R.string.unable_to_send_settings), errorCallback);
                     }
-                    
+
                     return;
                 }
 
-                whatNext(1, result.getString());
+                if (!result.wasSuccesful()) {
+                    MessageBox.Show(ctx, null, getString(R.string.unable_to_send_settings), errorCallback);
+
+                    return;
+                }
+                whatNext(2);
             }
         });
 
-        task.execute(account);
+        task.execute();
     }
 
-    private void registerToGcm(String token) {
-        final GCMRegistrationTask task = new GCMRegistrationTask(this, "", "Registering to GCM..."); // TODO i18n
+    private void registerToGcm() {
+        final GCMRegistrationTask task = new GCMRegistrationTask(this, "", getString(R.string.registering_to_gcm));
 
         final Context ctx = this;
         task.setCallback(new Callback<Boolean>() {
@@ -145,17 +179,17 @@ public class InitialSettingsActivity extends Activity {
                 boolean success = result;
 
                 if (!success) {
-                    MessageBox.Show(ctx, null, "Unable to register to GCM! Please try again later!", // TODO i18n
+                    MessageBox.Show(ctx, null, getString(R.string.unable_to_register_gcm),
                         new Callback<Void>() {
                             public void doStuff(Void param) {
-                                whatNext(-1, null);
+                                whatNext(-1);
                             }
                         });
 
                     return;
                 }
 
-                whatNext(2, null);
+                whatNext(1);
             }
         });
 

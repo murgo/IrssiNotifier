@@ -5,7 +5,7 @@ import android.app.Activity;
 import android.util.Log;
 
 public class GCMRegistrationTask extends BackgroundAsyncTask<Void, Void, Boolean> {
-    private static final String TAG = GCMRegistrationTask.class.getSimpleName();
+    private static final String TAG = GCMRegistrationTask.class.getName();
 
     public GCMRegistrationTask(Activity activity, String titleText, String text) {
         super(activity, titleText, text);

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:dslv="http://schemas.android.com/apk/res/fi.iki.murgo.irssinotifier"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
 
@@ -12,9 +13,8 @@
         android:paddingBottom="0dp"
         android:paddingLeft="10dp"
         android:paddingTop="0dp"
-        dslv:collapsed_height="5dp"
-        dslv:drag_scroll_start="0.33"
-        dslv:float_background_color="#000000"
-        dslv:max_drag_scroll_speed="0.5" />
+        custom:drag_start_mode="onMove"
+        custom:drag_handle_id="@+id/drag"
+        />
 
 </RelativeLayout>

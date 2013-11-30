@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONException;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -37,6 +35,14 @@ public class IrcNotificationManager {
     private long lastSoundDate = 0;
     private DataAccess da;
 
+    public long getLastSoundDate() {
+        return lastSoundDate;
+    }
+
+    public void setLastSoundDate(long time) {
+        lastSoundDate = time;
+    }
+
     private int getUnreadCount() {
         int total = 0;
         for (List<IrcMessage> msgs : unread.values()) {
@@ -46,14 +52,14 @@ public class IrcNotificationManager {
     }
 
     public int getUnreadCountForChannel(String channel) {
-        if (!unread.containsKey(channel))
+        if (!unread.containsKey(channel.toLowerCase()))
             return 0;
 
-        return unread.get(channel).size();
+        return unread.get(channel.toLowerCase()).size();
     }
 
     private void addUnread(IrcMessage msg) {
-        String key = msg.getLogicalChannel();
+        String key = msg.getLogicalChannel().toLowerCase();
 
         List<IrcMessage> msgs;
         if (unread.containsKey(key))
@@ -66,7 +72,7 @@ public class IrcNotificationManager {
         msgs.add(msg);
     }
 
-    public void handle(Context context, String message) {
+    public void handle(Context context, IrcMessage msg) {
         Preferences prefs = new Preferences(context);
         NotificationMode mode = prefs.getNotificationMode();
 
@@ -75,17 +81,19 @@ public class IrcNotificationManager {
         String titleText;
         int notificationId;
         long when = new Date().getTime();
-        IrcMessage msg = new IrcMessage();
         int currentUnreadCount = 1;
         List<String> messageLines = null;
 
         try {
-            msg.Deserialize(message);
-            msg.Decrypt(prefs.getEncryptionPassword());
+            msg.decrypt(prefs.getEncryptionPassword());
 
             if (da == null)
                 da = new DataAccess(context);
-            da.handleMessage(msg);
+
+            if (!da.handleMessage(msg)) {
+                return;
+            }
+
             addUnread(msg);
 
             ValueList values = getValues(msg, mode);
@@ -98,14 +106,9 @@ public class IrcNotificationManager {
 
             tickerText = titleText;
         } catch (CryptoException e) {
-            titleText = "IrssiNotifier error";
-            notificationMessage = "Unable to decrypt data. Perhaps encryption key is wrong?";
-            tickerText = "IrssiNotifier decryption error";
-            notificationId = 1;
-        } catch (JSONException e) {
-            titleText = "IrssiNotifier error";
-            notificationMessage = "Unable to parse data. Server error?";
-            tickerText = "IrssiNotifier parse error";
+            titleText = context.getString(R.string.irssinotifier_error_title);
+            notificationMessage = context.getString(R.string.decryption_error_notification);
+            tickerText = context.getString(R.string.decryption_error_ticker);
             notificationId = 1;
         }
 
@@ -127,13 +130,22 @@ public class IrcNotificationManager {
         builder.setAutoCancel(true);
         builder.setContentText(notificationMessage);
         builder.setContentTitle(titleText);
-        
+
         if (currentUnreadCount > 1) {
             builder.setNumber(currentUnreadCount);
         }
-        
+
+        int defaults = 0;
+
+        if (prefs.isLightsEnabled()) {
+            if (prefs.getUseDefaultLightColor()) {
+                defaults |=  Notification.DEFAULT_LIGHTS;
+            } else {
+                builder.setLights(prefs.getCustomLightColor(), 300, 5000);
+            }
+        }
+
         if ((!prefs.isSpamFilterEnabled() || new Date().getTime() > lastSoundDate + 60000L)) {
-            int defaults = 0;
             if (prefs.isSoundEnabled()) {
                 builder.setSound(prefs.getNotificationSound());
             }
@@ -142,13 +154,10 @@ public class IrcNotificationManager {
                 defaults |= Notification.DEFAULT_VIBRATE;
             }
 
-            if (prefs.isLightsEnabled()) {
-                defaults |=  Notification.DEFAULT_LIGHTS;
-            }
-
             lastSoundDate = new Date().getTime();
-            builder.setDefaults(defaults);
         }
+
+        builder.setDefaults(defaults);
 
         Intent toLaunch = new Intent(context, IrssiNotifierActivity.class);
         toLaunch.putExtra("Channel", msg.getLogicalChannel());
@@ -179,13 +188,17 @@ public class IrcNotificationManager {
         notificationManager.notify(notificationId, notification);
     }
 
-    public void mainActivityOpened(Context context) {
+    public boolean mainActivityOpened(Context context) {
+        boolean hadMessages = false;
         if (unread != null) {
+            hadMessages = unread.size() > 0;
             unread.clear();
         }
-        
+
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
+
+        return hadMessages;
     }
 
     private ValueList getValues(IrcMessage msg, NotificationMode mode) {
@@ -252,7 +265,7 @@ public class IrcNotificationManager {
 
             case PerChannel:
                 int channelUnreadCount = getUnreadCountForChannel(msg.getLogicalChannel());
-                id = msg.getLogicalChannel().hashCode();
+                id = msg.getLogicalChannel().toLowerCase().hashCode();
                 count = channelUnreadCount;
                 if (msg.isPrivate()) {
                     if (channelUnreadCount <= 1) {
@@ -272,7 +285,7 @@ public class IrcNotificationManager {
                     }
                 }
                 
-                List<IrcMessage> messages = unread.get(msg.getLogicalChannel());
+                List<IrcMessage> messages = unread.get(msg.getLogicalChannel().toLowerCase());
                 for (IrcMessage message : messages) {
                     messageLines.add("(" + message.getNick() + ") " + message.getMessage());
                 }
@@ -301,7 +314,7 @@ public class IrcNotificationManager {
         } else if (mode == NotificationMode.PerChannel) {
             String channel = intent.getStringExtra("channel");
             if (channel != null) {
-                List<IrcMessage> msgs = unread.get(channel);
+                List<IrcMessage> msgs = unread.get(channel.toLowerCase());
                 if (msgs != null) {
                     msgs.clear();
                 }

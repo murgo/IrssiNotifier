@@ -1,14 +1,14 @@
 
 package fi.iki.murgo.irssinotifier;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 public class DataAccessTask extends AsyncTask<IrcMessage, Void, List<Channel>> {
+    private static final String TAG = DataAccessTask.class.getName();
 
     private final Context context;
     private Callback<List<Channel>> callback;
@@ -20,6 +20,7 @@ public class DataAccessTask extends AsyncTask<IrcMessage, Void, List<Channel>> {
 
     @Override
     protected List<Channel> doInBackground(IrcMessage... params) {
+        long start = System.nanoTime();
         DataAccess da = new DataAccess(context);
         if (params != null) {
             for (IrcMessage im : params) {
@@ -28,36 +29,27 @@ public class DataAccessTask extends AsyncTask<IrcMessage, Void, List<Channel>> {
         }
 
         List<Channel> channels = da.getChannels();
-
-        // clear old messages from feed
-        List<IrcMessage> messages = new ArrayList<IrcMessage>();
+        HashMap<String, String> channelNames = new HashMap<String, String>(channels.size());
         for (Channel ch : channels) {
-            for (IrcMessage message : ch.getMessages()) {
-                if (!message.getClearedFromFeed()) {
-                    messages.add(message);
-                }
+            channelNames.put(Long.toString(ch.getId()), ch.getName());
+        }
+
+        ArrayList<IrcMessage> feedMessagesProcessed = new ArrayList<IrcMessage>();
+        List<IrcMessage> feedMessages = da.getFeedMessages();
+        for (IrcMessage im : feedMessages) {
+            if (!im.getClearedFromFeed()) {
+                im.setChannel(channelNames.get(im.getChannel()));
+                feedMessagesProcessed.add(im);
             }
         }
 
-        final int maximumMessagesInFeed = 50;
+        Channel feedChannel = new Channel();
+        feedChannel.setName(IrssiNotifierActivity.FEED);
+        feedChannel.setMessages(feedMessagesProcessed);
+        channels.add(0, feedChannel);
 
-        if (messages.size() > maximumMessagesInFeed) {
-            Collections.sort(messages, new Comparator<IrcMessage>() {
-                public int compare(IrcMessage lhs, IrcMessage rhs) {
-                    return lhs.getServerTimestamp().compareTo(rhs.getServerTimestamp());
-                }
-            });
-
-            List<Long> toClearIds = new ArrayList<Long>();
-
-            for (int i = 0; i < messages.size() - maximumMessagesInFeed; i++) {
-                toClearIds.add(messages.get(i).getId());
-                messages.get(i).setClearedFromFeed(true);
-            }
-
-            da.clearMessagesFromFeed(toClearIds);
-        }
-
+        double elapsed = (System.nanoTime() - start) / 1e6;
+        Log.d(TAG, "Data accessing done, elapsed ms: " + elapsed);
         return channels;
     }
 

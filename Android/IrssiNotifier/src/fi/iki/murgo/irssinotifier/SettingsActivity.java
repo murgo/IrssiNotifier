@@ -2,6 +2,9 @@
 package fi.iki.murgo.irssinotifier;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,11 +15,17 @@ import android.preference.PreferenceCategory;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import org.apache.http.auth.AuthenticationException;
+import yuku.ambilwarna.AmbilWarnaDialog;
 
-@SuppressWarnings("deprecation") // fuck the police
+import java.io.IOException;
+
+
+@SuppressWarnings("deprecation")
 public class SettingsActivity extends PreferenceActivity {
-    private static final String TAG = SettingsActivity.class.getSimpleName();
+    private static final String TAG = SettingsActivity.class.getName();
     protected static final int ICB_HOST_REQUEST_CODE = 666;
 
     @Override
@@ -27,7 +36,42 @@ public class SettingsActivity extends PreferenceActivity {
         addPreferencesFromResource(R.xml.preference_screen);
 
         final Context ctx = this;
-        Preference aboutPref = (Preference) findPreference("about");
+
+        final CheckBoxPreference enabled = (CheckBoxPreference) findPreference("NotificationsEnabled");
+        enabled.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                final boolean checked = (Boolean)newValue;
+                String s = "Disabling notifications...";
+                if (checked) {
+                    s = "Enabling notifications...";
+                }
+
+                SettingsSendingTask task = new SettingsSendingTask(SettingsActivity.this, "Sending settings", s);
+                task.setCallback(new Callback<ServerResponse>() {
+                    @Override
+                    public void doStuff(ServerResponse result) {
+                        if (result.getException() != null) {
+                            if (result.getException() instanceof IOException) {
+                                MessageBox.Show(ctx, "Network error", "Ensure your internet connection works and try again.", null);
+                            } else if (result.getException() instanceof AuthenticationException) {
+                                MessageBox.Show(ctx, "Authentication error", "Unable to authenticate to server.", null);
+                            } else if (result.getException() instanceof ServerException) {
+                                MessageBox.Show(ctx, "Server error", "Mystical server error, check if updates are available", null);
+                            } else {
+                                MessageBox.Show(ctx, null, "Unable to send settings to the server! Please try again later!", null);
+                            }
+                            enabled.setChecked(!checked);
+                        }
+                    }
+                });
+
+                task.execute();
+
+                return true;
+            }
+        });
+
+        Preference aboutPref = findPreference("about");
         aboutPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 Intent i = new Intent(ctx, AboutActivity.class);
@@ -38,7 +82,7 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
 
-        Preference channelsPref = (Preference) findPreference("channels");
+        Preference channelsPref = findPreference("channels");
         channelsPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 Intent i = new Intent(ctx, ChannelSettingsActivity.class);
@@ -65,12 +109,14 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
 
-        Preference initialSettingsPref = (Preference) findPreference("redoInitialSettings");
+        Preference initialSettingsPref = findPreference("redoInitialSettings");
         initialSettingsPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 Preferences prefs = new Preferences(ctx);
                 prefs.setAuthToken(null);
+                prefs.setAccountName(null);
                 prefs.setGcmRegistrationId(null);
+                prefs.setLicenseCount(0);
 
                 IrssiNotifierActivity.refreshIsNeeded();
                 finish();
@@ -78,7 +124,7 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
         
-        Preference disableThemePref = (Preference) findPreference("ThemeDisabled");
+        Preference disableThemePref = findPreference("ThemeDisabled");
         disableThemePref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
                 IrssiNotifierActivity.refreshIsNeeded();
@@ -86,12 +132,71 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
 
+        handleColorPicker();
+
         handleIcb();
+
+        if (!LicenseHelper.isPlusVersion(this)) {
+            CheckBoxPreference usePullMechanismPref = (CheckBoxPreference)findPreference("UsePullMechanism");
+            usePullMechanismPref.setSummary(usePullMechanismPref.getSummary() + ". Only in Plus version.");
+            usePullMechanismPref.setEnabled(false);
+            usePullMechanismPref.setChecked(false);
+        }
     }
-    
+
+    private void handleColorPicker() {
+        Preference colorPickerPref = findPreference("PickCustomLightColor");
+        colorPickerPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(final Preference preference) {
+                final Context ctx = SettingsActivity.this;
+
+                final Preferences preferences = new Preferences(ctx);
+                final int color = preferences.getCustomLightColor();
+
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(ctx);
+                builder.setSmallIcon(R.drawable.notification_icon);
+                builder.setTicker("Preview selected color");
+                builder.setAutoCancel(false);
+                builder.setOngoing(false);
+                builder.setContentText("Wait for the screen to turn off to see selected light color in action");
+                builder.setContentTitle("Preview light color");
+                builder.setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, new Intent(), 0));
+                builder.setLights(color, 300, 5000);
+
+                final Notification notification = builder.build();
+                final NotificationManager notificationManager = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.notify(666, notification);
+
+                final AmbilWarnaDialog dialog = new AmbilWarnaDialog(ctx, color, new AmbilWarnaDialog.OnAmbilWarnaListener() {
+                    @Override
+                    public void onCancel(AmbilWarnaDialog dialog) {
+                        notificationManager.cancel(666);
+                    }
+
+                    @Override
+                    public void onOk(AmbilWarnaDialog dialog, int color) {
+                        notificationManager.cancel(666);
+                        preferences.setCustomLightColor(color);
+                    }
+
+                    @Override
+                    public void onColorChanged(AmbilWarnaDialog dialog, int color) {
+                        notification.ledARGB = color;
+                        notificationManager.notify(666, notification);
+                    }
+                });
+
+                dialog.show();
+
+                return true;
+            }
+        });
+    }
+
     private void handleIcb() {
         CheckBoxPreference showIcbIconPreference = (CheckBoxPreference)findPreference("IcbEnabled");
-        if (!IntentSniffer.isIntentAvailable(this, IrssiConnectbotLauncher.INTENT_IRSSICONNECTBOT)) {
+        if (!IntentSniffer.isPackageAvailable(this, IrssiConnectbotLauncher.PACKAGE_IRSSICONNECTBOT)) {
             PreferenceCategory icbCategory = (PreferenceCategory)findPreference("IcbCategory");
             icbCategory.setEnabled(false);
             
@@ -107,7 +212,7 @@ public class SettingsActivity extends PreferenceActivity {
                 }
             });
             
-            Preference icbHostPref = (Preference) findPreference("IcbHost");
+            Preference icbHostPref = findPreference("IcbHost");
             
             Preferences prefs = new Preferences(this);
             String hostName = prefs.getIcbHostName();
@@ -120,7 +225,7 @@ public class SettingsActivity extends PreferenceActivity {
             icbHostPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
                     Intent i = new Intent("android.intent.action.PICK");
-                    i.setClassName(IrssiConnectbotLauncher.INTENT_IRSSICONNECTBOT, IrssiConnectbotLauncher.INTENT_IRSSICONNECTBOT + ".HostListActivity");
+                    i.setClassName(IrssiConnectbotLauncher.PACKAGE_IRSSICONNECTBOT, IrssiConnectbotLauncher.PACKAGE_IRSSICONNECTBOT + ".HostListActivity");
                     startActivityForResult(i, ICB_HOST_REQUEST_CODE);
                     return true;
                 }

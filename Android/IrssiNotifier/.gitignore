@@ -3,3 +3,4 @@ gen/
 out/
 .idea/
 *.iml
+proguard_logs
