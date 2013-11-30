@@ -96,4 +96,17 @@ class IrssiNotifier:
                 'message': message, 'channel': channel, 'nick': nick}
         self._send_request('Message', data)
 
+    def send_command(self, command):
+        """
+        Send command to the device.
+
+        @param command: the command.
+
+        @type command: C{str}
+        """
+        command = self._encrypt_text(command, self._enc_password)
+        data = {'apiToken': self._api_token, 'version': _VERSION,
+                'command': command}
+        self._send_request('Command', data)
+
 __all__ = ['IrssiNotifier']
