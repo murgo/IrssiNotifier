@@ -10,7 +10,7 @@ from hashlib import md5
 from Crypto.Cipher import AES
 from Crypto import Random
 
-_VERSION = 13
+_VERSION = 18
 
 
 class IrssiNotifier:
