@@ -1,5 +1,9 @@
-import urllib
-import urllib2
+try: # Python 2
+    from urllib  import urlencode
+    from urllib2 import urlopen
+except ImportError: # Python 3
+    from urllib.parse import urlencode
+    from urllib.request import urlopen
 import base64
 from hashlib import md5
 
@@ -24,18 +28,21 @@ class IrssiNotifier:
 
         @param api_token: the API token you got from the site.
         @param enc_password: the encryption password you set on your
-                             device.
+                             device. Type str or bytes.
         @type api_token: C{str}
         @type enc_password: C{str}
         """
+        if type(enc_password) != bytes:
+            enc_password = enc_password.encode('utf-8')
+
         self._api_base = 'https://irssinotifier.appspot.com/API'
         self._api_token = api_token
         self._enc_password = enc_password
 
     def _send_request(self, endpoint, data):
-        data = urllib.urlencode(data)
+        data = urlencode(data).encode('utf-8')
         url = '%s/%s' % (self._api_base, endpoint)
-        urllib2.urlopen(url, data)
+        urlopen(url, data)
 
     def _encrypt_text(self, text, password):
         BS = 16
@@ -67,7 +74,7 @@ class IrssiNotifier:
         c = AES.new(KEY, AES.MODE_CBC, IV)
         v = c.encrypt(TEXT)
 
-        s = "Salted__"+SALT+v
+        s = b"Salted__"+SALT+v
         return base64.urlsafe_b64encode(s)
 
     def send_message(self, message, channel, nick):
