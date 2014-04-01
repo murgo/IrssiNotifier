@@ -2,6 +2,7 @@ use strict; use warnings;
 
 use Irssi;
 use IPC::Open2 qw(open2);
+use Fcntl;
 use POSIX;
 use Encode;
 use vars qw($VERSION %IRSSI);
@@ -227,6 +228,7 @@ sub send_to_api {
     unless (defined($pid)) {
         Irssi::print("IrssiNotifier: couldn't fork - abort");
         close $readHandle; close $writeHandle;
+        $forked = 0;
         return 0;
     }
 
@@ -329,33 +331,26 @@ sub encrypt {
     my ($text) = @_ ? shift : $_;
     my $password = Irssi::settings_get_str('irssinotifier_encryption_password');
 
-    chdir();
-    my $fifo = ".irssinotifier_fifo";
-    unlink $fifo; # just in case
-    POSIX::mkfifo($fifo, 0700);
+    my ($r,$w);
+    pipe $r, $w;
 
-    my $password_pid = fork();
+    # disable close-on-exec
+    my $flags = fcntl($r, F_GETFD, 0) or die "fcntl F_GETFD: $!";
+    fcntl($r, F_SETFD, $flags & ~FD_CLOEXEC) or die "fcntl F_SETFD: $!";
 
-    if ($password_pid == 0) {
-        # child process
-        open (my $handle, "> $fifo"); # this line blocks until a reader (openssl) is spawned
-        print $handle $password;
-        close $handle;
-        unlink $fifo;
-        POSIX::_exit(1);
-    }
+    my $rfn = fileno($r);
+    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -A -pass), "fd:$rfn");
 
-    Irssi::pidwait_add($password_pid);
-
-    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -A -pass), "file:$fifo");
+    print $w "$password";
+    close $w;
 
     print $in "$text ";
     close $in;
 
-    local $/; # read full output at once
-    my $result = readline $out;
+    my $result = do { local $/; <$out> };
+
     waitpid $pid, 0;
-    waitpid $password_pid, 0;
+    close $r;
 
     $result =~ tr[+/][-_];
     $result =~ s/=//g;
