@@ -1,4 +1,6 @@
-use strict; use warnings;
+use strict;
+use warnings;
+no warnings 'closure';
 
 use Irssi;
 use IPC::Open2 qw(open2);
@@ -7,7 +9,7 @@ use POSIX;
 use Encode;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "18";
+$VERSION = "19";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -15,8 +17,13 @@ $VERSION = "18";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "https://irssinotifier.appspot.com",
-    changed     => "2013-06-02"
+    changed     => "2014-04-04"
 );
+
+# Sometimes, for some unknown reason, perl emits warnings like the following:
+#   Can't locate package Irssi::Nick for @Irssi::Irc::Nick::ISA
+# This package statement is here to suppress it.
+{ package Irssi::Nick }
 
 my $lastMsg;
 my $lastServer;
@@ -106,12 +113,8 @@ sub should_send_notification {
         return 0; # dcc is not enabled
     }
 
-    if (Irssi::settings_get_bool('irssinotifier_tmux_detached_only') && tmux_attached()) {
-        return 0; # tmux attached
-    }
-
-    if (Irssi::settings_get_bool('irssinotifier_screen_detached_only') && screen_attached()) {
-        return 0; # screen attached
+    if (Irssi::settings_get_bool('irssinotifier_screen_detached_only') && attached()) {
+        return 0; # screen/tmux attached
     }
 
     if (Irssi::settings_get_bool("irssinotifier_ignore_active_window") && $dest->{window}->{refnum} == Irssi::active_win()->{refnum}) {
@@ -178,9 +181,7 @@ sub should_send_notification {
 }
 
 sub attached {
-  return  (
-    tmux_attached() ||
-    screen_attached());
+  return (tmux_attached() || screen_attached());
 }
 
 sub tmux_attached {
@@ -194,7 +195,7 @@ sub tmux_attached {
 
 sub screen_attached {
     if (!$screen_socket_path || !defined($ENV{STY})) {
-        return 1;
+        return 0;
     }
     my $socket = $screen_socket_path . "/" . $ENV{'STY'};
     if (-e $socket && ((stat($socket))[2] & 00100) != 0) {
@@ -462,13 +463,15 @@ sub event_key_pressed {
     $lastKeyboardActivity = time;
 }
 
-my $screen_ls = `LC_ALL="C" screen -ls 2> /dev/null`;
-if ($screen_ls !~ /^No Sockets found/s) {
-    $screen_ls =~ /^.+\d+ Sockets? in ([^\n]+)\.\n.+$/s;
-    $screen_socket_path = $1;
-} else {
-    $screen_ls =~ /^No Sockets found in ([^\n]+)\.\n.+$/s;
-    $screen_socket_path = $1;
+if (defined($ENV{STY})) {
+    my $screen_ls = `LC_ALL="C" screen -ls 2> /dev/null`;
+    if ($screen_ls !~ /^No Sockets found/s) {
+        $screen_ls =~ /^.+\d+ Sockets? in ([^\n]+)\.\n.+$/s;
+        $screen_socket_path = $1;
+    } else {
+        $screen_ls =~ /^No Sockets found in ([^\n]+)\.\n.+$/s;
+        $screen_socket_path = $1;
+    }
 }
 
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_encryption_password', 'password');
@@ -482,7 +485,6 @@ Irssi::settings_add_str('irssinotifier', 'irssinotifier_required_public_highligh
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_ignore_active_window', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_away_only', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_screen_detached_only', 0);
-Irssi::settings_add_bool('irssinotifier', 'irssinotifier_tmux_detached_only', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_clear_notifications_when_viewed', 0);
 Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_enable_dcc', 1);
