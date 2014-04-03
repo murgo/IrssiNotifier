@@ -9,6 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -186,6 +189,23 @@ public class IrcNotificationManager {
         
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(notificationId, notification);
+
+		// Pebble
+
+		Intent pebbleIntent = new Intent("com.getpebble.action.SEND_NOTIFICATION");
+
+		Map<String, String> data = new HashMap<String, String>();
+		ValueList values = getValues(msg, NotificationMode.PerMessage);
+		data.put("title", values.title);
+		data.put("body", values.text);
+
+		String notificationData = new JSONArray().put(new JSONObject(data)).toString();
+		
+		pebbleIntent.putExtra("messageType", "PEBBLE_ALERT");
+		pebbleIntent.putExtra("sender", "IrssiNotifier");
+		pebbleIntent.putExtra("notificationData", notificationData);
+
+		context.sendBroadcast(pebbleIntent);
     }
 
     public boolean mainActivityOpened(Context context) {
