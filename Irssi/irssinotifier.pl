@@ -15,7 +15,7 @@ $VERSION = "18";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "https://irssinotifier.appspot.com",
-    changed     => "2013-06-02"
+    changed     => "2013-09-06"
 );
 
 my $lastMsg;
@@ -29,7 +29,22 @@ my $lastDcc = 0;
 my $notifications_sent = 0;
 my @delayQueue = ();
 
-my $screen_socket_path;
+my $screen_socket_name = $ENV{STY};
+my $tmux_pane = $ENV{TMUX_PANE};
+my $using_screen = defined $screen_socket_name;
+my $using_tmux = defined $tmux_pane;
+my $screen_socket;
+
+if ($using_screen) {
+    my $screen_ls = `LC_ALL="C" screen -ls`;
+    if ($screen_ls !~ /^No Sockets found/s) {
+        $screen_ls =~ /^.+\d+ Sockets? in ([^\n]+)\.\n.+$/s;
+        my $screen_socket_path = $1;
+        $screen_socket = $screen_socket_path . "/" . $screen_socket_name;
+    } else {
+        $using_screen = 0;
+    }
+}
 
 sub private {
     my ( $server, $msg, $nick, $address ) = @_;
@@ -106,8 +121,8 @@ sub should_send_notification {
         return 0; # dcc is not enabled
     }
 
-    if (Irssi::settings_get_bool('irssinotifier_screen_detached_only') && screen_attached()) {
-        return 0; # screen attached
+    if (Irssi::settings_get_bool('irssinotifier_mplexer_detached_only') && !detached()) {
+        return 0; # screen or tmux attached
     }
 
     if (Irssi::settings_get_bool("irssinotifier_ignore_active_window") && $dest->{window}->{refnum} == Irssi::active_win()->{refnum}) {
@@ -166,22 +181,42 @@ sub should_send_notification {
     }
 
     my $timeout = Irssi::settings_get_int('irssinotifier_require_idle_seconds');
-    if ($timeout > 0 && (time - $lastKeyboardActivity) <= $timeout && screen_attached()) {
+    if ($timeout > 0 && (time - $lastKeyboardActivity) <= $timeout && !detached()) {
         return 0; # not enough idle seconds
     }
 
     return 1;
 }
 
+sub using_mplexer {
+    return $using_screen || $using_tmux;
+}
+
 sub screen_attached {
-    if (!$screen_socket_path || !defined($ENV{STY})) {
-        return 1;
-    }
-    my $socket = $screen_socket_path . "/" . $ENV{'STY'};
-    if (-e $socket && ((stat($socket))[2] & 00100) != 0) {
-        return 1;
+    if ( $using_screen ) {
+        if (-e $screen_socket && ((stat($screen_socket))[2] & 00100) != 0) {
+            return 1;
+        }
     }
     return 0;
+}
+
+sub tmux_attached {
+    if ( $using_tmux ) {
+        my $tmux_status_output = `tmux display-message -p -t $tmux_pane '#{window_active} #{session_attached}'`;
+        return $tmux_status_output =~ /1 1/;
+    }
+    return 0;
+}
+
+sub detached {
+    if (!using_mplexer()) {
+        return 0; # will never be detached.
+    }
+    if (screen_attached() || tmux_attached()) {
+        return 0;
+    }
+    return 1;
 }
 
 sub is_dangerous_string {
@@ -443,15 +478,6 @@ sub event_key_pressed {
     $lastKeyboardActivity = time;
 }
 
-my $screen_ls = `LC_ALL="C" screen -ls`;
-if ($screen_ls !~ /^No Sockets found/s) {
-    $screen_ls =~ /^.+\d+ Sockets? in ([^\n]+)\.\n.+$/s;
-    $screen_socket_path = $1;
-} else {
-    $screen_ls =~ /^No Sockets found in ([^\n]+)\.\n.+$/s;
-    $screen_socket_path = $1;
-}
-
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_encryption_password', 'password');
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_api_token', '');
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_https_proxy', '');
@@ -462,7 +488,7 @@ Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignored_highlight_patter
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_required_public_highlight_patterns', '');
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_ignore_active_window', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_away_only', 0);
-Irssi::settings_add_bool('irssinotifier', 'irssinotifier_screen_detached_only', 0);
+Irssi::settings_add_bool('irssinotifier', 'irssinotifier_mplexer_detached_only', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_clear_notifications_when_viewed', 0);
 Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_enable_dcc', 1);
@@ -470,6 +496,7 @@ Irssi::settings_add_bool('irssinotifier', 'irssinotifier_enable_dcc', 1);
 # these commands are renamed
 Irssi::settings_remove('irssinotifier_ignore_server');
 Irssi::settings_remove('irssinotifier_ignore_channel');
+Irssi::settings_remove('irssinotifier_screen_detached_only');
 
 Irssi::signal_add('message irc action', 'public');
 Irssi::signal_add('message public',     'public');
