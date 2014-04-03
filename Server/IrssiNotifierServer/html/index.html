@@ -212,6 +212,16 @@
 
         <p class="answer">For latest developments, check project's <a href="https://github.com/murgo/irssinotifier">Github page</a>.<p>
 
+        <p class="question news">4.4.2014 Irssi script 19 released!</p>
+        <div class="answer news-content">
+            Welp, it's been almost a year! Here's new script, thanks to people who fixed my stuff! Fixes and features:
+            <ul>
+                <li>Support for <a href="http://tmux.sourceforge.net/">tmux</a>! tmux attach/detach state is used through the /set irssinotifier_screen_detached_only. Thanks to <a href="https://github.com/mlb-">mlb-</a> and <a href="https://github.com/vanaltj">vanaltj</a> for this.</li>
+                <li>"Queue is full" error message should be fixed now, thanks <a href="https://github.com/qvr">qvr</a>!</li>
+                <li>Couple of miscellaneous bug fixes.</li>
+            </ul>
+        </div>
+
         <p class="question news">2.6.2013 IrssiNotifier/IrssiNotifier+ 1.7 with Irssi script 18 released!</p>
         <div class="answer news-content">
             New script option: irssinotifier_clear_notifications_when_viewed.
@@ -450,9 +460,9 @@
             <div class="code-block">/set irssinotifier_away_only [ON or OFF]</div>
             <p class="answer">When set to ON, notifications will only be sent if you are away. Useful in combination with <a href="http://scripts.irssi.org/scripts/screen_away.pl">screen_away script</a>.
 
-            <p class="question">Don't receive notifications if attached to screen</p>
+            <p class="question">Don't receive notifications if attached to screen or tmux</p>
             <div class="code-block">/set irssinotifier_screen_detached_only [ON or OFF]</div>
-            <p class="answer">If on, you don't get notifications when you are attached to the screen in which Irssi is running.</p>
+            <p class="answer">If on, you don't get notifications when you are attached to the screen or tmux in which Irssi is running.</p>
 
             <p class="question">Don't receive notifications from currently open window</p>
             <div class="code-block">/set irssinotifier_ignore_active_window [ON or OFF]</div>

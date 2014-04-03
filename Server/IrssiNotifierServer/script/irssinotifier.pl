@@ -1,12 +1,15 @@
-use strict; use warnings;
+use strict;
+use warnings;
+no warnings 'closure';
 
 use Irssi;
 use IPC::Open2 qw(open2);
+use Fcntl;
 use POSIX;
 use Encode;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "18";
+$VERSION = "19";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -14,8 +17,13 @@ $VERSION = "18";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "https://irssinotifier.appspot.com",
-    changed     => "2013-06-02"
+    changed     => "2014-04-04"
 );
+
+# Sometimes, for some unknown reason, perl emits warnings like the following:
+#   Can't locate package Irssi::Nick for @Irssi::Irc::Nick::ISA
+# This package statement is here to suppress it.
+{ package Irssi::Nick }
 
 my $lastMsg;
 my $lastServer;
@@ -105,8 +113,8 @@ sub should_send_notification {
         return 0; # dcc is not enabled
     }
 
-    if (Irssi::settings_get_bool('irssinotifier_screen_detached_only') && screen_attached()) {
-        return 0; # screen attached
+    if (Irssi::settings_get_bool('irssinotifier_screen_detached_only') && attached()) {
+        return 0; # screen/tmux attached
     }
 
     if (Irssi::settings_get_bool("irssinotifier_ignore_active_window") && $dest->{window}->{refnum} == Irssi::active_win()->{refnum}) {
@@ -165,16 +173,29 @@ sub should_send_notification {
     }
 
     my $timeout = Irssi::settings_get_int('irssinotifier_require_idle_seconds');
-    if ($timeout > 0 && (time - $lastKeyboardActivity) <= $timeout && screen_attached()) {
+    if ($timeout > 0 && (time - $lastKeyboardActivity) <= $timeout && attached()) {
         return 0; # not enough idle seconds
     }
 
     return 1;
 }
 
+sub attached {
+  return (tmux_attached() || screen_attached());
+}
+
+sub tmux_attached {
+  if (!defined($ENV{'TMUX_PANE'})){
+    return 0;
+  }
+  chomp(my $session_attached = `tmux display-message -p -t$ENV{'TMUX_PANE'} '#{session_attached}' 2> /dev/null`);
+  chomp(my $window_active    = `tmux display-message -p -t$ENV{'TMUX_PANE'} '#{window_active}' 2> /dev/null`);
+  return $session_attached && $window_active;
+}
+
 sub screen_attached {
     if (!$screen_socket_path || !defined($ENV{STY})) {
-        return 1;
+        return 0;
     }
     my $socket = $screen_socket_path . "/" . $ENV{'STY'};
     if (-e $socket && ((stat($socket))[2] & 00100) != 0) {
@@ -227,6 +248,7 @@ sub send_to_api {
     unless (defined($pid)) {
         Irssi::print("IrssiNotifier: couldn't fork - abort");
         close $readHandle; close $writeHandle;
+        $forked = 0;
         return 0;
     }
 
@@ -329,33 +351,26 @@ sub encrypt {
     my ($text) = @_ ? shift : $_;
     my $password = Irssi::settings_get_str('irssinotifier_encryption_password');
 
-    chdir();
-    my $fifo = ".irssinotifier_fifo";
-    unlink $fifo; # just in case
-    POSIX::mkfifo($fifo, 0700);
+    my ($r,$w);
+    pipe $r, $w;
 
-    my $password_pid = fork();
+    # disable close-on-exec
+    my $flags = fcntl($r, F_GETFD, 0) or die "fcntl F_GETFD: $!";
+    fcntl($r, F_SETFD, $flags & ~FD_CLOEXEC) or die "fcntl F_SETFD: $!";
 
-    if ($password_pid == 0) {
-        # child process
-        open (my $handle, "> $fifo"); # this line blocks until a reader (openssl) is spawned
-        print $handle $password;
-        close $handle;
-        unlink $fifo;
-        POSIX::_exit(1);
-    }
+    my $rfn = fileno($r);
+    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -A -pass), "fd:$rfn");
 
-    Irssi::pidwait_add($password_pid);
-
-    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -A -pass), "file:$fifo");
+    print $w "$password";
+    close $w;
 
     print $in "$text ";
     close $in;
 
-    local $/; # read full output at once
-    my $result = readline $out;
+    my $result = do { local $/; <$out> };
+
     waitpid $pid, 0;
-    waitpid $password_pid, 0;
+    close $r;
 
     $result =~ tr[+/][-_];
     $result =~ s/=//g;
@@ -363,6 +378,8 @@ sub encrypt {
 }
 
 sub are_settings_valid {
+    $SIG{CHLD}='DEFAULT';
+
     Irssi::signal_remove( 'gui key pressed', 'event_key_pressed' );
     if (Irssi::settings_get_int('irssinotifier_require_idle_seconds') > 0) {
         Irssi::signal_add( 'gui key pressed', 'event_key_pressed' );
@@ -375,7 +392,7 @@ sub are_settings_valid {
 
     `openssl version`;
     if ($? != 0) {
-        Irssi::print("IrssiNotifier: openssl not found.");
+        Irssi::print("IrssiNotifier: openssl not found: $!");
         return 0;
     }
 
@@ -446,13 +463,15 @@ sub event_key_pressed {
     $lastKeyboardActivity = time;
 }
 
-my $screen_ls = `LC_ALL="C" screen -ls`;
-if ($screen_ls !~ /^No Sockets found/s) {
-    $screen_ls =~ /^.+\d+ Sockets? in ([^\n]+)\.\n.+$/s;
-    $screen_socket_path = $1;
-} else {
-    $screen_ls =~ /^No Sockets found in ([^\n]+)\.\n.+$/s;
-    $screen_socket_path = $1;
+if (defined($ENV{STY})) {
+    my $screen_ls = `LC_ALL="C" screen -ls 2> /dev/null`;
+    if ($screen_ls !~ /^No Sockets found/s) {
+        $screen_ls =~ /^.+\d+ Sockets? in ([^\n]+)\.\n.+$/s;
+        $screen_socket_path = $1;
+    } else {
+        $screen_ls =~ /^No Sockets found in ([^\n]+)\.\n.+$/s;
+        $screen_socket_path = $1;
+    }
 }
 
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_encryption_password', 'password');
