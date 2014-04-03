@@ -106,6 +106,10 @@ sub should_send_notification {
         return 0; # dcc is not enabled
     }
 
+    if (Irssi::settings_get_bool('irssinotifier_tmux_detached_only') && tmux_attached()) {
+        return 0; # tmux attached
+    }
+
     if (Irssi::settings_get_bool('irssinotifier_screen_detached_only') && screen_attached()) {
         return 0; # screen attached
     }
@@ -166,11 +170,26 @@ sub should_send_notification {
     }
 
     my $timeout = Irssi::settings_get_int('irssinotifier_require_idle_seconds');
-    if ($timeout > 0 && (time - $lastKeyboardActivity) <= $timeout && screen_attached()) {
+    if ($timeout > 0 && (time - $lastKeyboardActivity) <= $timeout && attached()) {
         return 0; # not enough idle seconds
     }
 
     return 1;
+}
+
+sub attached {
+  return  (
+    tmux_attached() ||
+    screen_attached());
+}
+
+sub tmux_attached {
+  if (!defined($ENV{'TMUX_PANE'})){
+    return 0;
+  }
+  chomp(my $session_attached = `tmux display-message -p -t$ENV{'TMUX_PANE'} '#{session_attached}' 2> /dev/null`);
+  chomp(my $window_active    = `tmux display-message -p -t$ENV{'TMUX_PANE'} '#{window_active}' 2> /dev/null`);
+  return $session_attached && $window_active;
 }
 
 sub screen_attached {
@@ -443,7 +462,7 @@ sub event_key_pressed {
     $lastKeyboardActivity = time;
 }
 
-my $screen_ls = `LC_ALL="C" screen -ls`;
+my $screen_ls = `LC_ALL="C" screen -ls 2> /dev/null`;
 if ($screen_ls !~ /^No Sockets found/s) {
     $screen_ls =~ /^.+\d+ Sockets? in ([^\n]+)\.\n.+$/s;
     $screen_socket_path = $1;
@@ -463,6 +482,7 @@ Irssi::settings_add_str('irssinotifier', 'irssinotifier_required_public_highligh
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_ignore_active_window', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_away_only', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_screen_detached_only', 0);
+Irssi::settings_add_bool('irssinotifier', 'irssinotifier_tmux_detached_only', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_clear_notifications_when_viewed', 0);
 Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_enable_dcc', 1);
