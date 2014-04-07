@@ -14,7 +14,7 @@ import json
 jinja_environment = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 MinAndroidVersion = 8
 MinScriptVersion = 2
-LatestScriptVersion = 19
+LatestScriptVersion = 20
 
 
 def getAndroidServerMessage(data):

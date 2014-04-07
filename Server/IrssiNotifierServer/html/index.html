@@ -212,6 +212,24 @@
 
         <p class="answer">For latest developments, check project's <a href="https://github.com/murgo/irssinotifier">Github page</a>.<p>
 
+        <p class="question news">8.4.2014 Irssi script 20 released.</p>
+        <div class="answer news-content">
+            The previously broken script is now (hopefully) fixed. If you installed script version 19 in the last couple of days, you might need to restart your Irssi or run following commands in Irssi after updating the script:
+            <div class="code-block">
+            /script exec $SIG{CHLD} = 'IGNORE';
+            <br />
+            /script exec wait;
+            </div>
+            Run the last line each for every zombie process you might have. Check earlier news post for more details. Please contact me if you are having issues. 
+        </div>
+
+        <p class="question news">7.4.2014 Rollback of Irssi script 19.</p>
+        <div class="answer news-content">
+            There's some issues with the latest release of the IrssiNotifier Irssi script, so it's been reverted until we get it fixed. Techinal jargon: broken script spawned a defunct zombie process for each highlight. If you have lots of Irssi zombie processes (ps x), run "/script exec wait;" in the Irssi. You have to run this one for each zombie process.
+            <br/> <br/>
+            Sorry!
+        </div>
+
         <p class="question news">4.4.2014 Irssi script 19 released!</p>
         <div class="answer news-content">
             Welp, it's been almost a year! Here's new script, thanks to people who fixed my stuff! Fixes and features:
