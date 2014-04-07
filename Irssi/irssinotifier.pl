@@ -9,7 +9,7 @@ use POSIX;
 use Encode;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "19";
+$VERSION = "20";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -17,7 +17,7 @@ $VERSION = "19";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "https://irssinotifier.appspot.com",
-    changed     => "2014-04-04"
+    changed     => "2014-04-08"
 );
 
 # Sometimes, for some unknown reason, perl emits warnings like the following:
@@ -378,8 +378,6 @@ sub encrypt {
 }
 
 sub are_settings_valid {
-    $SIG{CHLD}='DEFAULT';
-
     Irssi::signal_remove( 'gui key pressed', 'event_key_pressed' );
     if (Irssi::settings_get_int('irssinotifier_require_idle_seconds') > 0) {
         Irssi::signal_add( 'gui key pressed', 'event_key_pressed' );
@@ -391,13 +389,13 @@ sub are_settings_valid {
     }
 
     `openssl version`;
-    if ($? != 0) {
+    if ($? == 127) {
         Irssi::print("IrssiNotifier: openssl not found: $!");
         return 0;
     }
 
     `wget --version`;
-    if ($? != 0) {
+    if ($? == 127) {
         Irssi::print("IrssiNotifier: wget not found.");
         return 0;
     }
