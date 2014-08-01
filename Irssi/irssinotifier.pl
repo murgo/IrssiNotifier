@@ -81,25 +81,19 @@ sub dcc {
 sub print_text {
     my ($dest, $text, $stripped) = @_;
 
-    if (!defined $lastMsg || index($text, $lastMsg) == -1)
-    {
-        # text doesn't contain the message, so printed text is about something else and notification doesn't need to be sent
-        return;
-    }
-
-    if (should_send_notification($dest))
-    {
-        send_notification();
+    # We only need to check that it's a dcc, hilight, or privmsg
+    # before checking whether we need to send.
+    my $opt = MSGLEVEL_HILIGHT | MSGLEVEL_MSGS;
+    if ($lastDcc || (($dest->{level} & $opt) &&
+                     ($dest->{level} & MSGLEVEL_NOHILIGHT) == 0)) {
+        if (should_send_notification($dest)) {
+            send_notification();
+        }
     }
 }
 
 sub should_send_notification {
     my $dest = @_ ? shift : $_;
-
-    my $opt = MSGLEVEL_HILIGHT | MSGLEVEL_MSGS;
-    if (!$lastDcc && (!($dest->{level} & $opt) || ($dest->{level} & MSGLEVEL_NOHILIGHT))) {
-        return 0; # not a hilight and not a dcc message
-    }
 
     if (!are_settings_valid()) {
         return 0; # invalid settings
