@@ -403,8 +403,10 @@ public class IrssiNotifierActivity extends SherlockActivity {
         return true;
     }
 
-    public void newMessage(IrcMessage msg) {
-        if ((!preferences.isSpamFilterEnabled() || new Date().getTime() > IrcNotificationManager.getInstance().getLastSoundDate() + 60000L)) {
+	public void newMessage(IrcMessage msg) {
+		if ((!preferences.isSpamFilterEnabled() || new Date().getTime() > IrcNotificationManager
+				.getInstance().getLastSoundDate()
+				+ (1000L * preferences.getSpamFilterTime()))) {
             Uri sound = preferences.getNotificationSound();
             if (sound != null) {
                 MediaPlayer mp = MediaPlayer.create(this, sound);

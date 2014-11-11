@@ -32,11 +32,13 @@
             android:key="FeedViewDefault"
             android:summary="If turned off, channel with activity will be the tab to show when opening notifications"
             android:title="Feed view as the default tab" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="SpamFilterEnabled"
-            android:summary="Do not play sounds or vibrate more than once per minute"
-            android:title="Enable spam filtering" />
+        <ListPreference
+            android:defaultValue="60"
+            android:key="SpamFilterTime"
+            android:entries="@array/spamfilter_time_entries"
+            android:entryValues="@array/spamfilter_time_entry_values"
+            android:summary="Do not play sounds or vibrate more than once per time interval"
+            android:title="Spam filtering" />
         <PreferenceScreen
             android:title="Notification style"
             android:summary="Select sound, vibration, lights etc." >
