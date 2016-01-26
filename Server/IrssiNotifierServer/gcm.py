@@ -64,7 +64,7 @@ class GCM(object):
         request.add_header('Authorization', 'key=%s' % GCM.authkey)
         request.add_header('Content-Type', 'application/json')
 
-        json_request = {'data': {'message': message}, 'registration_ids': []}
+        json_request = {'data': {'message': message}, 'registration_ids': [], 'priority': 'high'}
         for token in tokens:
             json_request['registration_ids'].append(token.gcm_token)
 
