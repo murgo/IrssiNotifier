@@ -148,7 +148,9 @@ public class IrcNotificationManager {
             }
         }
 
-        if ((!prefs.isSpamFilterEnabled() || new Date().getTime() > lastSoundDate + 60000L)) {
+		if ((!prefs.isSpamFilterEnabled() || new Date().getTime() > IrcNotificationManager
+				.getInstance().getLastSoundDate()
+				+ (1000L * prefs.getSpamFilterTime()))) {
             if (prefs.isSoundEnabled()) {
                 builder.setSound(prefs.getNotificationSound());
             }

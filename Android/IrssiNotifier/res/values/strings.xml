@@ -48,4 +48,20 @@
     <string name="parse_error_ticker">IrssiNotifier parse error</string>
     <string name="welcome_thanks_for_support">Thank you for your support!</string>
 
+    <string-array name="spamfilter_time_entries">
+        <item>off</item>
+        <item>per minute</item>
+        <item>per 5 minutes</item>
+        <item>per 30 minutes</item>
+        <item>per hour</item>
+    </string-array>
+
+    <string-array name="spamfilter_time_entry_values">
+        <item>-1</item>
+        <item>60</item>
+        <item>300</item>
+        <item>1800</item>
+        <item>3600</item>
+    </string-array>
+
 </resources>
