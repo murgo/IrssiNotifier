@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_id": "irssinotifier",
+    "project_number": "939387723736",
+    "name": "irssinotifier"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:939387723736:android:eca1b4656a8e45f4",
+        "client_id": "android:fi.iki.murgo.irssinotifier",
+        "client_type": 1,
+        "android_client_info": {
+          "package_name": "fi.iki.murgo.irssinotifier",
+          "certificate_hash": []
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "939387723736-jo0nag23f1clvehle18lbo679gb8j7vv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "fi.iki.murgo.irssinotifier",
+            "certificate_hash": "9BD30D3A8FEBA52087EDEFA2312E5B93B5D4EACB"
+          }
+        },
+        {
+          "client_id": "939387723736-rdl438avuvc8ss9bmeqo4udoemsqn08j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "cloud_messaging_service": {
+          "status": 2,
+          "apns_config": []
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "google_signin_service": {
+          "status": 2
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "client_info": [],
+  "ARTIFACT_VERSION": "1"
+}
