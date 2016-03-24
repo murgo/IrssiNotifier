@@ -1,15 +1,23 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
+    compileSdkVersion 15
     buildToolsVersion "23.0.2"
 
     defaultConfig {
         applicationId "fi.iki.murgo.irssinotifier"
         minSdkVersion 9
-        targetSdkVersion 23
+        targetSdkVersion 15
         versionCode 15
         versionName "1.8.0"
+    }
+    productFlavors {
+        free {
+            applicationId "fi.iki.murgo.irssinotifier"
+        }
+        pro {
+            applicationId "fi.iki.murgo.irssinotifier.plus"
+        }
     }
     buildTypes {
         release {
@@ -24,13 +32,12 @@ dependencies {
     wearApp project(':wear')
     testCompile 'junit:junit:4.12'
 
-    compile 'com.google.android.gms:play-services-gcm:8.4.0'
+    compile files('libs/gcm.jar')
+
     compile 'com.github.yukuku:ambilwarna:2.0.1'
     compile 'fr.avianey.com.viewpagerindicator:library:2.4.1.1@aar'
     compile 'asia.ivity.android:drag-sort-listview:1.0'
 
-    compile 'com.android.support:support-v4:23.2.1'
-    compile 'com.android.support:appcompat-v7:23.2.1'
+    compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
+    compile 'com.android.support:support-v4:18.0.0'
 }
-
-apply plugin: 'com.google.gms.google-services'

@@ -180,11 +180,13 @@ public class SettingsActivity extends PreferenceActivity {
                         preferences.setCustomLightColor(color);
                     }
 
+                    /*
                     @Override
                     public void onColorChanged(AmbilWarnaDialog dialog, int color) {
                         notification.ledARGB = color;
                         notificationManager.notify(666, notification);
                     }
+                    */
                 });
 
                 dialog.show();
