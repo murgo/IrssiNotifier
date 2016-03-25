@@ -29,12 +29,8 @@ public class IrcMessage {
         setServerTimestamp((long) (Double.parseDouble(obj.getString("server_timestamp")) * 1000));
         if (obj.has("id")) {
             String externalId = obj.getString("id");
-            try {
-                Integer.parseInt(externalId);
+            if (externalId != null && externalId.length() > 0)
                 setExternalId(externalId);
-            } catch (NumberFormatException e) {
-                // don't do anything with it if it's not a number
-            }
         }
     }
 
