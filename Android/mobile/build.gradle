@@ -13,11 +13,9 @@ android {
     }
     productFlavors {
         free {
-            applicationId "fi.iki.murgo.irssinotifier"
         }
         pro {
             applicationId "fi.iki.murgo.irssinotifier.plus"
-            // TODO: Name, icon, licensing, duplicate messages
         }
     }
     buildTypes {
