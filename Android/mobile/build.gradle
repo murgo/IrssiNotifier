@@ -17,6 +17,7 @@ android {
         }
         pro {
             applicationId "fi.iki.murgo.irssinotifier.plus"
+            // TODO: Name, icon, licensing, duplicate messages
         }
     }
     buildTypes {
