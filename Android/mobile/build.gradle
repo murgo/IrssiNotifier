@@ -28,7 +28,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    wearApp project(':wear')
+    //wearApp project(':wear')
     testCompile 'junit:junit:4.12'
 
     compile files('libs/gcm.jar')
