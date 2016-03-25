@@ -28,7 +28,7 @@ public class Preferences {
     private static final String DEVICE_NAME_KEY = "Name";
     private static final String ENABLED_KEY = "Enabled";
     private static final String SOUND_ENABLED = "SoundEnabled";
-    private static final String SPAM_FILTER_ENABLED = "SpamFilterEnabled";
+    private static final String SPAM_FILTER_TIME = "SpamFilterTime";
     private static final String NOTIFICATIONS_ENABLED = "NotificationsEnabled";
     private static final String NOTIFICATION_SOUND = "NotificationSound";
     private static final String LIGHTS_ENABLED = "LightsEnabled";
@@ -142,8 +142,15 @@ public class Preferences {
         return sharedPreferences.getBoolean(SOUND_ENABLED, true);
     }
 
-    public boolean isSpamFilterEnabled() {
-        return sharedPreferences.getBoolean(SPAM_FILTER_ENABLED, true);
+	public boolean isSpamFilterEnabled() {
+		long time = Long.parseLong(sharedPreferences.getString(
+				SPAM_FILTER_TIME, "-1"));
+		return time >= 0;
+    }
+
+	public long getSpamFilterTime() {
+		return Long.parseLong(sharedPreferences.getString(SPAM_FILTER_TIME,
+				"-1"));
     }
 
     public boolean isNotificationsEnabled() {
