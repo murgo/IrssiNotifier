@@ -556,7 +556,7 @@
         <p>Registered on: <span class="datetime">{{ registration_date }}</span></p>
         <p>API token: {{ user.api_token }}</p>
 {% if license_type == 'Plus' %}
-        <p>License type: <span class="working">{{ license_type }}</span> (upgraded on <span class="datetime">{{ license_timestamp }}</span>)</p>
+        <p>License type: <span class="working">{{ license_type }}</span> <span title="License upgrades before 2016-03-26 show the last installation time.">(upgraded on <span class="datetime">{{ license_timestamp }}</span>*)</span></p>
 {% else %}
         <p>License type: {{ license_type }}</p>
 {% endif %}

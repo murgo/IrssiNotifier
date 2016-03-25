@@ -282,8 +282,12 @@ def save_license(irssi_user, response_code, nonce, package_name, version_code, u
     logging.info("User %s licensed!" % irssi_user.email)
 
     current_time = int(time.time())
-    irssi_user.license_timestamp = current_time
-    irssi_user.put()
+
+    if irssi_user.license_timestamp is None:
+        logging.info("User %s first time licensing, cool. Current time: %s" % (irssi_user.email, current_time))
+        irssi_user.license_timestamp = current_time
+        irssi_user.put()
+
     api_token_key = "api-token" + str(irssi_user.api_token)
     memcache.set(api_token_key, irssi_user)
 
