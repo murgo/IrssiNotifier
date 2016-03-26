@@ -44,6 +44,7 @@ public class Preferences {
     private static final String LAST_LICENSE_TIME = "LastLicenseTime";
     private static final String LICENSE_COUNT = "LicenseCount";
     private static final String USE_PULL_MECHANISM = "UsePullMechanism";
+    private static final String PEBBLE_ENABLED = "PebbleEnabled";
 
     private SharedPreferences sharedPreferences;
     private static int versionCode;
@@ -249,5 +250,9 @@ public class Preferences {
 
     public boolean isPullMechanismInUse() {
         return sharedPreferences.getBoolean(USE_PULL_MECHANISM, true);
+    }
+
+    public boolean isPebbleEnabled() {
+        return sharedPreferences.getBoolean(PEBBLE_ENABLED, true);
     }
 }

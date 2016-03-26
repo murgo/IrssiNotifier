@@ -82,7 +82,14 @@
             </PreferenceCategory>
         </PreferenceScreen>
     </PreferenceCategory>
-    
+
+    <PreferenceCategory android:title="Wearables" android:key="WearableCategory" >
+        <CheckBoxPreference
+                android:key="PebbleEnabled"
+                android:defaultValue="true"
+                android:title="Send notifications to Pebble" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="Irssi ConnectBot integration" android:key="IcbCategory" >
         <CheckBoxPreference
             android:key="IcbEnabled"
@@ -95,7 +102,7 @@
             android:summary=""
             android:dependency="IcbEnabled" />
     </PreferenceCategory>
-    
+
     <PreferenceCategory android:title="Misc" >
         <Preference
             android:key="channels"

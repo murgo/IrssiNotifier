@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -21,6 +22,7 @@ import android.support.v4.app.NotificationCompat;
 
 public class IrcNotificationManager {
 
+    private static final String TAG = IrcNotificationManager.class.getName();
     private static IrcNotificationManager instance;
 
     public static IrcNotificationManager getInstance() {
@@ -192,22 +194,31 @@ public class IrcNotificationManager {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(notificationId, notification);
 
-		// Pebble
+        if (prefs.isPebbleEnabled()) {
+            try {
+                notifyPebble(context, msg);
+            } catch (Exception e) {
+                // don't crash from pebble notifications
+                Log.e(TAG, "Exception while notifying pebble", e);
+            }
+        }
+    }
 
-		Intent pebbleIntent = new Intent("com.getpebble.action.SEND_NOTIFICATION");
+    private void notifyPebble(Context context, IrcMessage msg) {
+        Intent pebbleIntent = new Intent("com.getpebble.action.SEND_NOTIFICATION");
 
-		Map<String, String> data = new HashMap<String, String>();
-		ValueList values = getValues(msg, NotificationMode.PerMessage);
-		data.put("title", values.title);
-		data.put("body", values.text);
+        Map<String, String> data = new HashMap<String, String>();
+        ValueList values = getValues(msg, NotificationMode.PerMessage);
+        data.put("title", values.title);
+        data.put("body", values.text);
 
-		String notificationData = new JSONArray().put(new JSONObject(data)).toString();
-		
-		pebbleIntent.putExtra("messageType", "PEBBLE_ALERT");
-		pebbleIntent.putExtra("sender", "IrssiNotifier");
-		pebbleIntent.putExtra("notificationData", notificationData);
+        String notificationData = new JSONArray().put(new JSONObject(data)).toString();
 
-		context.sendBroadcast(pebbleIntent);
+        pebbleIntent.putExtra("messageType", "PEBBLE_ALERT");
+        pebbleIntent.putExtra("sender", "IrssiNotifier");
+        pebbleIntent.putExtra("notificationData", notificationData);
+
+        context.sendBroadcast(pebbleIntent);
     }
 
     public boolean mainActivityOpened(Context context) {
