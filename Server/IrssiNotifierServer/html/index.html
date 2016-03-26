@@ -173,7 +173,7 @@
 
         <p class="question">What do I need?</p>
         <p class="answer">
-            You'll need Irssi running on Linux server or similar. You'll also need an Android device (phone or tablet, or both) with Android version 2.2 (froyo) or later.
+            You'll need Irssi running on Linux server or similar (with wget installed). You'll also need an Android device (phone or tablet, or both) with Android version 2.2 (froyo) or later.
         </p>
 
         <p class="question">Privacy?</p>
@@ -442,7 +442,7 @@
         <h2>Irssi script installation instructions</h2>
 
         <div class="answer">
-        (To upgrade script, just follow steps 1 and 2).
+        (To upgrade script, just follow steps 1 and 2). Script depends on wget and openssl.
         <ol>
             <li>Download Irssi script by copying and pasting the following command (as a single line) to your shell (don't mind any "File exists" -errors):
             <div class="code-block">mkdir -p ~/.irssi/scripts/autorun; wget --no-check-certificate https://irssinotifier.appspot.com/script/irssinotifier.pl -O ~/.irssi/scripts/irssinotifier.pl; ln -s ~/.irssi/scripts/irssinotifier.pl ~/.irssi/scripts/autorun/irssinotifier.pl</div>
@@ -456,7 +456,7 @@
             <li>Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too. Password can be anything you like (forbidden characters: ", \, `). Do not use your Google account password (or any other existing password) for security reasons.
             <div class="code-block">/set irssinotifier_encryption_password password</div>
             </li>
-            <li>Query yourself and check <a href="#profile">profile page</a> to see if it works.</li>
+            <li>Ask someone to hilight you or send yourself a private message and check <a href="#profile">profile page</a> to see if it works.</li>
         </ol>
         </div>
 
