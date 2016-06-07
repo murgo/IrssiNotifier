@@ -458,7 +458,7 @@ sub event_key_pressed {
 if (defined($ENV{STY})) {
     my $screen_ls = `LC_ALL="C" screen -ls 2> /dev/null`;
     if ($screen_ls !~ /^No Sockets found/s) {
-        $screen_ls =~ /^.+\d+ Sockets? in ([^\n]+)\.\n.+$/s;
+        $screen_ls =~ /^.*\d+ Sockets? in ([^\n]+)\..*$/sm;
         $screen_socket_path = $1;
     } else {
         $screen_ls =~ /^No Sockets found in ([^\n]+)\.\n.+$/s;
