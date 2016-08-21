@@ -81,11 +81,11 @@ sub dcc {
 sub print_text {
     my ($dest, $text, $stripped) = @_;
 
-    # We only need to check that it's a dcc, hilight, or privmsg
+    # We only need to check that it's a dcc, highlight, or privmsg
     # before checking whether we need to send.
-    my $opt = MSGLEVEL_HILIGHT | MSGLEVEL_MSGS;
+    my $opt = MSGLEVEL_HIGHLIGHT | MSGLEVEL_MSGS;
     if ($lastDcc || (($dest->{level} & $opt) &&
-                     ($dest->{level} & MSGLEVEL_NOHILIGHT) == 0)) {
+                     ($dest->{level} & MSGLEVEL_NOHIGHLIGHT) == 0)) {
         if (should_send_notification($dest)) {
             send_notification();
         }
@@ -439,7 +439,7 @@ sub check_window_activity {
 
     my $act = 0;
     foreach (Irssi::windows()) {
-        # data_level 3 means window has unseen hilight
+        # data_level 3 means window has unseen highlight
         if ($_->{data_level} == 3) {
             $act++; last;
         }

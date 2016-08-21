@@ -252,15 +252,15 @@ public class IrcNotificationManager {
                         title = "Query from " + msg.getNick();
                         text = msg.getMessage();
                     } else {
-                        title = "Hilight at " + msg.getChannel();
+                        title = "Highlight at " + msg.getChannel();
                         text = "(" + msg.getNick() + ") " + msg.getMessage();
                     }
                 } else {
                     if (msg.isPrivate()) {
-                        title = "" + unreadCount + " new hilights";
+                        title = "" + unreadCount + " new highlights";
                         text = "Last: (" + msg.getNick() + ") " + msg.getMessage();
                     } else {
-                        title = "" + unreadCount + " new hilights";
+                        title = "" + unreadCount + " new highlights";
                         text = "Last: " + msg.getLogicalChannel() + " (" + msg.getNick() + ") " + msg.getMessage();
                     }
 
@@ -310,10 +310,10 @@ public class IrcNotificationManager {
                     }
                 } else {
                     if (channelUnreadCount <= 1) {
-                        title = "Hilight at " + msg.getChannel();
+                        title = "Highlight at " + msg.getChannel();
                         text = "(" + msg.getNick() + ") " + msg.getMessage();
                     } else {
-                        title = "" + channelUnreadCount + " new hilights at " + msg.getChannel();
+                        title = "" + channelUnreadCount + " new highlights at " + msg.getChannel();
                         text = "Last: (" + msg.getNick() + ") " + msg.getMessage();
                     }
                 }
