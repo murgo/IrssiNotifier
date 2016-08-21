@@ -107,9 +107,9 @@ sub print_text {
 sub should_send_notification {
     my $dest = @_ ? shift : $_;
 
-    my $opt = MSGLEVEL_HILIGHT | MSGLEVEL_MSGS;
+    my $opt = MSGLEVEL_HIGHLIGHT | MSGLEVEL_MSGS;
     if (!$lastDcc && (!($dest->{level} & $opt) || ($dest->{level} & MSGLEVEL_NOHILIGHT))) {
-        return 0; # not a hilight and not a dcc message
+        return 0; # not a highlight and not a dcc message
     }
 
     if (!are_settings_valid()) {
@@ -456,7 +456,7 @@ sub check_window_activity {
 
     my $act = 0;
     foreach (Irssi::windows()) {
-        # data_level 3 means window has unseen hilight
+        # data_level 3 means window has unseen highlight
         if ($_->{data_level} == 3) {
             $act++; last;
         }

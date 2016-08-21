@@ -158,7 +158,7 @@
         <div class="questions">
         <p class="question">What?</p>
         <p class="answer">
-            Get notifications from IRC hilights and private messages straight to your Android™ device! Project is open source, see <a href="https://github.com/murgo/IrssiNotifier">GitHub project page</a> for details. Check <a href="http://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">Google Play™</a> for screenshots. There are also unofficial support for <a href="http://www.weechat.org/files/scripts/irssinotifier.py">WeeChat</a> and <a href="https://github.com/evgeni/IrssiNotifier/tree/python/Python">Python</a>.
+            Get notifications from IRC highlights and private messages straight to your Android™ device! Project is open source, see <a href="https://github.com/murgo/IrssiNotifier">GitHub project page</a> for details. Check <a href="http://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier">Google Play™</a> for screenshots. There are also unofficial support for <a href="http://www.weechat.org/files/scripts/irssinotifier.py">WeeChat</a> and <a href="https://github.com/evgeni/IrssiNotifier/tree/python/Python">Python</a>.
         </p>
 
         <p class="question">How?</p>
@@ -248,7 +248,7 @@
         <p class="question news">2.6.2013 IrssiNotifier/IrssiNotifier+ 1.7 with Irssi script 18 released!</p>
         <div class="answer news-content">
             New script option: irssinotifier_clear_notifications_when_viewed.
-            When this command is turned on, notifications on the phone are cleared automatically when you change away from the last window that had hilights.
+            When this command is turned on, notifications on the phone are cleared automatically when you change away from the last window that had highlights.
             <br /> <br />
             Pretty handy! Thanks to <a href="https://github.com/qvr">qvr</a> for implementing this!
         </div>
@@ -309,7 +309,7 @@
             New features and fixes:
             <ul>
                 <li>Added optional support for DCC chats</li>
-                <li>Added support for /hilight -level JOINS somebody</li>
+                <li>Added support for /highlight -level JOINS somebody</li>
                 <li>Added support for non-UTF-8 encodings. Thanks, <a href="https://github.com/qvr">qvr</a>!</li>
                 <li>Added built-in <a href="http://en.wikipedia.org/wiki/GNU_Screen">Screen</a> integration. Thanks, <a href="https://github.com/qvr">qvr</a>!</li>
                 <li>Sending notifications should no longer freeze Irssi for a sec. Thanks, <a href="https://github.com/qvr">qvr</a>!</li>
@@ -456,7 +456,7 @@
             <li>Optional: Change your encryption password with the following command. You'll have to change the password to the Android device, too. Password can be anything you like (forbidden characters: ", \, `). Do not use your Google account password (or any other existing password) for security reasons.
             <div class="code-block">/set irssinotifier_encryption_password password</div>
             </li>
-            <li>Ask someone to hilight you or send yourself a private message and check <a href="#profile">profile page</a> to see if it works.</li>
+            <li>Ask someone to highlight you or send yourself a private message and check <a href="#profile">profile page</a> to see if it works.</li>
         </ol>
         </div>
 
@@ -493,15 +493,15 @@
 
             <p class="question">Don't receive notifications from certain channels</p>
             <div class="code-block">/set irssinotifier_ignored_channels [channel names]</div>
-            <p class="answer">When one or more channels are set, you will not be notified about hilights from those channels. You can also block query windows (private messages) with this command. Use space as a separator (e.g. /set irssinotifier_ignored_channels #channel query).</p>
+            <p class="answer">When one or more channels are set, you will not be notified about highlights from those channels. You can also block query windows (private messages) with this command. Use space as a separator (e.g. /set irssinotifier_ignored_channels #channel query).</p>
 
             <p class="question">Don't receive notifications from certain servers</p>
             <div class="code-block">/set irssinotifier_ignored_servers [server names]</div>
-            <p class="answer">When one or more servers are set, you will not be notified about hilights from those servers. Useful for blocking bitlbee etc. Use space as a separator (e.g. /set irssinotifier_ignored_servers IRCnet quakenet).</p>
+            <p class="answer">When one or more servers are set, you will not be notified about highlights from those servers. Useful for blocking bitlbee etc. Use space as a separator (e.g. /set irssinotifier_ignored_servers IRCnet quakenet).</p>
 
             <p class="question">Don't receive notifications from certain nicks</p>
             <div class="code-block">/set irssinotifier_ignored_nicks [nicks]</div>
-            <p class="answer">When one or more nicks are set, you will not be notified about hilights from those nicks (users). Use space as a separator (e.g. /set irssinotifier_ignored_nicks mom murgo).</p>
+            <p class="answer">When one or more nicks are set, you will not be notified about highlights from those nicks (users). Use space as a separator (e.g. /set irssinotifier_ignored_nicks mom murgo).</p>
 
             <p class="question">Don't receive notifications that contain certain patterns (regular expressions)</p>
             <div class="code-block">/set irssinotifier_ignored_highlight_patterns [patterns]</div>
@@ -521,7 +521,7 @@
 
             <p class="question">Automatically clear notifications from phone when they are read</p>
             <div class="code-block">/set irssinotifier_clear_notifications_when_viewed [ON or OFF]</div>
-            <p class="answer">If set to ON, notifications on the phone are cleared automatically when you change away from the last window that had hilights.</p>
+            <p class="answer">If set to ON, notifications on the phone are cleared automatically when you change away from the last window that had highlights.</p>
         </div>
 
         <h2>Troubleshooting</h2>
