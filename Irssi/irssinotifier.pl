@@ -255,12 +255,17 @@ sub send_to_api {
         eval {
             my $api_token = Irssi::settings_get_str('irssinotifier_api_token');
             my $proxy     = Irssi::settings_get_str('irssinotifier_https_proxy');
-
+            my $certcmd = "";
+            
             if($proxy) {
                 $ENV{https_proxy} = $proxy;
             }
+            
+            if(Irssi::settings_get_bool("irssinotifier_disable_cert_check")) {
+              $certcmd = "--no-check-certificate ";
+            }
 
-            my $wget_cmd = "wget --tries=2 --timeout=10 --no-check-certificate -qO- /dev/null";
+            my $wget_cmd = "wget --tries=2 --timeout=10 $certcmd -qO- /dev/null";
             my $api_url;
             my $data;
 
@@ -480,6 +485,7 @@ Irssi::settings_add_bool('irssinotifier', 'irssinotifier_screen_detached_only', 
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_clear_notifications_when_viewed', 0);
 Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_enable_dcc', 1);
+Irssi::settings_add_bool('irssinotifier', 'irssinotifier_disable_cert_check', 0);
 
 # these commands are renamed
 Irssi::settings_remove('irssinotifier_ignore_server');
