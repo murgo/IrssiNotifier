@@ -1,13 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 15
-    buildToolsVersion "23.0.2"
+    compileSdkVersion 25
+    buildToolsVersion "23.0.3"
+    useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         applicationId "fi.iki.murgo.irssinotifier"
         minSdkVersion 9
-        targetSdkVersion 15
+        targetSdkVersion 25
         versionCode 15
         versionName "1.8.0"
     }
@@ -38,5 +39,5 @@ dependencies {
     compile 'asia.ivity.android:drag-sort-listview:1.0'
 
     compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
-    compile 'com.android.support:support-v4:18.0.0'
+    compile 'com.android.support:support-v4:25.0.0'
 }
