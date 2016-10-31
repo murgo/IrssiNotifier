@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="fi.iki.murgo.irssinotifier"
-    android:versionCode="15"
-    android:versionName="1.8.0" >
+    package="fi.iki.murgo.irssinotifier">
     
     <!-- Only this application can receive the messages and registration result -->
     <permission
@@ -21,9 +19,6 @@
     <!-- Keeps the processor from sleeping when a message is received. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <uses-sdk
-        android:minSdkVersion="8"
-        android:targetSdkVersion="15" />
 
     <application android:icon="@drawable/icon"
         android:name="fi.iki.murgo.irssinotifier.IrssiNotifierApplication"
