@@ -35,6 +35,7 @@ my $forked;
 my $lastDcc = 0;
 my $notifications_sent = 0;
 my @delayQueue = ();
+my $lastTag;
 
 my $screen_socket_path;
 
@@ -46,6 +47,7 @@ sub private {
     $lastTarget  = "!PRIVATE";
     $lastWindow  = $nick;
     $lastDcc = 0;
+    $lastTag     = $server->{tag};
 }
 
 sub joined {
@@ -66,6 +68,7 @@ sub public {
     $lastTarget  = $target;
     $lastWindow  = $target;
     $lastDcc = 0;
+	$lastTag     = $server->{tag};
 }
 
 sub dcc {
@@ -263,6 +266,11 @@ sub send_to_api {
             my $wget_cmd = "wget --tries=2 --timeout=10 --no-check-certificate -qO- /dev/null";
             my $api_url;
             my $data;
+			my $tag = Irssi::settings_get_str('irssinotifier_tag');
+			
+			if ($tag eq 'True') {
+				$lastNick = "$lastNick on $lastTag"
+				}
 
             if ($type eq 'notification') {
                 $lastMsg = Irssi::strip_codes($lastMsg);
@@ -465,13 +473,18 @@ if (defined($ENV{STY})) {
         $screen_socket_path = $1;
     }
 }
+
 sub custom_msg {
     my ($data, $server, $witem) = @_;
-    use Text::ParseWords;    my ($nick, @message_words) = shellwords($data);
-    $lastMsg = "@message_words";
-    $lastNick = "$nick";
-    $lastTarget = "!PRIVATE";
-    send_to_api();
+    use Text::ParseWords; 
+    my ($nick, @message_words) = shellwords($data); 
+    
+    $lastMsg     = "@message_words";
+    $lastNick    = "$nick";
+    $lastTarget  = "!PRIVATE";
+    $lastTag     = $server->{tag};
+	
+	send_to_api();
 }
 
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_encryption_password', 'password');
@@ -488,6 +501,7 @@ Irssi::settings_add_bool('irssinotifier', 'irssinotifier_screen_detached_only', 
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_clear_notifications_when_viewed', 0);
 Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_enable_dcc', 1);
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_tag', 'False');
 
 # these commands are renamed
 Irssi::settings_remove('irssinotifier_ignore_server');
@@ -502,4 +516,4 @@ Irssi::signal_add('message dcc action', 'dcc');
 Irssi::signal_add('print text',         'print_text');
 Irssi::signal_add('setup changed',      'are_settings_valid');
 Irssi::signal_add('window changed',     'check_window_activity');
-Irssi::command_bind custom_msg => \&custom_msg;
+Irssi::command_bind('custom_msg',       'custom_msg');
