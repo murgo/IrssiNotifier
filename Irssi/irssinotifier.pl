@@ -515,4 +515,4 @@ Irssi::signal_add('message dcc action', 'dcc');
 Irssi::signal_add('print text',         'print_text');
 Irssi::signal_add('setup changed',      'are_settings_valid');
 Irssi::signal_add('window changed',     'check_window_activity');
-Irssi::command_bind('custom_msg',       'custom_msg');
+Irssi::command_bind('custom_msg',       'custom_msg'); # Can be used to send test messages to your phone or if you like to use a trigger to push 
