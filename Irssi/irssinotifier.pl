@@ -77,7 +77,7 @@ sub dcc {
     $lastMsg     = $msg;
     $lastNick    = $dcc->{nick};
     $lastTarget  = "!PRIVATE";
-    $lastWindow  = $dcc->{target};
+    $lastWindow  = $dcc->{tag};
     $lastDcc = 1;
 }
 
