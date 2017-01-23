@@ -266,9 +266,8 @@ sub send_to_api {
             my $wget_cmd = "wget --tries=2 --timeout=10 --no-check-certificate -qO- /dev/null";
             my $api_url;
             my $data;
-			my $tag = Irssi::settings_get_str('irssinotifier_enable_network_tag');
-			
-			if ($tag eq 'True') {
+            		
+			if (Irssi::settings_get_str('irssinotifier_enable_network_tag')) {
 				$lastNick = "$lastNick on $lastTag"
 				}
 
