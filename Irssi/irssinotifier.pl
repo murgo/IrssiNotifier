@@ -266,7 +266,7 @@ sub send_to_api {
             my $wget_cmd = "wget --tries=2 --timeout=10 --no-check-certificate -qO- /dev/null";
             my $api_url;
             my $data;
-			my $tag = Irssi::settings_get_str('irssinotifier_tag');
+			my $tag = Irssi::settings_get_str('irssinotifier_enable_network_tag');
 			
 			if ($tag eq 'True') {
 				$lastNick = "$lastNick on $lastTag"
@@ -501,7 +501,7 @@ Irssi::settings_add_bool('irssinotifier', 'irssinotifier_screen_detached_only', 
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_clear_notifications_when_viewed', 0);
 Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_enable_dcc', 1);
-Irssi::settings_add_str('irssinotifier', 'irssinotifier_tag', 'False');
+Irssi::settings_add_bool('irssinotifier', 'irssinotifier_enable_network_tag', '1');
 
 # these commands are renamed
 Irssi::settings_remove('irssinotifier_ignore_server');
