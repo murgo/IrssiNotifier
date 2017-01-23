@@ -1,6 +1,6 @@
 #IrssiNotifier
 
-Get notifications from IRC hilights and private messages from Irssi to Android.
+Get notifications from IRC hilights and private messages from Irssi to Android. 
 
 Check it out on [Google Play](https://play.google.com/store/apps/details?id=fi.iki.murgo.irssinotifier)!
 
