@@ -500,7 +500,7 @@ Irssi::settings_add_bool('irssinotifier', 'irssinotifier_screen_detached_only', 
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_clear_notifications_when_viewed', 0);
 Irssi::settings_add_int('irssinotifier', 'irssinotifier_require_idle_seconds', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_enable_dcc', 1);
-Irssi::settings_add_bool('irssinotifier', 'irssinotifier_enable_network_tag', '0');
+Irssi::settings_add_bool('irssinotifier', 'irssinotifier_enable_network_tag', 0);
 
 # these commands are renamed
 Irssi::settings_remove('irssinotifier_ignore_server');
