@@ -475,8 +475,9 @@ if (defined($ENV{STY})) {
 
 sub custom_msg {
     my ($data, $server, $witem) = @_;
-    use Text::ParseWords; 
-    my ($nick, @message_words) = shellwords($data); 
+    #use Text::ParseWords; 
+    #my ($nick, @message_words) = shellwords($data); 
+    my ($nick, @message_words) = split " ", $data, 2;
     
     $lastMsg     = "@message_words";
     $lastNick    = "$nick";
