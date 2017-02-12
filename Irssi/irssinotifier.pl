@@ -7,8 +7,17 @@ use IPC::Open2 qw(open2);
 use Fcntl;
 use POSIX;
 use Encode;
-use vars qw($VERSION %IRSSI);
 
+use MIME::Base64;
+use Data::Random qw(rand_chars);
+use Crypt::Mode::CBC;
+use Crypt::PBKDF2;
+use Crypt::Misc qw(encode_b64);
+use URI::Escape qw(uri_escape);
+use Mojo::Util qw(url_escape);
+use LWP::Simple;
+
+use vars qw($VERSION %IRSSI);
 $VERSION = "21";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
@@ -484,9 +493,43 @@ sub custom_msg {
     $lastTarget  = "!PRIVATE";
     $lastTag     = $server->{tag};
 	
-	send_to_api();
+    if ("$lastNick" && "$lastMsg") {
+	send_to_api(); 
+    }
+    else {
+        print "You need both a nick and a message to use this command, read more /help custom_msg"
+    }
 }
 
+sub cmd_help {
+    my ($args) = @_;
+    if ($args =~ /^irssinotifier *$/i) {
+      print CLIENTCRAP <<HELP
+
+      Start with adding your token to the settings /set irssinotifier_api_token <token>
+      You will find the token at https://irssinotifier.appspot.com/#profile
+
+      Second if you have set a password in the android app you need to set the same here. 
+      /set irssinotifier_encryption_password <password>
+HELP
+;
+Irssi::signal_stop;
+  }
+    if ($args =~ /^custom_msg *$/i) {
+    print CLIENTCRAP <<HELP
+
+CUSTOM_MSG [nick] [text]
+
+      The command is used to manually send a notification to your phone, if you like to use the trigger.pl or test it. 
+      
+      nick: The sender dispalyed on the phone app
+      text: The messaged displayed on the phone app
+HELP
+;
+Irssi::signal_stop;
+  }
+}    
+    
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_encryption_password', 'password');
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_api_token', '');
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_https_proxy', '');
@@ -516,4 +559,6 @@ Irssi::signal_add('message dcc action', 'dcc');
 Irssi::signal_add('print text',         'print_text');
 Irssi::signal_add('setup changed',      'are_settings_valid');
 Irssi::signal_add('window changed',     'check_window_activity');
-Irssi::command_bind('custom_msg',       'custom_msg'); # Can be used to send test messages to your phone or if you like to use a trigger to push 
+Irssi::command_bind('custom_msg',       'custom_msg'); 		# Can be used to send test messages to your phone or if you like to use a trigger to push
+Irssi::command_bind_first('help' => 'cmd_help');		# So you can use the /help command. 
+Irssi::command_bind('irssinotifier', 	'cmd_help');		# To make it easier to to get the help info 
