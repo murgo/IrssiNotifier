@@ -7,7 +7,6 @@ use IPC::Open2 qw(open2);
 use Fcntl;
 use POSIX;
 use Encode;
-
 use vars qw($VERSION %IRSSI);
 $VERSION = "21";
 %IRSSI   = (
@@ -477,6 +476,19 @@ sub irssinotifier {
   my ($data, $server, $witem) = @_;
   my ($args, $rest) = Irssi::command_parse_options('irssinotifier', $data);
   ref $args or return 0;
+
+  if (!exists $args->{nick}) {
+    Irssi::print("You need to use -nick and nickname after it");
+    return 0;
+  } elsif ( !length $args->{nick}) {
+      Irssi::print("you need to specify a nickname after -nick");
+      return 0;
+  }
+
+  if ($args->{nick} and !length $rest ) {
+    Irssi::print("You need to specify a message");
+    return 0;
+  }
   
   $lastNick = $args->{nick};
   $lastMsg = $rest;
