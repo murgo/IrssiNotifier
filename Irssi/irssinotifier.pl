@@ -472,6 +472,55 @@ if (defined($ENV{STY})) {
         $screen_socket_path = $1;
     }
 }
+
+sub irssinotifier {
+  my ($data, $server, $witem) = @_;
+  my ($args, $rest) = Irssi::command_parse_options('irssinotifier', $data);
+  ref $args or return 0;
+  
+  $lastNick = $args->{nick};
+  $lastMsg = $rest;
+  if ($args->{channel}){
+    $lastTarget = "$args->{channel}";
+  } else {
+     $lastTarget = "!PRIVATE";
+  }  
+  send_to_api();
+}
+
+sub irssinotifier_help {
+  my ($args) = @_;
+  if ($args =~ /^irssinotifier *$/i) {
+    print CLIENTCRAP <<HELP
+
+Syntax:
+
+irssinotifier [-nick <text>] [-channel #<text>] <text>
+
+%U%_Description:%_%U
+
+     The command is used to manually send messages using the irssinotifier API
+     
+%U%_Parameters:%_%U
+
+    -nick      The nick name that should be presented in the android application.
+    
+    -channel   The channel name that should be presented in the android application.
+               # is mandator in the name. 
+               
+    <text>     The message you like to send
+    
+%U%_Example:%_%U
+
+    Send a message as Foo to your phone
+        /irssinotifier -nick foo I hope you got my message now
+    Send a message as Foo in #channel
+        /irssinotifier -nick foo -channel #channel I hope you got this message too 
+HELP
+    ;
+    Irssi::signal_stop;
+  }
+}
     
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_encryption_password', 'password');
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_api_token', '');
@@ -493,12 +542,16 @@ Irssi::settings_add_bool('irssinotifier', 'irssinotifier_enable_network_tag', 0)
 Irssi::settings_remove('irssinotifier_ignore_server');
 Irssi::settings_remove('irssinotifier_ignore_channel');
 
-Irssi::signal_add('message irc action', 'public');
-Irssi::signal_add('message public',     'public');
-Irssi::signal_add('message private',    'private');
-Irssi::signal_add('message join',       'joined');
-Irssi::signal_add('message dcc',        'dcc');
-Irssi::signal_add('message dcc action', 'dcc');
-Irssi::signal_add('print text',         'print_text');
-Irssi::signal_add('setup changed',      'are_settings_valid');
-Irssi::signal_add('window changed',     'check_window_activity');
+Irssi::signal_add('message irc action',     'public');
+Irssi::signal_add('message public',         'public');
+Irssi::signal_add('message private',        'private');
+Irssi::signal_add('message join',           'joined');
+Irssi::signal_add('message dcc',            'dcc');
+Irssi::signal_add('message dcc action',     'dcc');
+Irssi::signal_add('print text',             'print_text');
+Irssi::signal_add('setup changed',          'are_settings_valid');
+Irssi::signal_add('window changed',         'check_window_activity');
+Irssi::command_bind('irssinotifier',        'irssinotifier');
+Irssi::command_bind_first('help',           'irssinotifier_help');
+Irssi::command_set_options('irssinotifier', '+nick +channel');
+
