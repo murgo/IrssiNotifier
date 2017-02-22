@@ -9,7 +9,7 @@ use POSIX;
 use Encode;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "21";
+$VERSION = "22";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -17,7 +17,7 @@ $VERSION = "21";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "https://irssinotifier.appspot.com",
-    changed     => "2016-03-26"
+    changed     => "2017-02-22"
 );
 
 # Sometimes, for some unknown reason, perl emits warnings like the following:
@@ -359,7 +359,7 @@ sub encrypt {
     fcntl($r, F_SETFD, $flags & ~FD_CLOEXEC) or die "fcntl F_SETFD: $!";
 
     my $rfn = fileno($r);
-    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -A -pass), "fd:$rfn");
+    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -md md5 -A -pass), "fd:$rfn");
 
     print $w "$password";
     close $w;
