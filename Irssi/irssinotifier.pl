@@ -213,6 +213,7 @@ sub send_notification {
                             'nick' => $lastNick,
                             'target' => $lastTarget,
                             'added' => time,
+                            'tag' => $lastTag,
                             };
         } else {
             Irssi::print("IrssiNotifier: previous send is still in progress and queue is full, skipping notification");
