@@ -9,7 +9,7 @@ use POSIX;
 use Encode;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "20";
+$VERSION = "22";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -17,7 +17,7 @@ $VERSION = "20";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "https://irssinotifier.appspot.com",
-    changed     => "2014-04-08"
+    changed     => "2017-02-22"
 );
 
 # Sometimes, for some unknown reason, perl emits warnings like the following:
@@ -37,17 +37,6 @@ my $notifications_sent = 0;
 my @delayQueue = ();
 
 my $screen_socket_path;
-
-if (defined($ENV{STY})) {
-    my $screen_ls = `LC_ALL="C" screen -ls 2> /dev/null`;
-    if ($screen_ls !~ /^No Sockets found/s) {
-        $screen_ls =~ /^.+\d+ Sockets? in ([^\n]+)\.\n.+$/s;
-        $screen_socket_path = $1;
-    } else {
-        $screen_ls =~ /^No Sockets found in ([^\n]+)\.\n.+$/s;
-        $screen_socket_path = $1;
-    }
-}
 
 sub private {
     my ( $server, $msg, $nick, $address ) = @_;
@@ -370,7 +359,7 @@ sub encrypt {
     fcntl($r, F_SETFD, $flags & ~FD_CLOEXEC) or die "fcntl F_SETFD: $!";
 
     my $rfn = fileno($r);
-    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -A -pass), "fd:$rfn");
+    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -md md5 -A -pass), "fd:$rfn");
 
     print $w "$password";
     close $w;
@@ -470,6 +459,17 @@ sub check_window_activity {
 
 sub event_key_pressed {
     $lastKeyboardActivity = time;
+}
+
+if (defined($ENV{STY})) {
+    my $screen_ls = `LC_ALL="C" screen -ls 2> /dev/null`;
+    if ($screen_ls !~ /^No Sockets found/s) {
+        $screen_ls =~ /^.+\d+ Sockets? in ([^\n]+)\.\n.+$/s;
+        $screen_socket_path = $1;
+    } else {
+        $screen_ls =~ /^No Sockets found in ([^\n]+)\.\n.+$/s;
+        $screen_socket_path = $1;
+    }
 }
 
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_encryption_password', 'password');
