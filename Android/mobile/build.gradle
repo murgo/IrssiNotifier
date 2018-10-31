@@ -1,20 +1,23 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 15
-    buildToolsVersion "23.0.2"
+    compileSdkVersion 25
+    buildToolsVersion "28.0.3"
 
     defaultConfig {
         applicationId "fi.iki.murgo.irssinotifier"
-        minSdkVersion 9
-        targetSdkVersion 15
+        minSdkVersion 14
+        targetSdkVersion 25
         versionCode 15
         versionName "1.8.0"
     }
+    flavorDimensions "version"
     productFlavors {
         free {
+            dimension "version"
         }
         pro {
+            dimension "version"
             applicationId "fi.iki.murgo.irssinotifier.plus"
         }
     }
@@ -24,6 +27,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    useLibrary 'org.apache.http.legacy'
 }
 
 dependencies {
@@ -37,6 +42,6 @@ dependencies {
     compile 'fr.avianey.com.viewpagerindicator:library:2.4.1.1@aar'
     compile 'asia.ivity.android:drag-sort-listview:1.0'
 
-    compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
-    compile 'com.android.support:support-v4:18.0.0'
+    compile "com.android.support:appcompat-v7:25.0.+"
+    compile 'com.android.support:support-v4:25.0.0'
 }

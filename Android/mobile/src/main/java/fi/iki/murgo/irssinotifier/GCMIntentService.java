@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class GCMIntentService extends GCMBaseIntentService {
+    private static final String TAG = GCMIntentService.class.getName();
 
     private static final String GCM_DATA_ACTION = "action";
     private static final String GCM_DATA_MESSAGE = "message";
@@ -27,9 +28,20 @@ public class GCMIntentService extends GCMBaseIntentService {
         GCMIntentService.callback = callback;
     }
 
-    public static void registerToGcm(Context context) {
+    public static void registerToGcm(Context context) throws Exception {
+        Log.d(TAG,"GCM - Checking device");
         GCMRegistrar.checkDevice(context); // throws exception if notifications cannot be received
+        Log.d(TAG,"GCM - Checking manifest");
+        GCMRegistrar.checkManifest(context);
+        Log.d(TAG,"GCM - registering");
         GCMRegistrar.register(context, SENDER_ID);
+        Log.d(TAG,"GCM - Registered");
+
+        boolean registered = GCMRegistrar.isRegistered(context);
+
+        if(!registered) {
+            throw new Exception("Not registered!");
+        }
     }
 
     @Override

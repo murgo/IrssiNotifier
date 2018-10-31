@@ -10,11 +10,7 @@ import android.net.Uri;
 import android.os.Vibrator;
 import org.apache.http.auth.AuthenticationException;
 
-import com.actionbarsherlock.app.SherlockActivity;
 import com.viewpagerindicator.TitlePageIndicator;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
-import com.actionbarsherlock.view.Window;
 
 import android.content.Context;
 import android.content.Intent;
@@ -22,9 +18,13 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.Window;
 
-public class IrssiNotifierActivity extends SherlockActivity {
+public class IrssiNotifierActivity extends AppCompatActivity {
     public static final String FEED = "------------------------FEED";
 
     private static final String TAG = IrssiNotifierActivity.class.getName();
@@ -353,7 +353,8 @@ public class IrssiNotifierActivity extends SherlockActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        getSupportMenuInflater().inflate(R.menu.mainmenu, menu);
+
+        getMenuInflater().inflate(R.menu.mainmenu, menu);
 
         if (!preferences.getIcbEnabled() || !IntentSniffer.isPackageAvailable(this, IrssiConnectbotLauncher.PACKAGE_IRSSICONNECTBOT)) {
             menu.findItem(R.id.menu_irssi_connectbot).setVisible(false);

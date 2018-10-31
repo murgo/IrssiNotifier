@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res/fi.iki.murgo.irssinotifier">
 
-<style name="Theme.LameIrssiTheme" parent="Theme.Sherlock">
+<style name="Theme.LameIrssiTheme" parent="Theme.AppCompat">
     <item name="vpiTitlePageIndicatorStyle">@style/Widget.LameIrssiTheme.ViewPagerIndicator</item>
 </style>
 
@@ -14,7 +14,7 @@
     <item name="footerIndicatorStyle">underline</item>
 </style>
     
-<style name="Theme.IrssiTheme" parent="Theme.Sherlock">
+<style name="Theme.IrssiTheme" parent="Theme.AppCompat">
     <item name="actionBarStyle">@style/Widget.IrssiTheme.ActionBar</item>
     <item name="android:actionBarStyle">@style/Widget.IrssiTheme.ActionBar</item>
     <item name="android:scrollViewStyle">@style/Widget.IrssiTheme.ScrollView</item>
@@ -23,7 +23,7 @@
     <item name="android:windowBackground">@color/backgroundColor</item>
 </style>
 
-<style name="Widget.IrssiTheme.ActionBar" parent="Widget.Sherlock.ActionBar.Solid">
+<style name="Widget.IrssiTheme.ActionBar" parent="Base.ThemeOverlay.AppCompat.Dark">
     <item name="background">@drawable/actionbar</item>
     <item name="android:background">@drawable/actionbar</item>
 </style>
