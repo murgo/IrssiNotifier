@@ -10,7 +10,10 @@ import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 
 public class UserHelper {
 
@@ -18,6 +21,10 @@ public class UserHelper {
 
     public Account[] getAccounts(Context context)
     {
+        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.GET_ACCOUNTS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions((Activity)context, new String[]{android.Manifest.permission.GET_ACCOUNTS}, 0);
+        }
+
         AccountManager manager = AccountManager.get(context);
         return manager.getAccountsByType(ACCOUNT_TYPE);
     }
