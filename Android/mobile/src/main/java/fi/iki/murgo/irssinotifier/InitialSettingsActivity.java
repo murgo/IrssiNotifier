@@ -77,7 +77,7 @@ public class InitialSettingsActivity extends Activity {
                 finish();
                 break;
             case 0:
-                registerToGcm();
+                registerToFcm();
                 break;
             case 1:
                 sendSettings();
@@ -169,26 +169,22 @@ public class InitialSettingsActivity extends Activity {
         task.execute();
     }
 
-    private void registerToGcm() {
-        final GCMRegistrationTask task = new GCMRegistrationTask(this, "", getString(R.string.registering_to_gcm));
+    private void waitForFcm() {
+        try {
+            while (preferences.getGcmRegistrationId() == null) {
+                Thread.sleep(1);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
-        final Context ctx = this;
+    private void registerToFcm() {
+        final FCMRegistrationTask task = new FCMRegistrationTask(this, "", getString(R.string.registering_to_gcm));
+
         task.setCallback(new Callback<Boolean>() {
             public void doStuff(Boolean result) {
                 task.getDialog().dismiss();
-                boolean success = result;
-
-                if (!success) {
-                    MessageBox.Show(ctx, null, getString(R.string.unable_to_register_gcm),
-                        new Callback<Void>() {
-                            public void doStuff(Void param) {
-                                whatNext(-1);
-                            }
-                        });
-
-                    return;
-                }
-
                 whatNext(1);
             }
         });

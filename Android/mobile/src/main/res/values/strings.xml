@@ -34,7 +34,7 @@
     <string name="server_error_title">Server error</string>
     <string name="server_error">Mystical server error, check if updates are available</string>
     <string name="unable_to_send_settings">Unable to send settings to the server! Please try again later!</string>
-    <string name="registering_to_gcm">Registering to GCM...</string>
+    <string name="registering_to_gcm">Registering to FCM...</string>
     <string name="unable_to_register_gcm">Unable to register to GCM! Please try again later!</string>
     <string name="success">Success</string>
     <string name="decryption_error_title">Decryption error</string>

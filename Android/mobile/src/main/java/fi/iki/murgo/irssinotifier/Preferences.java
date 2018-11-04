@@ -62,6 +62,9 @@ public class Preferences {
     }
 
     public boolean setGcmRegistrationId(String registrationId) {
+        if (registrationId == null)
+            return false; // never clear token on FCM world
+
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(GCM_REGISTRATION_ID_KEY, registrationId);
         editor.putBoolean(SETTINGS_SENT_KEY, false);

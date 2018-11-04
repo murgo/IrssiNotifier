@@ -1,18 +1,16 @@
 {
   "project_info": {
-    "project_id": "irssinotifier",
     "project_number": "939387723736",
-    "name": "irssinotifier"
+    "firebase_url": "https://irssinotifier.firebaseio.com",
+    "project_id": "irssinotifier",
+    "storage_bucket": "irssinotifier.appspot.com"
   },
   "client": [
     {
       "client_info": {
         "mobilesdk_app_id": "1:939387723736:android:eca1b4656a8e45f4",
-        "client_id": "android:fi.iki.murgo.irssinotifier",
-        "client_type": 1,
         "android_client_info": {
-          "package_name": "fi.iki.murgo.irssinotifier",
-          "certificate_hash": []
+          "package_name": "fi.iki.murgo.irssinotifier"
         }
       },
       "oauth_client": [
@@ -21,36 +19,37 @@
           "client_type": 1,
           "android_info": {
             "package_name": "fi.iki.murgo.irssinotifier",
-            "certificate_hash": "9BD30D3A8FEBA52087EDEFA2312E5B93B5D4EACB"
+            "certificate_hash": "9bd30d3a8feba52087edefa2312e5b93b5d4eacb"
           }
         },
         {
-          "client_id": "939387723736-rdl438avuvc8ss9bmeqo4udoemsqn08j.apps.googleusercontent.com",
+          "client_id": "939387723736-srsn325u5d79rh11gni6hls9vih2ckhi.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
-      "api_key": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRPar8fKWa6KxO6KtTsiz-4fHjnkdANU8"
+        }
+      ],
       "services": {
         "analytics_service": {
           "status": 1
         },
-        "cloud_messaging_service": {
-          "status": 2,
-          "apns_config": []
-        },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
-        },
-        "google_signin_service": {
-          "status": 2
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "939387723736-srsn325u5d79rh11gni6hls9vih2ckhi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
-          "status": 1
+          "status": 2
         }
       }
     }
   ],
-  "client_info": [],
-  "ARTIFACT_VERSION": "1"
+  "configuration_version": "1"
 }
