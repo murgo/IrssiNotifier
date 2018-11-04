@@ -21,7 +21,7 @@
     <!-- Keeps the processor from sleeping when a message is received. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <uses-sdk android:targetSdkVersion="25" />
+    <uses-sdk />
 
     <application android:icon="@drawable/icon"
         android:name="fi.iki.murgo.irssinotifier.IrssiNotifierApplication"
