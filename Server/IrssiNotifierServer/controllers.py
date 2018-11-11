@@ -278,6 +278,8 @@ class WipeController(BaseController):
 
 class AdminController(BaseController):
     def get(self):
+        from gcm import GCM
+        GCM.authkey = None
         self.redirect('https://appengine.google.com/dashboard?&app_id=s~irssinotifier')
 
 

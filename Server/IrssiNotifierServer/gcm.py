@@ -6,7 +6,7 @@ from httplib import HTTPException
 from urllib2 import HTTPError
 import json
 
-GcmUrl = "https://android.googleapis.com/gcm/send"
+GcmUrl = "https://fcm.googleapis.com/fcm/send"
 
 
 def is_set(key, arr):
@@ -22,13 +22,14 @@ class GCM(object):
         self.gcmhelper = gcmhelper
         if GCM.authkey is None:
             GCM.authkey = self.dao.load_gcm_auth_key()
+            logging.info("AUTH1 %s" % GCM.authkey)
             if GCM.authkey is None:
-                raise Exception("No auth key for GCM!")
+                raise Exception("No auth key for FCM!")
 
     def send_gcm_to_user(self, irssiuser_key, message):
         logging.debug("Sending gcm message to user %s" % irssiuser_key)
         if GCM.authkey is None:
-            logging.error("No auth key for GCM!")
+            logging.error("No auth key for FCM!")
             return
 
         tokens = self.dao.get_gcm_tokens_for_user_key(irssiuser_key)
@@ -36,9 +37,9 @@ class GCM(object):
 
     def send_gcm(self, tokens, message):
         self.tokens = tokens
-        logging.info("Sending gcm message to %s tokens" % len(self.tokens))
+        logging.info("Sending FCM message to %s tokens" % len(self.tokens))
         if GCM.authkey is None:
-            logging.error("No auth key for GCM!")
+            logging.error("No auth key for FCM!")
             return
 
         if len(self.tokens) == 0:
@@ -75,23 +76,23 @@ class GCM(object):
         try:
             response = urllib2.urlopen(request)
             response_body = response.read()
-            logging.debug("GCM Message sent, response: %s" % response_body)
+            logging.debug("FCM Message sent, response: %s" % response_body)
             return json.loads(response_body)
         except HTTPError as e:
             if 500 <= e.code < 600:
                 raise Exception("NOMAIL %s, retrying whole task" % e.code)  # retry
             else:
                 logging.error(
-                    "Unable to send GCM message! Response code: %s, response body: %s " % (e.code, response_body))
+                    "Unable to send FCM message! Response code: %s, response body: %s " % (e.code, response_body))
                 return None  # do not retry
         except HTTPException as e:
-            logging.warn("HTTPException: Unable to send GCM message! %s" % traceback.format_exc())
+            logging.warn("HTTPException: Unable to send FCM message! %s" % traceback.format_exc())
             raise HTTPException("NOMAIL %s " % e)  # retry
         except socket.error as e:
-            logging.warn("socket.error: Unable to send GCM message! %s" % traceback.format_exc())
+            logging.warn("socket.error: Unable to send FCM message! %s" % traceback.format_exc())
             raise HTTPException("NOMAIL %s " % e)  # retry
         except:
-            logging.error("Unable to send GCM message! %s" % traceback.format_exc())
+            logging.error("Unable to send FCM message! %s" % traceback.format_exc())
             return None
 
     def handle_gcm_result(self, result, token, message):
@@ -102,7 +103,7 @@ class GCM(object):
         else:
             if is_set("error", result):
                 error = result["error"]
-                logging.warn("Error sending GCM message: %s" % error)
+                logging.warn("Error sending FCM message with authkey %s: %s" % (GCM.authkey, error))
                 if error == "Unavailable":
                     logging.warn("Token unavailable, retrying")
                     self.gcmhelper.send_gcm_to_token_deferred(token, message)
@@ -114,9 +115,9 @@ class GCM(object):
                     self.dao.remove_gcm_token(token)
                 else:
                     if error == "InternalServerError":
-                        logging.warn("InternalServerError in GCM: " + error)
+                        logging.warn("InternalServerError in FCM: " + error)
                     else:
-                        logging.error("Unrecoverable error in GCM: " + error)
+                        logging.error("Unrecoverable error in FCM: " + error)
 
     def replace_gcm_token_with_canonical(self, token, new_token_id):
         already_exists = new_token_id in [t.gcm_token for t in self.tokens]
