@@ -368,7 +368,7 @@ sub encrypt {
     fcntl($r, F_SETFD, $flags & ~FD_CLOEXEC) or die "fcntl F_SETFD: $!";
 
     my $rfn = fileno($r);
-    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -md md5 -A -pass), "fd:$rfn");
+    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -md md5 -A -pass), "fd:$rfn 2>/dev/null");
 
     print $w "$password";
     close $w;
