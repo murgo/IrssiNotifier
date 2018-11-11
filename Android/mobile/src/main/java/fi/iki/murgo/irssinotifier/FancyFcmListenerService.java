@@ -2,6 +2,8 @@ package fi.iki.murgo.irssinotifier;
 
 import android.util.Log;
 
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
@@ -49,15 +51,12 @@ public class FancyFcmListenerService extends FirebaseMessagingService {
 
     @Override
     public void onNewToken(String registrationId) {
-        Log.i(TAG, "Registered to FCM with registrationId: " + registrationId);
-
-        Preferences preferences = new Preferences(this);
-        preferences.setGcmRegistrationId(registrationId);
+        Log.i(TAG, "Registered to FCM with registrationId (Unused): " + registrationId);
     }
 
     @Override
     public void onSendError(String errorId, Exception e) {
-        Log.e(TAG, "Error while registering to GCM: " + errorId, e);
+        Log.e(TAG, "Error while registering to FCM: " + errorId, e);
     }
 
     /*
