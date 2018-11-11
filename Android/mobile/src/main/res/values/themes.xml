@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res/fi.iki.murgo.irssinotifier">
+<resources xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
 
 <style name="Theme.LameIrssiTheme" parent="Theme.AppCompat">
     <item name="vpiTitlePageIndicatorStyle">@style/Widget.LameIrssiTheme.ViewPagerIndicator</item>
@@ -19,7 +19,6 @@
     <item name="android:actionBarStyle">@style/Widget.IrssiTheme.ActionBar</item>
     <item name="android:scrollViewStyle">@style/Widget.IrssiTheme.ScrollView</item>
     <item name="vpiTitlePageIndicatorStyle">@style/Widget.IrssiTheme.ViewPagerIndicator</item>
-
     <item name="android:windowBackground">@color/backgroundColor</item>
 </style>
 

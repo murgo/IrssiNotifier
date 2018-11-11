@@ -1,11 +1,11 @@
 
 package fi.iki.murgo.irssinotifier;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnDismissListener;
+import android.support.v7.app.AlertDialog;
 import android.text.method.LinkMovementMethod;
 import android.view.WindowManager.BadTokenException;
 import android.widget.TextView;

@@ -18,6 +18,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -71,6 +72,17 @@ public class IrssiNotifierActivity extends AppCompatActivity {
 
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setIndeterminateProgressBarVisibility(false);
+
+        // set action Bar icon & Text. Apparently this is no longer a good practice but I'm too lazy to do UI redesign now.
+        // See https://stackoverflow.com/questions/26838730/the-application-icon-does-not-show-on-action-bar
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM | ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_USE_LOGO);
+            actionBar.setLogo(R.mipmap.ic_actionbar);
+            //actionBar.setDisplayUseLogoEnabled(true);
+            //actionBar.setDisplayShowTitleEnabled(true);
+            //actionBar.setDisplayShowHomeEnabled(true);
+        }
 
         Intent i = getIntent();
         if (i != null) {
