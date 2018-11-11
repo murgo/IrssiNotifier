@@ -172,6 +172,15 @@ sub should_send_notification {
         }
     }
 
+    # If specified, require a channel name to be matched before sending
+    my $irssinotifier_required_channel_patterns = Irssi::settings_get_str("irssinotifier_required_channel_patterns");
+    if ($irssinotifier_required_channel_patterns ne '' && ($dest->{level} & MSGLEVEL_PUBLIC)) {
+        my @required_patterns = split(/ /, $irssinotifier_required_channel_patterns);
+        if (!(grep { $lastWindow =~ /$_/i } @required_patterns)) {
+            return 0; # Required pattern not matched
+        }
+    }
+
     my $timeout = Irssi::settings_get_int('irssinotifier_require_idle_seconds');
     if ($timeout > 0 && (time - $lastKeyboardActivity) <= $timeout && attached()) {
         return 0; # not enough idle seconds
@@ -480,6 +489,7 @@ Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignored_channels', '');
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignored_nicks', '');
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_ignored_highlight_patterns', '');
 Irssi::settings_add_str('irssinotifier', 'irssinotifier_required_public_highlight_patterns', '');
+Irssi::settings_add_str('irssinotifier', 'irssinotifier_required_channel_patterns', '');
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_ignore_active_window', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_away_only', 0);
 Irssi::settings_add_bool('irssinotifier', 'irssinotifier_screen_detached_only', 0);
