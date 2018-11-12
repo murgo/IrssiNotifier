@@ -1,7 +1,7 @@
 {
   "project_info": {
     "project_number": "939387723736",
-    "firebase_url": "",
+    "firebase_url": "https://irssinotifier.firebaseio.com",
     "project_id": "irssinotifier",
     "storage_bucket": "irssinotifier.appspot.com"
   },
@@ -14,14 +14,6 @@
         }
       },
       "oauth_client": [
-        {
-          "client_id": "939387723736-jo0nag23f1clvehle18lbo679gb8j7vv.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "fi.iki.murgo.irssinotifier",
-            "certificate_hash": "9bd30d3a8feba52087edefa2312e5b93b5d4eacb"
-          }
-        },
         {
           "client_id": "939387723736-srsn325u5d79rh11gni6hls9vih2ckhi.apps.googleusercontent.com",
           "client_type": 3
@@ -37,13 +29,39 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 2,
-          "other_platform_oauth_client": [
-            {
-              "client_id": "939387723736-srsn325u5d79rh11gni6hls9vih2ckhi.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:939387723736:android:f959e9015fb32cd4",
+        "android_client_info": {
+          "package_name": "fi.iki.murgo.irssinotifier.plus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "939387723736-srsn325u5d79rh11gni6hls9vih2ckhi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRPar8fKWa6KxO6KtTsiz-4fHjnkdANU8"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
         },
         "ads_service": {
           "status": 2

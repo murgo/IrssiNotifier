@@ -1,20 +1,19 @@
 
 package fi.iki.murgo.irssinotifier;
 
+import android.accounts.AccountManager;
+import android.content.pm.PackageManager;
 import android.text.SpannableStringBuilder;
 
-import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
+
+import com.google.android.gms.common.AccountPicker;
+
 import org.apache.http.auth.AuthenticationException;
 
 import java.io.IOException;
@@ -22,13 +21,39 @@ import java.io.IOException;
 public class InitialSettingsActivity extends Activity {
 
     private static final String TAG = InitialSettingsActivity.class.getName();
+    private static final int CHOOSE_ACCOUNT_REQUEST = 1;
     private Preferences preferences;
+    private int _currentStateId = 0;
 
     private Callback<Void> errorCallback = new Callback<Void>() {
         public void doStuff(Void param) {
             whatNext(-1);
         }
     };
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        // Not used for now since GET_ACCOUNTS doesn't seem to be necessary?
+
+        switch (requestCode) {
+            case UserHelper.GET_ACCOUNTS_PERMISSION_REQUEST: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the
+                    // stuff you need to do.
+                    whatNext(0);
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    whatNext(-1);
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request.
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,8 +67,61 @@ public class InitialSettingsActivity extends Activity {
             tv.setText(getString(R.string.welcome_thanks_for_support) + " " + tv.getText());
         }
 
+        if (LicenseHelper.bothEditionsInstalled(this)) {
+            MessageBox.Show(this, null, getString(R.string.both_versions_installed), null);
+        }
+
+        whatNext(0);
+    }
+
+    // stupid state machine
+    private void whatNext(int i) {
+        Log.d(TAG, "Changing state: " + i);
+        _currentStateId = i;
+        switch (i) {
+            default:
+            case -1:
+                preferences.setAccountName(null);
+                preferences.setAuthToken(null);
+                preferences.setGcmRegistrationId(null);
+                finish();
+                break;
+            case 0:
+                getAccounts();
+                break;
+            case 1:
+                registerToFcm();
+                break;
+            case 2:
+                sendSettings();
+                break;
+            case 3:
+                if (LicenseHelper.isPlusVersion(this)) {
+                    checkLicense();
+                    break;
+                }
+
+                startMainApp();
+                break;
+            case 4:
+                startMainApp();
+                break;
+        }
+    }
+
+    private void continueStateMachine() {
+        whatNext(_currentStateId + 1);
+    }
+
+    private void getAccounts() {
+        /*
         UserHelper fetcher = new UserHelper();
         final Account[] accounts = fetcher.getAccounts(this);
+        if (accounts == null) {
+            // no permission to show accounts, wait for permission request
+            return;
+        }
+
         String[] accountNames = new String[accounts.length];
         for (int i = 0; i < accounts.length; i++) {
             accountNames[i] = accounts[i].name;
@@ -56,43 +134,25 @@ public class InitialSettingsActivity extends Activity {
                 Account account = accounts[arg2];
                 preferences.setAccountName(account.name);
                 preferences.setNotificationsEnabled(true);
-                whatNext(0);
+                continueStateMachine();
             }
         });
+        */
 
-        if (LicenseHelper.bothEditionsInstalled(this)) {
-            MessageBox.Show(this, null, getString(R.string.both_versions_installed), null);
-        }
+        Intent intent = AccountPicker.newChooseAccountIntent(null, null, new String[]{"com.google"},
+                false, null, null, null, null);
+        startActivityForResult(intent, CHOOSE_ACCOUNT_REQUEST);
     }
 
-    // stupid state machine
-    private void whatNext(int i) {
-        Log.d(TAG, "Changing state: " + i);
-        switch (i) {
-            default:
-            case -1:
-                preferences.setAccountName(null);
-                preferences.setAuthToken(null);
-                preferences.setGcmRegistrationId(null);
-                finish();
-                break;
-            case 0:
-                registerToFcm();
-                break;
-            case 1:
-                sendSettings();
-                break;
-            case 2:
-                if (LicenseHelper.isPlusVersion(this)) {
-                    checkLicense();
-                    break;
-                }
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        if (requestCode == CHOOSE_ACCOUNT_REQUEST && resultCode == RESULT_OK) {
+            String accountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
 
-                startMainApp();
-                break;
-            case 3:
-                startMainApp();
-                break;
+            preferences.setAccountName(accountName);
+            preferences.setNotificationsEnabled(true);
+            continueStateMachine();
+        } else {
+            whatNext(-1);
         }
     }
 
@@ -103,7 +163,7 @@ public class InitialSettingsActivity extends Activity {
             public void doStuff(LicenseCheckingTask.LicenseCheckingMessage result) {
                 switch (result.licenseCheckingStatus) {
                     case Allow:
-                        whatNext(3);
+                        continueStateMachine();
                         break;
                     case Disallow:
                         preferences.setLicenseCount(0);
@@ -162,7 +222,7 @@ public class InitialSettingsActivity extends Activity {
 
                     return;
                 }
-                whatNext(2);
+                continueStateMachine();
             }
         });
 
@@ -185,7 +245,7 @@ public class InitialSettingsActivity extends Activity {
         task.setCallback(new Callback<Boolean>() {
             public void doStuff(Boolean result) {
                 task.getDialog().dismiss();
-                whatNext(1);
+                continueStateMachine();
             }
         });
 

@@ -45,7 +45,7 @@ public class Server {
 
     private Map<ServerTarget, String> serverUrls = new HashMap<ServerTarget, String>();
 
-    private DefaultHttpClient http_client = new DefaultHttpClient();
+    private DefaultHttpClient http_client = new DefaultHttpClient(); // THIS WILL NO LONGER WORK WITH API LEVEL 28+
 
     private static final int maxRetryCount = 2;
 

@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="fi.iki.murgo.irssinotifier" >
-    
+
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <!--
+    This was required on lower API levels but I guess not any more?
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    -->
 
     <uses-sdk />
 

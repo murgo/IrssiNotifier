@@ -85,7 +85,9 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
     }
 
     private LicenseCheckingMessage checkLicense(int nonce) {
-        boolean bindResult = activity.bindService(new Intent("com.android.vending.licensing.ILicensingService"),
+        Intent intent = new Intent("com.android.vending.licensing.ILicensingService");
+        intent.setPackage("com.android.vending");
+        boolean bindResult = activity.bindService(intent,
                 new ServiceConnection() {
                     @Override
                     public void onServiceConnected(ComponentName name, IBinder s) {
