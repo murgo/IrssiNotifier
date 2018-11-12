@@ -87,20 +87,19 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
     private LicenseCheckingMessage checkLicense(int nonce) {
         Intent intent = new Intent("com.android.vending.licensing.ILicensingService");
         intent.setPackage("com.android.vending");
-        boolean bindResult = activity.bindService(intent,
-                new ServiceConnection() {
-                    @Override
-                    public void onServiceConnected(ComponentName name, IBinder s) {
-                        service = ILicensingService.Stub.asInterface(s);
-                    }
+        ServiceConnection serviceConnection = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder s) {
+                service = ILicensingService.Stub.asInterface(s);
+            }
 
-                    @Override
-                    public void onServiceDisconnected(ComponentName name) {
-                        Log.w(TAG, "Service unexpectedly disconnected.");
-                        service = null;
-                    }
-                },
-                Context.BIND_AUTO_CREATE);
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                Log.w(TAG, "Service unexpectedly disconnected.");
+                service = null;
+            }
+        };
+        boolean bindResult = activity.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
 
         if (!bindResult) {
             Log.e(TAG, "Could not bind to service.");
@@ -154,6 +153,8 @@ public class LicenseCheckingTask extends BackgroundAsyncTask<Void, Void, License
             Log.e(TAG, "Could not check license from licensing service in time");
             return new LicenseCheckingMessage("Could not check license from licensing service in time");
         }
+
+        activity.unbindService(serviceConnection);
 
         /* Response codes:
             private static final int LICENSED = 0x0;

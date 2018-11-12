@@ -67,10 +67,6 @@ public class InitialSettingsActivity extends Activity {
             tv.setText(getString(R.string.welcome_thanks_for_support) + " " + tv.getText());
         }
 
-        if (LicenseHelper.bothEditionsInstalled(this)) {
-            MessageBox.Show(this, null, getString(R.string.both_versions_installed), null);
-        }
-
         whatNext(0);
     }
 
@@ -163,7 +159,16 @@ public class InitialSettingsActivity extends Activity {
             public void doStuff(LicenseCheckingTask.LicenseCheckingMessage result) {
                 switch (result.licenseCheckingStatus) {
                     case Allow:
-                        continueStateMachine();
+                        if (LicenseHelper.bothEditionsInstalled(InitialSettingsActivity.this)) {
+                            MessageBox.Show(InitialSettingsActivity.this, null, getString(R.string.both_versions_installed), new Callback<Void>() {
+                                @Override
+                                public void doStuff(Void param) {
+                                    continueStateMachine();
+                                }
+                            });
+                        } else {
+                            continueStateMachine();
+                        }
                         break;
                     case Disallow:
                         preferences.setLicenseCount(0);
