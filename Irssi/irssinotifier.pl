@@ -9,7 +9,7 @@ use POSIX;
 use Encode;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "23";
+$VERSION = "24";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -17,7 +17,7 @@ $VERSION = "23";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "https://irssinotifier.appspot.com",
-    changed     => "2018-11-11"
+    changed     => "2018-11-12"
 );
 
 # Sometimes, for some unknown reason, perl emits warnings like the following:
@@ -367,8 +367,12 @@ sub encrypt {
     my $flags = fcntl($r, F_GETFD, 0) or die "fcntl F_GETFD: $!";
     fcntl($r, F_SETFD, $flags & ~FD_CLOEXEC) or die "fcntl F_SETFD: $!";
 
+    # preserve STDERR
+    open (OLDER, ">&", \*STDERR) || warn "Can't preserve STDERR\n$!\n";
+    close STDERR;
+
     my $rfn = fileno($r);
-    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -md md5 -A -pass), "fd:$rfn 2>/dev/null");
+    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -md md5 -A -pass), "fd:$rfn");
 
     print $w "$password";
     close $w;
@@ -380,6 +384,10 @@ sub encrypt {
 
     waitpid $pid, 0;
     close $r;
+
+    # restore STDERR
+    open (STDERR, ">&", \*OLDER) || warn "Can't restore STDERR\n$!\n";
+    close OLDER;
 
     $result =~ tr[+/][-_];
     $result =~ s/=//g;
