@@ -1,12 +1,12 @@
 Server deployment steps:
 1) Adjust version number
-2) Use Launcher to upload new version
-3) Go to app engine dashboard -> versions -> activate latest
+2) Use gcloud app deploy to upload new version (there's a deploy.bat)
+3) Go to app engine dashboard -> versions -> activate latest (this is now automatic I think?)
 
 Android deployment steps:
 1) Update version number
 2) Commit, test, yada yada
-3) Sign APK and zipalign using wizard: IDEA -> Build -> Generate signed SDK -> next next next
+3) Sign APK and zipalign using wizard: IDEA -> Build -> Generate signed APK -> next next next
 4) Test signed APK
 5) Create tag: git tag -a v1.2 -m "Version 1.2" ; git push --tags
 6) Go to https://play.google.com/apps/publish
