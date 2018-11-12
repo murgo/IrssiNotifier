@@ -9,7 +9,7 @@ use POSIX;
 use Encode;
 use vars qw($VERSION %IRSSI);
 
-$VERSION = "22";
+$VERSION = "23";
 %IRSSI   = (
     authors     => "Lauri \'murgo\' Härsilä",
     contact     => "murgo\@iki.fi",
@@ -17,7 +17,7 @@ $VERSION = "22";
     description => "Send notifications about irssi highlights to server",
     license     => "Apache License, version 2.0",
     url         => "https://irssinotifier.appspot.com",
-    changed     => "2017-02-22"
+    changed     => "2018-11-11"
 );
 
 # Sometimes, for some unknown reason, perl emits warnings like the following:
@@ -368,7 +368,7 @@ sub encrypt {
     fcntl($r, F_SETFD, $flags & ~FD_CLOEXEC) or die "fcntl F_SETFD: $!";
 
     my $rfn = fileno($r);
-    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -md md5 -A -pass), "fd:$rfn");
+    my $pid = open2(my $out, my $in, qw(openssl enc -aes-128-cbc -salt -base64 -md md5 -A -pass), "fd:$rfn 2>/dev/null");
 
     print $w "$password";
     close $w;
@@ -473,7 +473,7 @@ sub event_key_pressed {
 if (defined($ENV{STY})) {
     my $screen_ls = `LC_ALL="C" screen -ls 2> /dev/null`;
     if ($screen_ls !~ /^No Sockets found/s) {
-        $screen_ls =~ /^.+\d+ Sockets? in ([^\n]+)\.\n.+$/s;
+        $screen_ls =~ /^.*\d+ Sockets? in ([^\n]+)\..*$/sm;
         $screen_socket_path = $1;
     } else {
         $screen_ls =~ /^No Sockets found in ([^\n]+)\.\n.+$/s;

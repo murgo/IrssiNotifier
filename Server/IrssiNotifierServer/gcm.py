@@ -22,7 +22,6 @@ class GCM(object):
         self.gcmhelper = gcmhelper
         if GCM.authkey is None:
             GCM.authkey = self.dao.load_gcm_auth_key()
-            logging.info("AUTH1 %s" % GCM.authkey)
             if GCM.authkey is None:
                 raise Exception("No auth key for FCM!")
 

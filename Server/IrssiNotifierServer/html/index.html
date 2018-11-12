@@ -212,6 +212,18 @@
 
         <p class="answer">For latest developments, check project's <a href="https://github.com/murgo/irssinotifier">Github page</a>.<p>
 
+        <p class="question news">11.11.2018: Android 9 is now supported.</p>
+        <div class="answer news-content">
+            New version of the IrssiNotifier app has been released, which removes Google Cloud Messaging in favor of Firebase Cloud Messaging to properly support Android Pie.
+            <br /> <br />
+            Also new version (23) of Irssi script has been released with the following features:
+            <ul>
+                <li>OpenSSL warnings are dismissed to get rid of AES-128 deprecation warnings of new OpenSSL. Probably not best practice. Feel free to fix properly and send PR.</li>
+                <li>New option: irssinotifier_required_channel_patterns can be used to whitelist channels (thanks <a href="https://github.com/smith153">smith153</a>)</li>
+                <li>Improved Screen detection, some environments display screen socket differently thus breaking screen attach state detection (thanks <a href="https://github.com/benedicteb">benedicteb</a>) </li>
+            </ul>
+        </div>
+
         <p class="question news">5.7.2017 Irssi script version 22 released.</p>
         <div class="answer news-content">
             New version of OpenSSL is now supported. If you're having encryption troubles, try updating the script.

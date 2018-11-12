@@ -111,12 +111,14 @@ def update_irssi_user_from_message(irssi_user, version):
 # gcm auth key stuff
 
 def load_gcm_auth_key():
-    key = Secret.get_by_id("GCM_AUTHKEY")
-    if key is None:
-        key = add_gcm_auth_key()
-        if key is None:
-            return None
-    return key.secret
+    # for some reason old secret is gotten from DB forever, temp hax to read it straight from file
+    #key = Secret.get_by_id("GCM_AUTHKEY")
+    #if key is None:
+    #    key = add_gcm_auth_key()
+    #    if key is None:
+    #        return None
+    #return key.secret
+    return get_secret('google_api_key')
 
 
 def add_gcm_auth_key():
