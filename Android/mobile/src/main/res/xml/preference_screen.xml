@@ -42,6 +42,10 @@
         <PreferenceScreen
             android:title="Notification style"
             android:summary="Select sound, vibration, lights etc." >
+            <Preference
+                android:key="openNotificationChannelSettings"
+                android:title="Open notification channel settings"
+                android:summary="On Android 8+, click here to go to notification channel settings. Settings below might not do anything on new phones." />
             <PreferenceCategory android:title="Sound" >
                 <CheckBoxPreference
                     android:defaultValue="true"
@@ -80,14 +84,18 @@
                     android:title="Pick custom light color"
                     android:dependency="UseDefaultLightColor" />
             </PreferenceCategory>
+            <Preference
+                android:key="applyNotificationSettings"
+                android:title="Apply settings to Notification Channels"
+                android:summary="Click here to (try to) apply notification settings on newer phones." />
         </PreferenceScreen>
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Wearables" android:key="WearableCategory" >
         <CheckBoxPreference
-                android:key="PebbleEnabled"
-                android:defaultValue="true"
-                android:title="Send notifications to Pebble" />
+            android:defaultValue="false"
+            android:key="PebbleEnabled"
+            android:title="Send notifications to Pebble" />
     </PreferenceCategory>
 
     <PreferenceCategory android:title="Irssi ConnectBot integration" android:key="IcbCategory" >

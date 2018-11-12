@@ -109,6 +109,22 @@ public class SettingsActivity extends PreferenceActivity {
             }
         });
 
+        Preference openNotificationChannelSettings = findPreference("openNotificationChannelSettings");
+        openNotificationChannelSettings.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                NotificationChannelCreator.openNotificationChannelSettings(SettingsActivity.this);
+                return true;
+            }
+        });
+
+        Preference applyNotificationSettings = findPreference("applyNotificationSettings");
+        applyNotificationSettings.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+            public boolean onPreferenceClick(Preference preference) {
+                NotificationChannelCreator.recreateNotificationChannel(SettingsActivity.this);
+                return true;
+            }
+        });
+
         Preference initialSettingsPref = findPreference("redoInitialSettings");
         initialSettingsPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {

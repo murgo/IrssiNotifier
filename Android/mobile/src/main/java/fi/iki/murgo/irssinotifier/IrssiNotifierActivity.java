@@ -97,7 +97,7 @@ public class IrssiNotifierActivity extends AppCompatActivity {
             channelToView = savedInstanceState.getString("channelToView");
         }
 
-        NotificationChannelCreator.createNotificationChannel(this);
+        NotificationChannelCreator.createNotificationChannels(this);
 
         IrcNotificationManager.getInstance().mainActivityOpened(this);
         startMainApp(b);

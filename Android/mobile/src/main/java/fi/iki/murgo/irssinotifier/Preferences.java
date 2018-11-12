@@ -147,14 +147,11 @@ public class Preferences {
     }
 
 	public boolean isSpamFilterEnabled() {
-		long time = Long.parseLong(sharedPreferences.getString(
-				SPAM_FILTER_TIME, "-1"));
-		return time >= 0;
+		return getSpamFilterTime() >= 0;
     }
 
 	public long getSpamFilterTime() {
-		return Long.parseLong(sharedPreferences.getString(SPAM_FILTER_TIME,
-				"-1"));
+		return Long.parseLong(sharedPreferences.getString(SPAM_FILTER_TIME, "60"));
     }
 
     public boolean isNotificationsEnabled() {
@@ -256,6 +253,6 @@ public class Preferences {
     }
 
     public boolean isPebbleEnabled() {
-        return sharedPreferences.getBoolean(PEBBLE_ENABLED, true);
+        return sharedPreferences.getBoolean(PEBBLE_ENABLED, false);
     }
 }
