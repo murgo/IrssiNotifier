@@ -135,6 +135,7 @@ public class IrcNotificationManager {
         builder.setAutoCancel(true);
         builder.setContentText(notificationMessage);
         builder.setContentTitle(titleText);
+        builder.setChannelId(NotificationChannelCreator.CHANNEL_ID);
 
         if (currentUnreadCount > 1) {
             builder.setNumber(currentUnreadCount);
