@@ -39,6 +39,7 @@ public class FancyFcmListenerService extends FirebaseMessagingService {
             }
 
             msg = new IrcMessage();
+            msg.setExternalId(remoteMessage.getMessageId());
             msg.deserialize(payload);
         } catch (JSONException e) {
             // malformed payload, probably server error or something, who cares
