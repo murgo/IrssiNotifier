@@ -27,7 +27,7 @@ public class IrcMessage {
         setChannel(obj.getString("channel"));
         setNick(obj.getString("nick"));
         setServerTimestamp((long) (Double.parseDouble(obj.getString("server_timestamp")) * 1000));
-        if (obj.has("id")) {
+        if (obj.has("id") && !obj.isNull("id")) {
             String externalId = obj.getString("id");
             if (externalId != null && externalId.length() > 0)
                 setExternalId(externalId);
