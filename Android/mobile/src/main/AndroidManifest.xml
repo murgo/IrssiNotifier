@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="fi.iki.murgo.irssinotifier" >
+    xmlns:tools="http://schemas.android.com/tools"
+    package="fi.iki.murgo.irssinotifier">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="com.sonelli.juicessh.api.v1.permission.READ_CONNECTIONS" />
+    <uses-permission android:name="com.sonelli.juicessh.api.v1.permission.OPEN_SESSIONS" />
     <!--
     This was required on lower API levels but I guess not any more?
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
@@ -12,7 +15,8 @@
 
     <uses-sdk />
 
-    <application android:icon="@drawable/icon"
+    <application tools:replace="android:icon"
+        android:icon="@drawable/icon"
         android:name="fi.iki.murgo.irssinotifier.IrssiNotifierApplication"
         android:label="@string/app_name"
         android:allowBackup="false"
@@ -48,6 +52,12 @@
         </activity>
         <activity
             android:name="fi.iki.murgo.irssinotifier.ChannelSettingsActivity"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.IrssiTheme"
+            >
+        </activity>
+        <activity
+            android:name="fi.iki.murgo.irssinotifier.JuiceSSHLauncher"
             android:label="@string/app_name"
             android:theme="@style/Theme.IrssiTheme"
             >

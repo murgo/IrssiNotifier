@@ -111,6 +111,20 @@
             android:dependency="IcbEnabled" />
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="JuiceSSH integration" android:key="JuiceSSHCategory" >
+        <CheckBoxPreference
+            android:key="JuiceSSHEnabled"
+            android:defaultValue="true"
+            android:title="Show JuiceSSH icon"
+            android:summary="Show JuiceSSH icon in the action bar" />
+        <Preference
+            android:key="JuiceSSHHost"
+            android:title="Select JuiceSSH host"
+            android:summary=""
+            android:dependency="JuiceSSHEnabled" />
+    </PreferenceCategory>
+
+
     <PreferenceCategory android:title="Misc" >
         <Preference
             android:key="channels"
