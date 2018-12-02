@@ -8,8 +8,8 @@ android {
         applicationId "fi.iki.murgo.irssinotifier"
         minSdkVersion 14
         targetSdkVersion 27
-        versionCode 17
-        versionName "1.9.1"
+        versionCode 18
+        versionName "1.9.2"
     }
     flavorDimensions "version"
     productFlavors {
