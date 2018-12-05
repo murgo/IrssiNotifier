@@ -1,25 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
         android:id="@+id/menu_irssi_connectbot"
         android:icon="@drawable/irssi_connectbot"
-        android:showAsAction="ifRoom|withText"
-        android:title="Launch Irssi ConnectBot"/>
+        android:title="Launch Irssi ConnectBot"
+        app:showAsAction="ifRoom|withText" />
+    <item
+        android:id="@+id/menu_juicessh"
+        android:icon="@drawable/juicessh"
+        android:title="Launch JuiceSSH"
+        app:showAsAction="ifRoom|withText" />
     <item
         android:id="@+id/menu_settings"
         android:icon="@drawable/ic_menu_preferences"
-        android:showAsAction="ifRoom|withText"
-        android:title="Settings"/>
+        android:title="Settings"
+        app:showAsAction="ifRoom|withText" />
     <item
         android:id="@+id/menu_clear_channel"
         android:icon="@drawable/ic_menu_close_clear_cancel"
-        android:showAsAction="never|withText"
-        android:title="Clear channel messages"/>
+        android:title="Clear channel messages"
+        app:showAsAction="never|withText" />
     <item
         android:id="@+id/menu_remove_all_channels"
         android:icon="@drawable/ic_menu_close_clear_cancel"
-        android:showAsAction="never|withText"
-        android:title="Remove all channels"/>
+        android:title="Remove all channels"
+        app:showAsAction="never|withText" />
 
 </menu>

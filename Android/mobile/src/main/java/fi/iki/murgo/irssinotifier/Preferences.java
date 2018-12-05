@@ -12,7 +12,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 
@@ -40,6 +39,9 @@ public class Preferences {
     private static final String ICB_HOST_INTENT_URI = "IcbHostIntentUri";
     private static final String ICB_HOST_NAME = "IcbHostName";
     private static final String ICB_ENABLED = "IcbEnabled";
+    private static final String JUICESSH_HOST_INTENT_URI = "JuiceSSHHostIntentUri";
+    private static final String JUICESSH_HOST_NAME = "JuiceSSHHostName";
+    private static final String JUICESSH_ENABLED = "JuiceSSHEnabled";
     private static final String THEME_DISABLED = "ThemeDisabled";
     private static final String ACCOUNT_NAME = "AccountName";
     private static final String CUSTOM_LIGHT_COLOR = "CustomLightColor";
@@ -193,7 +195,22 @@ public class Preferences {
     public String getIcbHostIntentUri() {
         return sharedPreferences.getString(ICB_HOST_INTENT_URI, null);
     }
+    public boolean setJuiceSSHHost(String hostName, String hostUri) {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(JUICESSH_HOST_NAME, hostName);
+        editor.putString(JUICESSH_HOST_INTENT_URI, hostUri);
+        return editor.commit();
+    }
 
+    public String getJuiceSSHHostName() {
+        return sharedPreferences.getString(JUICESSH_HOST_NAME, null);
+    }
+    public boolean getJuiceSSHEnabled() {
+        return sharedPreferences.getBoolean(JUICESSH_ENABLED, true);
+    }
+    public String getJuiceSSHHostUUID() {
+        return sharedPreferences.getString(JUICESSH_HOST_INTENT_URI, null);
+    }
     public boolean isThemeDisabled() {
         return sharedPreferences.getBoolean(THEME_DISABLED, false);
     }

@@ -45,6 +45,8 @@ dependencies {
 
     implementation "com.android.support:appcompat-v7:27.1.1"
     implementation 'com.android.support:support-v4:27.1.1'
+
+    implementation 'com.sonelli:juicessh-pluginlibrary:1.0.+@aar'
 }
 
 apply plugin: 'com.google.gms.google-services'
