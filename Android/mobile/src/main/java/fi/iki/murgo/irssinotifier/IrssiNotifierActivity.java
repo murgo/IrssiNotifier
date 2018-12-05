@@ -389,8 +389,7 @@ public class IrssiNotifierActivity extends AppCompatActivity {
             IrssiConnectbotLauncher.launchIrssiConnectbot(this);
             //MessageGenerator.Flood(this);
         } else if (item.getItemId() == R.id.menu_juicessh) {
-            Intent intent = new Intent(this, JuiceSSHLauncher.class);
-            startActivity(intent);
+            JuiceSSHLauncher.launchJuiceSSH(this);
         } else if (item.getItemId() == R.id.menu_settings) {
             Intent settingsActivity = new Intent(this, SettingsActivity.class);
             startActivity(settingsActivity);
