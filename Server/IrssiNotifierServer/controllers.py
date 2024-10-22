@@ -1,33 +1,41 @@
-import traceback
-from google.appengine.api import users
-
-import webapp2
+from flask import request, jsonify, render_template, redirect, abort
 import logging
 import licensing
 import login
 import dao
-import gcmhelper
+import fcmhelper
+import json
+import traceback
 import jinja2
 import os
-import json
+
+import secret_manager
 
 jinja_environment = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 MinAndroidVersion = 8
 MinScriptVersion = 2
 LatestScriptVersion = 24
 
+LOGIN_REDIRECT_URI = os.getenv('LOGIN_REDIRECT_URI')
+CLIENT_ID = secret_manager.get_secret("oauth2-client-id")
+
+#if not LOGIN_REDIRECT_URI:
+#    LOGIN_REDIRECT_URI = 'http://127.0.0.1:5000/oauth2callback';
+
+login_url = f'https://accounts.google.com/o/oauth2/auth?client_id={CLIENT_ID}&redirect_uri={LOGIN_REDIRECT_URI}&response_type=code&scope=openid%20email'
+logout_url = "/logout"
 
 def getAndroidServerMessage(data):
     if "version" in data:
-        logging.debug("Validating version: " + data["version"])
+        logging.debug("Validating version: " + str(data["version"]))
         try:
             if int(data["version"]) < MinAndroidVersion:
-                logging.warn('Client has too old version')
+                logging.warning('Client has too old version')
                 return (
                     False,
                     "Too old version! Get latest version of IrssiNotifier from https://irssinotifier.appspot.com")
         except ValueError:
-            logging.warn('Client version is not integer')
+            logging.warning('Client version is not integer')
             return (
                 False, "Too old version! Get latest version of IrssiNotifier from https://irssinotifier.appspot.com")
     return True, ""
@@ -40,69 +48,39 @@ def getIrssiServerMessage(data):
                 return (
                     False, "Update your IrssiNotifier script to latest version from https://irssinotifier.appspot.com")
         except ValueError:
-            logging.warn('Irssi script version is not integer')
+            logging.warning('Irssi script version is not integer')
             return False, "Update your IrssiNotifier script to latest version from https://irssinotifier.appspot.com"
     return True, ""
 
 
-class BaseController(webapp2.RequestHandler):
-    data = {}
+class BaseController:
+    def __init__(self):
+        self.data = {}
+        self.irssi_user = None
 
-    def handle_exception(self, exception, debug):
-        # Log the error.
-        logging.exception(exception)
+    def init_controller(self, name, param_requirements, allowApiTokenUse):
+        logging.info(f"Method started: {name}")
 
-        # Set a custom message.
-        self.response.write('An error occurred.')
+        if request.args:
+            self.data = request.args.to_dict()
+        if not self.data and request.get_json(force=True, silent=True):
+            self.data = request.get_json(force=True)
+        if not self.data and request.form:
+            self.data = request.form.to_dict()
+        logging.debug(f"Data {self.data}")
 
-        # If the exception is a HTTPException, use its error code.
-        # Otherwise use a generic 500 error code.
-        if isinstance(exception, webapp2.HTTPException):
-            self.response.set_status(exception.code)
-        else:
-            self.response.set_status(500)
-
-    def initController(self, name, paramRequirements):
-        logging.info("Method started: %s" % name)
-
-        if len(self.request.params) > 0:
-            self.data = self.request.params
-        else:
-            try:
-                self.data = self.decode_params(self.request)
-            except:
-                # because of weird assertion error
-                self.data = {}
-
-        logging.debug("Data {0}".format(self.data))
-
-        self.irssi_user = login.get_irssi_user(self.data)
+        self.irssi_user = login.get_irssi_user(self.data, allowApiTokenUse)
         if not self.irssi_user:
-            self.response.status = "401 Unauthorized"
-            return False
+            abort(401)
 
-        if not self.validate_params(self.data, paramRequirements):
-            self.response.status = "400 Bad Request"
-            return False
+        if not self.validate_params(self.data, param_requirements):
+            abort(400)
         return True
-
-    def decode_params(self, request):
-        d = request.body
-        pairs = d.split('&')
-        data = {}
-        for pair in pairs:
-            if len(pair) < 2:
-                break
-            split = pair.split('=')
-            key = split[0]
-            value = split[1]
-            data[key] = value
-        return data
 
     def validate_params(self, data, params):
         for i in params:
             if i not in data:
-                logging.warn("data error: %s not in %s" % (i, [x for x in data]))
+                logging.warning(f"data error: {i} not in {list(data.keys())}")
                 return False
         return True
 
@@ -110,7 +88,7 @@ class BaseController(webapp2.RequestHandler):
 class WebController(BaseController):
     def get(self):
         logging.debug("WebController.get()")
-        user = login.get_irssi_user(self.request.params)
+        user = login.get_irssi_user(request.args, False)
 
         tokens = []
         irssi_script_version = 0
@@ -122,11 +100,11 @@ class WebController(BaseController):
         license_timestamp = 0
 
         if user is not None:
-            tokens = dao.get_gcm_tokens_for_user(user)
+            tokens = dao.get_fcm_tokens_for_user(user)
 
             for token in tokens:
                 if token.registration_date is not None:
-                    token.registration_date_string = token.registration_date
+                    token.registration_date_string = str(token.registration_date)
                 else:
                     token.registration_date_string = 'Yesterday?'
 
@@ -159,8 +137,8 @@ class WebController(BaseController):
             'tokens': tokens,
             'token_count': len(tokens),
             'logged_in': user is not None,
-            'login_url': users.create_login_url("#profile").replace("&", "&amp;"),
-            'logout_url': users.create_logout_url("").replace("&", "&amp;"),
+            'login_url': login_url,
+            'logout_url': logout_url,
             'irssi_working': irssi_working,
             'irssi_latest': irssi_script_version >= LatestScriptVersion,
             'registration_date': registration_date,
@@ -170,152 +148,144 @@ class WebController(BaseController):
             'license_timestamp': license_timestamp
         }
 
-        template = jinja_environment.get_template('html/index.html')
-        self.response.out.write(template.render(template_values))
+        return render_template('html/index.html', **template_values)
 
 
 class SettingsController(BaseController):
     def post(self):
-        success = self.initController("SettingsController.post()", ["Name", "Enabled", "RegistrationId"])
+        success = self.init_controller("SettingsController.post()", ["Name", "Enabled", "RegistrationId"], True) #todo: should block api token use?
         if not success:
-            return self.response
+            return '', 400
 
-        self.response.headers['Content-Type'] = 'application/json'
-        (cont, serverMessage) = getAndroidServerMessage(self.data)
+        cont, server_message = getAndroidServerMessage(self.data)
         if not cont:
-            self.response.out.write(json.dumps({'servermessage': serverMessage}))
-            return self.response
+            return jsonify({'servermessage': server_message})
 
         dao.save_settings(self.irssi_user, self.data["RegistrationId"], bool(int(self.data["Enabled"])),
                           self.data["Name"])
 
-        responseJson = json.dumps({'response': 'ok'})
-
-        self.response.out.write(responseJson)
+        return jsonify({'response': 'ok'})
 
 
 class MessageController(BaseController):
     def post(self):
-        success = self.initController("MessageController.post()", ["message", "channel", "nick", "version"])
+        success = self.init_controller("MessageController.post()", ["message", "channel", "nick", "version"], True)
         if not success:
-            return self.response
+            return '', 400
 
-        (cont, serverMessage) = getIrssiServerMessage(self.data)
+        if request.args:
+            self.data = request.args.to_dict()
+        if not self.data and request.get_json(force=True, silent=True):
+            self.data = request.get_json(force=True)
+        if not self.data and request.form:
+            self.data = request.form.to_dict()
+        logging.debug(f"MessageController.Post() {self.data}")
+
+        cont, server_message = getIrssiServerMessage(self.data)
         if not cont:
-            self.response.out.write(serverMessage)
-            return self.response
+            return server_message
 
         try:
-            message = dao.add_message(self.irssi_user, self.data["message"], self.data['channel'], self.data['nick'])
+            fcm_message = dao.add_message(self.irssi_user, self.data["message"], self.data['channel'], self.data['nick'])
             dao.update_irssi_user_from_message(self.irssi_user, int(self.data['version']))
-            gcmhelper.send_gcm_to_user_deferred(self.irssi_user, message.to_gcm_json())
-        except:
-            logging.warn("Error while creating new message, exception %s", traceback.format_exc())
-            self.response.status = '400 Bad Request'
-            return self.response
+            self.data['fcm_message'] = fcm_message.to_fcm_json()
+            fcmhelper.send_fcm_to_user_deferred(self.data)
+            dao.update_irssi_user_from_message(self.irssi_user, int(self.data['version']))
+        except Exception:
+            logging.warning(f"Error while creating new message, exception {traceback.format_exc()}")
+            return '', 400
 
-        self.response.out.write(serverMessage)
+        return server_message
 
     def get(self):
-        val = self.initController("MessageController.get()", ["version"])
-        if not val:
-            return self.response
+        success = self.init_controller("MessageController.get()", ["version"], True) # todo allow api key?
+        if not success:
+            return '', 400
 
-        self.response.headers['Content-Type'] = 'application/json'
-        (cont, serverMessage) = getAndroidServerMessage(self.data)
+        cont, server_message = getAndroidServerMessage(self.data)
         if not cont:
-            self.response.out.write(json.dumps({'servermessage': serverMessage, "messages": []}))
-            return self.response
+            return jsonify({'servermessage': server_message, "messages": []})
 
-        if "timestamp" in self.data:
-            timestamp = self.data["timestamp"]
-        else:
-            timestamp = 0
+        timestamp = self.data.get("timestamp", 0)
 
         messages = dao.get_messages(self.irssi_user, timestamp)
         message_jsons = [message.to_json() for message in messages]
-        response_json = json.dumps({"servermessage": serverMessage, "messages": message_jsons})
+        return jsonify({"servermessage": server_message, "messages": message_jsons})
 
-        self.response.out.write(response_json)
+
+class DeferredMessageController(BaseController):
+    def post(self):
+        logging.debug(f'DeferredMessageController.post() {request.data}')
+        fcmhelper._send_fcm_to_user(request);
+        return jsonify({'response': 'ok'})
 
 
 class CommandController(BaseController):
     def post(self):
-        success = self.initController("CommandController.post()", ["command"])
+        success = self.init_controller("CommandController.post()", ["command"], True)
         if not success:
-            return self.response
+            return '', 400
 
         try:
-            gcmhelper.send_gcm_to_user_deferred(self.irssi_user, json.dumps({"command": self.data['command']}))
+            self.data['fcm_message'] = json.dumps({"command": self.data['command']})
+            fcmhelper.send_fcm_to_user_deferred(self.data)
         except:
-            self.response.status = '400 Bad Request'
-            return self.response
+            return '', 400
 
-        self.response.out.write("")
+        return ""
 
 
 class WipeController(BaseController):
     def post(self):
-        success = self.initController("WipeController.post()", [])
+        success = self.init_controller("WipeController.post()", [], False)
         if not success:
-            return self.response
+            return '', 400
 
         if 'RegistrationId' in self.data:
             token_key = self.data['RegistrationId']
-            logging.info('Removing GCM Token: %s' % token_key)
-            token = dao.get_gcm_token_for_id(self.irssi_user, token_key)
+            logging.info('Removing FCM Token: %s' % token_key)
+            token = dao.get_fcm_token_for_id(self.irssi_user, token_key)
             if token is not None:
-                dao.remove_gcm_token(token)
+                dao.remove_fcm_token(token)
             else:
-                logging.warning('GCM Token to be removed not found!')
+                logging.warning('FCM Token to be removed not found!')
         else:
             dao.wipe_user(self.irssi_user)
 
-        responseJson = json.dumps({'response': 'ok'})
-        self.response.headers['Content-Type'] = 'application/json'
-        self.response.out.write(responseJson)
+        return login.logout()
 
 
-class AdminController(BaseController):
-    def get(self):
-        from gcm import GCM
-        GCM.authkey = None
-        self.redirect('https://appengine.google.com/dashboard?&app_id=s~irssinotifier')
-
-
-class AnalyticsController(BaseController):
-    def get(self):
-        self.redirect(
-            'https://www.google.com/analytics/web/?pli=1#report/visitors-overview/a29331277w55418008p56422952/')
-
-
-class CronController(webapp2.RequestHandler):
+#untested with new version
+class CronController:
     def get(self):
         logging.info("Clearing data")
         dao.clear_old_messages()
+        return '', 200
 
 
+#untested with new version
 class NonceController(BaseController):
     def get(self):
-        val = self.initController("NonceController.get()", [])
-        if not val:
-            return self.response
+        success = self.init_controller("NonceController.get()", [], True) # todo allow api key?
+        if not success:
+            return '', 400
 
         nonce = dao.get_new_nonce(self.irssi_user)
-        self.response.out.write(nonce.nonce)
+        return str(nonce.nonce)
 
 
+#untested with new version
 class LicensingController(BaseController):
     def post(self):
-        val = self.initController("LicensingController.post()", ['SignedData', 'Signature'])
-        if not val:
-            return self.response
+        success = self.init_controller("LicensingController.post()", ['SignedData', 'Signature'], True) # todo allow api key?
+        if not success:
+            return '', 400
 
         logging.info('Verifying license for user %s' % self.irssi_user.email)
 
         ok = licensing.Licensing().check_license(self.irssi_user, self.data['SignedData'], self.data['Signature'])
 
         if ok:
-            self.response.out.write('OK')
+            return 'OK'
         else:
-            self.response.status = '403 Forbidden'
+            return '', 403
