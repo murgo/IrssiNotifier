@@ -38,17 +38,9 @@ public class AboutActivity extends Activity {
 
         ftvs.add(new FancyTextView(getText(R.string.created_by), this));
 
-        boolean plus = LicenseHelper.isPlusVersion(this);
-
-        if (plus) {
-            ftvs.add(new FancyTextView(getText(R.string.thanks_for_support), this));
-        }
-
         ftvs.add(new FancyTextView(getText(R.string.instructions), this));
 
-        if (!plus) {
-            ftvs.add(new FancyTextView(getText(R.string.donate), this));
-        }
+        ftvs.add(new FancyTextView(getText(R.string.donate), this));
 
         ftvs.add(new FancyTextView(getText(R.string.open_source), this));
         ftvs.add(new FancyTextView(getText(R.string.thanks_donators), this));

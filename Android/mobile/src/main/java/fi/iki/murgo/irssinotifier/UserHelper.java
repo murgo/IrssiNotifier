@@ -3,17 +3,14 @@ package fi.iki.murgo.irssinotifier;
 
 import java.io.IOException;
 
-import android.accounts.Account;
+import android.accounts.Acc
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 
 public class UserHelper {
 

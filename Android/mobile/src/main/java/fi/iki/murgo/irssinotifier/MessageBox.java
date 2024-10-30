@@ -5,10 +5,11 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnDismissListener;
-import android.support.v7.app.AlertDialog;
 import android.text.method.LinkMovementMethod;
 import android.view.WindowManager.BadTokenException;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
 
 public class MessageBox {
     public static void Show(Context context, CharSequence title, CharSequence contents, final Callback<Void> callback) {
