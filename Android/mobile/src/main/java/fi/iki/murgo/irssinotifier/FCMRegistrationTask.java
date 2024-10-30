@@ -4,9 +4,8 @@ package fi.iki.murgo.irssinotifier;
 import android.app.Activity;
 import android.util.Log;
 
-import com.google.firebase.iid.FirebaseInstanceId;
-
-import java.io.IOException;
+import com.google.firebase.iid.internal.FirebaseInstanceIdInternal;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class FCMRegistrationTask extends BackgroundAsyncTask<Void, Void, Boolean> {
     private static final String TAG = FCMRegistrationTask.class.getName();
@@ -22,14 +21,19 @@ public class FCMRegistrationTask extends BackgroundAsyncTask<Void, Void, Boolean
 
         Preferences preferences = new Preferences(activity);
 
-        try {
-            String token = FirebaseInstanceId.getInstance().getToken(SENDER_ID, "FCM");
-            preferences.setGcmRegistrationId(token);
-        } catch (Exception e) {
-            Log.e(TAG, "Error trying to register to FCM", e);
-            return false;
-        }
-        
+        FirebaseMessaging.getInstance().getToken()
+            .addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                    return;
+                }
+
+                // Get new FCM registration token
+                String token = task.getResult();
+
+                preferences.setGcmRegistrationId(token);
+            });
+
         return true;
     }
 }

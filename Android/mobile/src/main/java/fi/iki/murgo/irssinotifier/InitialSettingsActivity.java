@@ -62,11 +62,6 @@ public class InitialSettingsActivity extends Activity {
 
         preferences = new Preferences(this);
 
-        if (LicenseHelper.isPlusVersion(this)) {
-            TextView tv = (TextView)findViewById(R.id.textViewWelcomeHelp);
-            tv.setText(getString(R.string.welcome_thanks_for_support) + " " + tv.getText());
-        }
-
         whatNext(0);
     }
 
@@ -75,13 +70,6 @@ public class InitialSettingsActivity extends Activity {
         Log.d(TAG, "Changing state: " + i);
         _currentStateId = i;
         switch (i) {
-            default:
-            case -1:
-                preferences.setAccountName(null);
-                preferences.setAuthToken(null);
-                preferences.setGcmRegistrationId(null);
-                finish();
-                break;
             case 0:
                 getAccounts();
                 break;
@@ -92,15 +80,13 @@ public class InitialSettingsActivity extends Activity {
                 sendSettings();
                 break;
             case 3:
-                if (LicenseHelper.isPlusVersion(this)) {
-                    checkLicense();
-                    break;
-                }
-
                 startMainApp();
                 break;
-            case 4:
-                startMainApp();
+            default:
+                preferences.setAccountName(null);
+                preferences.setAuthToken(null);
+                preferences.setGcmRegistrationId(null);
+                finish();
                 break;
         }
     }
@@ -152,46 +138,11 @@ public class InitialSettingsActivity extends Activity {
         }
     }
 
-    private void checkLicense() {
-        LicenseCheckingTask task = new LicenseCheckingTask(this, "", getString(R.string.verifying_license));
-
-        task.setCallback(new Callback<LicenseCheckingTask.LicenseCheckingMessage>() {
-            public void doStuff(LicenseCheckingTask.LicenseCheckingMessage result) {
-                switch (result.licenseCheckingStatus) {
-                    case Allow:
-                        if (LicenseHelper.bothEditionsInstalled(InitialSettingsActivity.this)) {
-                            MessageBox.Show(InitialSettingsActivity.this, null, getString(R.string.both_versions_installed), new Callback<Void>() {
-                                @Override
-                                public void doStuff(Void param) {
-                                    continueStateMachine();
-                                }
-                            });
-                        } else {
-                            continueStateMachine();
-                        }
-                        break;
-                    case Disallow:
-                        preferences.setLicenseCount(0);
-                        MessageBox.Show(InitialSettingsActivity.this, getString(R.string.not_licensed_title), getString(R.string.not_licensed), errorCallback);
-                        break;
-                    case Error:
-                        MessageBox.Show(InitialSettingsActivity.this, getText(R.string.licensing_error_title), new SpannableStringBuilder().append(getText(R.string.license_error)).append(result.errorMessage), errorCallback);
-                        break;
-                }
-            }
-        });
-
-        task.execute();
-    }
-
     private void startMainApp() {
         final Context ctx = this;
         CharSequence msg = getText(R.string.check_web_page);
         String title = getString(R.string.success);
-        if (LicenseHelper.isPlusVersion(this)) {
-            msg = getText(R.string.app_licensed);
-            title = getString(R.string.thank_you_for_support);
-        }
+
         MessageBox.Show(this, title, msg,
                         new Callback<Void>() {
                             public void doStuff(Void param) {

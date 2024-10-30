@@ -18,7 +18,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.app.NotificationCompat;
+
+import androidx.core.app.NotificationCompat;
 
 public class IrcNotificationManager {
 
@@ -128,7 +129,7 @@ public class IrcNotificationManager {
             return;
         }
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NotificationChannelCreator.CHANNEL_DEFAULT_ID);
         builder.setSmallIcon(R.drawable.notification_icon);
         builder.setTicker(tickerText);
         builder.setWhen(when);
@@ -150,7 +151,7 @@ public class IrcNotificationManager {
             }
         }
 
-		if ((!prefs.isSpamFilterEnabled() || new Date().getTime() > IrcNotificationManager.getInstance().getLastSoundDate() + (1000L * prefs.getSpamFilterTime()))) {
+        if ((!prefs.isSpamFilterEnabled() || new Date().getTime() > IrcNotificationManager.getInstance().getLastSoundDate() + (1000L * prefs.getSpamFilterTime()))) {
             // no spam filter going on
 
             // legacy, this stuff affects only pre-android 8 phones
@@ -163,6 +164,7 @@ public class IrcNotificationManager {
             }
 
             lastSoundDate = new Date().getTime();
+
             builder.setChannelId(NotificationChannelCreator.CHANNEL_DEFAULT_ID);
         } else {
             builder.setChannelId(NotificationChannelCreator.CHANNEL_LOWPRIO_ID);
@@ -194,9 +196,10 @@ public class IrcNotificationManager {
         }
         
         Notification notification = builder.build();
-        
+
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(notificationId, notification);
+
 
         if (prefs.isPebbleEnabled()) {
             try {

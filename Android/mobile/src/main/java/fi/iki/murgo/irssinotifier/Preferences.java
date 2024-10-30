@@ -12,9 +12,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.util.Log;
-
-import com.google.firebase.iid.FirebaseInstanceId;
 
 /**
  * Default settings are actually stored in preference_screen.xml :(

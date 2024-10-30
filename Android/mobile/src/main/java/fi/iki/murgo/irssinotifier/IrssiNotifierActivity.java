@@ -18,8 +18,9 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -62,7 +63,7 @@ public class IrssiNotifierActivity extends AppCompatActivity {
         Preferences.setVersion(versionCode);
 
         // do initial settings
-        if (preferences.getAccountName() == null || preferences.getGcmRegistrationId() == null || preferences.getGcmRegistrationIdVersion() != versionCode || (LicenseHelper.isPlusVersion(this) && preferences.getLicenseCount() == 0)) {
+        if (preferences.getAccountName() == null || preferences.getGcmRegistrationId() == null || preferences.getGcmRegistrationIdVersion() != versionCode) {
             Log.d(TAG, "Asking for initial settings");
             Intent i = new Intent(this, InitialSettingsActivity.class);
             startActivity(i);
@@ -105,6 +106,7 @@ public class IrssiNotifierActivity extends AppCompatActivity {
 
     @Override
     protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         String intentChannelToView = intent.getStringExtra("Channel");
         if (intentChannelToView != null && !preferences.isFeedViewDefault())
             channelToView = intentChannelToView;
@@ -211,7 +213,7 @@ public class IrssiNotifierActivity extends AppCompatActivity {
             public void run() {
                 refreshUi();
 
-                if (!uptodate && preferences.isPullMechanismInUse() && LicenseHelper.isPlusVersion(IrssiNotifierActivity.this)) {
+                if (!uptodate && preferences.isPullMechanismInUse()) {
                     TaskExecutor.executeOnThreadPoolIfPossible(dataFetcherTask);
                     backgroundOperationStarted();
                 }
@@ -220,50 +222,8 @@ public class IrssiNotifierActivity extends AppCompatActivity {
                 TaskExecutor.executeOnThreadPoolIfPossible(datask);
                 backgroundOperationStarted();
 
-                if (LicenseHelper.isPlusVersion(IrssiNotifierActivity.this)) {
-                    checkLicense();
-                }
             }
         });
-    }
-
-    private void checkLicense() {
-        if (preferences.getLicenseCount() >= 2) {
-            return;
-        }
-
-        if (System.currentTimeMillis() - preferences.getLastLicenseTime() <= 1000 * 60 * 30) {
-            return;
-        }
-
-        // over half hour since last registration, register again to prevent 15 minute return policy abuse
-        LicenseCheckingTask task = new LicenseCheckingTask(this);
-        task.setCallback(new Callback<LicenseCheckingTask.LicenseCheckingMessage>() {
-            @Override
-            public void doStuff(LicenseCheckingTask.LicenseCheckingMessage param) {
-                backgroundOperationEnded();
-
-                switch (param.licenseCheckingStatus) {
-                    case Allow:
-                        // yay! do nothing
-                        break;
-                    case Disallow:
-                        preferences.setLicenseCount(0);
-                        MessageBox.Show(IrssiNotifierActivity.this, getText(R.string.not_licensed_title), getText(R.string.not_licensed), new Callback<Void>() {
-                            @Override
-                            public void doStuff(Void param) {
-                                IrssiNotifierActivity.this.finish();
-                            }
-                        });
-                        break;
-                    case Error:
-                        // do nothing, on next startup licensing will be retried
-                        break;
-                }
-            }
-        });
-        TaskExecutor.executeOnThreadPoolIfPossible(task);
-        backgroundOperationStarted();
     }
 
     private void backgroundOperationEnded() {
