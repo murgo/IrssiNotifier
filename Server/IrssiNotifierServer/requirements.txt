@@ -1,0 +1,13 @@
+google-cloud-ndb
+google-cloud-secret-manager
+#google-cloud-memcache
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+flask
+flask-cors
+requests
+firebase-admin
+pycryptodome
+google-cloud-tasks
+gunicorn

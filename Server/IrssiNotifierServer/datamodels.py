@@ -1,16 +1,13 @@
 import json
 import logging
-from google.appengine.ext import ndb
-
-
-class Secret(ndb.Model):
-    secret = ndb.StringProperty()
+from google.cloud import ndb
 
 
 class IrssiUser(ndb.Model):
-    user_name = ndb.StringProperty(indexed=False)
+    user_name = ndb.StringProperty(indexed=True)
     email = ndb.StringProperty(indexed=True)
     user_id = ndb.StringProperty(indexed=True)
+    user_id_oauth2 = ndb.StringProperty(indexed=True)
     api_token = ndb.StringProperty(indexed=True)
     registration_date = ndb.IntegerProperty(indexed=False)
     notification_count_since_licensed = ndb.IntegerProperty(indexed=False)
@@ -19,10 +16,11 @@ class IrssiUser(ndb.Model):
     license_timestamp = ndb.IntegerProperty(indexed=False)
 
 
+# use GcmToken and gcm_token to comply with old database (instead of "Fcm")
 class GcmToken(ndb.Model):
     gcm_token = ndb.StringProperty(indexed=True)
     enabled = ndb.BooleanProperty(indexed=True)
-    name = ndb.StringProperty(indexed=False)
+    name = ndb.StringProperty(indexed=True)
     registration_date = ndb.IntegerProperty(indexed=False)
 
 
@@ -43,7 +41,7 @@ class Message(ndb.Model):
              'nick': self.nick,
              'id': self.key.integer_id()})
 
-    def to_gcm_json(self):
+    def to_fcm_json(self):
         values = {'server_timestamp': '%f' % self.server_timestamp,
                   'message': self.message,
                   'channel': self.channel,

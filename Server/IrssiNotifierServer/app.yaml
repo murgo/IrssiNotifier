@@ -1,8 +1,7 @@
 #application: irssinotifier
-#version: fcm-10
-runtime: python27
-api_version: 1
-threadsafe: true
+#version: 2024-rewrite-1
+runtime: python312
+entrypoint: gunicorn -b :$PORT main:app
 
 handlers:
 - url: /favicon.ico
@@ -16,23 +15,32 @@ handlers:
 - url: /static
   static_dir: static
 - url: /cron/clear
-  script: cron.app
+  script: auto
+  login: admin
+- url: /tasks/fcm
+  script: auto
   login: admin
 - url: /.*
-  script: main.app
+  script: auto
   secure: always
-- url: /tasks/gcm
-  script: gcmqueuehandler.app
-  login: admin
-  
-libraries:
-- name: jinja2
-  version: latest
-- name: pycrypto
-  version: "2.6"
-- name: yaml
-  version: latest
 
 builtins:
 - deferred: on
 - appstats: on
+
+env_variables:
+  PROJECT_NAME: 'IrssiNotifier'
+  PROJECT_ID: '939387723736'
+  LOCATION: 'us-central1'
+  QUEUE_NAME: 'fcm-queue'
+  BASE_URL: 'https://irssinotifier.appspot.com/'
+  LOGIN_REDIRECT_URI: 'https://irssinotifier.appspot.com/oauth2callback'
+
+# Don't forget to create:
+#  - GAE project in https://console.cloud.google.com/appengine/start/reception
+#  - Scheduled task in https://console.cloud.google.com/marketplace/product/google/cloudscheduler.googleapis.com
+#  - Secrets in https://console.cloud.google.com/security/secret-manager
+#  - Tasks queue in 
+#  - Database in
+#  - Logging in
+#  - FCM in https://console.firebase.google.com/
