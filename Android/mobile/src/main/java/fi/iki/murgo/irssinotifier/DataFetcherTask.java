@@ -3,8 +3,9 @@ package fi.iki.murgo.irssinotifier;
 
 import java.util.HashMap;
 
+import android.accounts.AuthenticatorException;
 import android.app.Activity;
-import org.apache.http.auth.AuthenticationException;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -35,7 +36,7 @@ public class DataFetcherTask extends AsyncTask<Void, Void, DataFetchResult> {
             Server server = new Server(activity);
             boolean authenticated = server.authenticate();
             if (!authenticated) {
-                throw new AuthenticationException();
+                throw new Exception("Authentication failed");
             }
 
             HashMap<String, String> map = new HashMap<String, String>();

@@ -8,7 +8,6 @@ import java.util.List;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Vibrator;
-import org.apache.http.auth.AuthenticationException;
 
 import com.viewpagerindicator.TitlePageIndicator;
 
@@ -214,7 +213,7 @@ public class IrssiNotifierActivity extends AppCompatActivity {
                 refreshUi();
 
                 if (!uptodate && preferences.isPullMechanismInUse()) {
-                    TaskExecutor.executeOnThreadPoolIfPossible(dataFetcherTask);
+                    //TaskExecutor.executeOnThreadPoolIfPossible(dataFetcherTask);
                     backgroundOperationStarted();
                 }
 

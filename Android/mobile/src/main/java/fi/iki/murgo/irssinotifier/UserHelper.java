@@ -3,7 +3,7 @@ package fi.iki.murgo.irssinotifier;
 
 import java.io.IOException;
 
-import android.accounts.Acc
+import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;

@@ -9,20 +9,15 @@ import android.accounts.Account;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
 import android.app.Activity;
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie2;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
-
 import android.util.Log;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class Server {
     private static final String TAG = Server.class.getName();
@@ -31,6 +26,7 @@ public class Server {
     private final Activity activity;
 
     private boolean usingDevServer = false; // must be false when deploying
+    private String authenticationCookie = null;
 
     public enum ServerTarget {
         SaveSettings,
@@ -45,11 +41,13 @@ public class Server {
 
     private Map<ServerTarget, String> serverUrls = new HashMap<ServerTarget, String>();
 
-    private DefaultHttpClient http_client = new DefaultHttpClient(); // THIS WILL NO LONGER WORK WITH API LEVEL 28+
+
+    private OkHttpClient httpClient;
 
     private static final int maxRetryCount = 2;
 
     public Server(Activity activity) {
+        this.httpClient = new OkHttpClient().newBuilder().followRedirects(false).build();
         this.activity = activity;
         this.preferences = new Preferences(activity);
         String baseServerUrl = "https://irssinotifier.appspot.com";
@@ -69,13 +67,13 @@ public class Server {
     public boolean authenticate() throws IOException {
         return authenticate(0);
     }
-    
+
     private boolean authenticate(int retryCount) throws IOException {
         if (usingDevServer) {
             BasicClientCookie2 cookie = new BasicClientCookie2("dev_appserver_login", "irssinotifier@gmail.com:False:118887942201532232498");
             cookie.setDomain("10.0.2.2");
             cookie.setPath("/");
-            http_client.getCookieStore().addCookie(cookie);
+            //FIXME: httpClient.getCookieStore().addCookie(cookie);
 
             return true;
         }
@@ -107,7 +105,7 @@ public class Server {
         }
 
         Log.w(TAG, "Login failed, retrying... Retry count " + (retryCount + 1));
-        http_client = new DefaultHttpClient();
+        httpClient = new OkHttpClient();
         preferences.setAuthToken(null);
 
         if (retryCount >= maxRetryCount) {
@@ -126,34 +124,34 @@ public class Server {
     private boolean doAuthenticate(String token) throws IOException {
         if (checkCookie()) return true;
 
-        try {
-            Log.v(TAG, "Authenticating...");
+        Request request = new Request.Builder()
+                .url(serverUrls.get(ServerTarget.Authenticate) + token)
+                .build();
 
-            // Don't follow redirects
-            http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
-
-            HttpGet http_get = new HttpGet(serverUrls.get(ServerTarget.Authenticate) + token);
-            HttpResponse response;
-            response = http_client.execute(http_get);
-
-            EntityUtils.toString(response.getEntity()); // read response to prevent warning
-            int statusCode = response.getStatusLine().getStatusCode();
+        try (Response response = httpClient.newCall(request).execute()) {
+            Log.i(TAG,"response " + response.code() + " " + response.body());
+            int statusCode = response.code();
             if (statusCode != 302) {
                 Log.w(TAG, "No redirect, login failed. Status code: " + statusCode);
                 return false;
             } else {
                 Log.v(TAG, "Redirected, OK. Status code: " + statusCode);
             }
-
+            storeCookie(response);
             return checkCookie();
-        } finally {
-            if (http_client != null)
-                http_client.getParams().setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, true);
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
         }
     }
 
+    private void storeCookie(Response response) {
+        authenticationCookie = response.header("Set-Cookie");
+    }
+
     private boolean checkCookie() {
-        for (Cookie c : http_client.getCookieStore().getCookies()) {
+        return authenticationCookie != null && !authenticationCookie.isEmpty();
+        /*FIXME
+        for (Cookie c : httpClient.getCookieStore().getCookies()) {
             if (c.getName().equals("SACSID")) {
                 Log.v(TAG, "Found SACSID cookie");
                 if (!c.isExpired(new Date())) {
@@ -163,17 +161,41 @@ public class Server {
                 }
             }
         }
-        
+
         Log.w(TAG, "No valid SACSID cookie found");
-        http_client.getCookieStore().clear();
-        return false;
+        httpClient.getCookieStore().clear();*/
     }
 
     public ServerResponse post(MessageToServer message, ServerTarget target) throws IOException {
+
+        Request request = new Request.Builder()
+                .post(message.getRequestBody())
+                .header("cookie", authenticationCookie)
+                .url(serverUrls.get(target))
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            int statusCode = response.code();
+            String responseString = response.body().string();
+            ServerResponse serverResponse;
+            serverResponse = new ServerResponse(statusCode, responseString);
+
+            if (serverResponse.wasSuccesful()) {
+                Log.i(TAG, "Settings sent to server");
+            } else {
+                Log.e(TAG, "Unable to send settings! Response status code: " + statusCode + ", response string: " + responseString);
+            }
+
+            return serverResponse;
+        }
+        catch (Exception e) {
+            Log.e(TAG,"TROELOR");
+        }
+        /*
         HttpPost httpPost = new HttpPost(serverUrls.get(target));
         httpPost.setEntity(new StringEntity(message.getHttpString()));
 
-        HttpResponse response = http_client.execute(httpPost);
+        HttpResponse response = httpClient.execute(httpPost);
         int statusCode = response.getStatusLine().getStatusCode();
         String responseString = EntityUtils.toString(response.getEntity());
 
@@ -186,15 +208,39 @@ public class Server {
             Log.e(TAG, "Unable to send settings! Response status code: " + statusCode + ", response string: " + responseString);
         }
 
-        return serverResponse;
+        return serverResponse;*/
+        return null; //FIXME
     }
 
     public ServerResponse get(MessageToServer message, ServerTarget target) throws IOException {
         String url = serverUrls.get(target);
+        url = message.getUrlWithParameters(url);
+        Request request = new Request.Builder()
+                .url(url)
+                .header("cookie", authenticationCookie)
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            int statusCode = response.code();
+            String responseString = response.body().string();
+            ServerResponse serverResponse;
+            serverResponse = new ServerResponse(statusCode, responseString);
+
+            if (serverResponse.wasSuccesful()) {
+                Log.i(TAG, "Settings sent to server");
+            } else {
+                Log.e(TAG, "Unable to send settings! Response status code: " + statusCode + ", response string: " + responseString);
+            }
+
+            return serverResponse;
+        }
+
+        /*
+        String url = serverUrls.get(target);
         url = buildUrlWithParameters(url, message.getMap());
         HttpGet httpGet = new HttpGet(url);
 
-        HttpResponse response = http_client.execute(httpGet);
+        HttpResponse response = httpClient.execute(httpGet);
         int statusCode = response.getStatusLine().getStatusCode();
         String responseString = EntityUtils.toString(response.getEntity());
 
@@ -203,14 +249,14 @@ public class Server {
             serverResponse = new MessageServerResponse(statusCode, responseString);
         else
             serverResponse = new ServerResponse(statusCode, responseString);
-        
+
         if (serverResponse.wasSuccesful()) {
             Log.i(TAG, "Data fetched from server, target type " + target);
         } else {
             Log.e(TAG, "Unable to fetch data from server! Response status code: " + statusCode + ", response string: " + responseString);
         }
-        
-        return serverResponse;
+
+        return serverResponse;*/
     }
 
     private static String buildUrlWithParameters(String url, Map<String, String> parameters) {
