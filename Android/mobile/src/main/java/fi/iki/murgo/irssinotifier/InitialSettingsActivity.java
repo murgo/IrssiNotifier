@@ -14,7 +14,6 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.AccountPicker;
 
-import org.apache.http.auth.AuthenticationException;
 
 import java.io.IOException;
 

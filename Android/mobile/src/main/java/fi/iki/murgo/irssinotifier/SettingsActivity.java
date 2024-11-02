@@ -17,7 +17,6 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import org.apache.http.auth.AuthenticationException;
 import yuku.ambilwarna.AmbilWarnaDialog;
 
 import java.io.IOException;

@@ -3,7 +3,6 @@ package fi.iki.murgo.irssinotifier;
 
 import android.app.Activity;
 import android.util.Log;
-import org.apache.http.auth.AuthenticationException;
 
 public class SettingsSendingTask extends BackgroundAsyncTask<Void, Void, ServerResponse> {
 
@@ -22,7 +21,7 @@ public class SettingsSendingTask extends BackgroundAsyncTask<Void, Void, ServerR
             boolean authenticated = server.authenticate();
             if (!authenticated) {
                 Log.e(TAG, "Unable to authenticate to server");
-                return new ServerResponse(new AuthenticationException());
+                return new ServerResponse(new Exception("Authentication exception"));
             }
 
             Preferences prefs = new Preferences(activity);
