@@ -3,6 +3,9 @@
 runtime: python312
 entrypoint: gunicorn -b :$PORT main:app
 
+automatic_scaling:
+  max_instances: 1
+
 handlers:
 - url: /favicon.ico
   static_files: static/favicon.ico

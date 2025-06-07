@@ -62,7 +62,7 @@ public class IrssiNotifierActivity extends AppCompatActivity {
         Preferences.setVersion(versionCode);
 
         // do initial settings
-        if (preferences.getAccountName() == null || preferences.getGcmRegistrationId() == null || preferences.getGcmRegistrationIdVersion() != versionCode) {
+        if (preferences.getAuthToken() == null || preferences.getGcmRegistrationId() == null || preferences.getGcmRegistrationIdVersion() != versionCode) {
             Log.d(TAG, "Asking for initial settings");
             Intent i = new Intent(this, InitialSettingsActivity.class);
             startActivity(i);

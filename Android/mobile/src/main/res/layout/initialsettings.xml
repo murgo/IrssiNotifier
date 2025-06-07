@@ -25,6 +25,12 @@
         android:text="@string/selectaccount"
         android:textSize="20sp" />
 
+    <Button
+        android:id="@+id/login_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/common_signin_button_text" />
+
     <ListView
         android:id="@+id/accountsList"
         android:layout_width="match_parent"

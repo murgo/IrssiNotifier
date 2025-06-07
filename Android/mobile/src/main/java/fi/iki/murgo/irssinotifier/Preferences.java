@@ -107,6 +107,7 @@ public class Preferences {
             target = ServerTarget.WipeSettings;
         }
 
+        map.put("id_token", getAuthToken());
         MessageToServer msg = new MessageToServer(map);
 
         ServerResponse response = server.post(msg, target);
@@ -195,6 +196,7 @@ public class Preferences {
         return sharedPreferences.getBoolean(THEME_DISABLED, false);
     }
 
+    /*
     public boolean setAccountName(String name) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(ACCOUNT_NAME, name);
@@ -204,6 +206,7 @@ public class Preferences {
     public String getAccountName() {
         return sharedPreferences.getString(ACCOUNT_NAME, null);
     }
+     */
 
     public boolean setNotificationsEnabled(boolean b) {
         SharedPreferences.Editor editor = sharedPreferences.edit();

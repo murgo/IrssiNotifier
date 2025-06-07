@@ -34,10 +34,12 @@ public class DataFetcherTask extends AsyncTask<Void, Void, DataFetchResult> {
         DataFetchResult result = new DataFetchResult();
         try {
             Server server = new Server(activity);
+            /*
             boolean authenticated = server.authenticate();
             if (!authenticated) {
                 throw new Exception("Authentication failed");
             }
+             */
 
             HashMap<String, String> map = new HashMap<String, String>();
             map.put("timestamp", Long.toString(lastFetchTime / 1000));

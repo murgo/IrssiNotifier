@@ -32,6 +32,7 @@ public class FCMRegistrationTask extends BackgroundAsyncTask<Void, Void, Boolean
                 String token = task.getResult();
 
                 preferences.setGcmRegistrationId(token);
+                preferences.setNotificationsEnabled(true);
             });
 
         return true;

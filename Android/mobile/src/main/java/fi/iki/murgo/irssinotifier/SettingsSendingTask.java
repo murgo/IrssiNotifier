@@ -18,11 +18,13 @@ public class SettingsSendingTask extends BackgroundAsyncTask<Void, Void, ServerR
 
         try {
             Server server = new Server(activity);
+            /*
             boolean authenticated = server.authenticate();
             if (!authenticated) {
                 Log.e(TAG, "Unable to authenticate to server");
-                return new ServerResponse(new Exception("Authentication exception"));
+                return new ServerResponse(new AuthenticationException());
             }
+             */
 
             Preferences prefs = new Preferences(activity);
             return prefs.sendSettings(server);

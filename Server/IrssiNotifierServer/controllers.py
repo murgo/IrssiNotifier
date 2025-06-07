@@ -1,4 +1,4 @@
-from flask import request, jsonify, render_template, redirect, abort
+from flask import request, jsonify, render_template, redirect, abort, session
 import logging
 import licensing
 import login
@@ -68,6 +68,20 @@ class BaseController:
         if not self.data and request.form:
             self.data = request.form.to_dict()
         logging.debug(f"Data {self.data}")
+
+        logging.debug("HEADERS BABY")
+        foo = json.dumps(dict(request.headers))
+        logging.debug(foo)
+
+        if 'Authorization' in request.headers:
+            auth = request.headers['Authorization']
+            if auth.startswith('Bearer '):
+                session['id_token'] = auth[7:]
+                logging.debug(f"id_token: {session['id_token']}")
+            else:
+                logging.warning(f"Malformed authorization header!")
+        else:
+            logging.debug(f"No authorization header!")
 
         self.irssi_user = login.get_irssi_user(self.data, allowApiTokenUse)
         if not self.irssi_user:

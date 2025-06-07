@@ -36,7 +36,7 @@ def oauth2callback():
         # Check if the access token is present
         if 'id_token' in token_data:
             session['id_token'] = token_data['id_token']
-            return redirect("/#profile");
+            return redirect("/#profile")
         else:
             return f"Authorization failed. Error: {token_data.get('error_description', 'Unknown error')}"
     except Exception as e:
@@ -45,7 +45,7 @@ def oauth2callback():
 
 def logout():
     session.clear()
-    return redirect("/");
+    return redirect("/")
 
 def get_irssi_user(params, allowApiTokenUse):
     logging.info("Login.getIrssiUser()")
